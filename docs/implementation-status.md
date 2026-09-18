@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 3 — Account Read
-CURRENT_TASK: TASK-0302 — Account Read Mapping
-LAST_COMPLETED_TASK: TASK-0301 — AccountStatus Domain Model
+CURRENT_TASK: TASK-0303 — AccountService
+LAST_COMPLETED_TASK: TASK-0302 — Account Read Mapping
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301 DONE。TASK-0302 READY。TASK-0303～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0302 DONE。TASK-0303 READY。TASK-0304～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–2 are complete. AccountStatus domain behavior T-18–T-20 is automated verified. account/read protocol mapping and runtime behavior remain NOT_RUN.
+Stages 0–2 are complete. AccountStatus domain behavior T-18–T-20 and account/read DTO/mapping are automated verified. AccountService and real account/read remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -223,6 +223,18 @@ Stages 0–2 are complete. AccountStatus domain behavior T-18–T-20 is automate
 - KNOWN_UNKNOWNS: Protocol DTO/mapping, service, and real account/read remain NOT_RUN
 - NEXT_TASK: TASK-0302 — Account Read Mapping
 
+### TASK-0302 — Account Read Mapping
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/codex/protocol.py`, `server/app/codex/adapter.py`, `server/app/codex/account_mapper.py`, `server/tests/unit/test_adapter.py`, `server/tests/unit/test_account_mapping.py`
+- TESTS: T-18 PASS；T-19 PASS；T-20 PASS；account/read DTO、mapping、adapter request、invalid-response sanitization、transport-error propagation PASS（Automated Verified, `20 passed`）；T-47～T-48 NOT_RUN
+- VALIDATION: `PYTHONPATH=server /tmp/task0003-review.C5k26h/bin/python -m pytest -q server/tests/unit/test_account_model.py server/tests/unit/test_account_mapping.py server/tests/unit/test_adapter.py` PASS (`20 passed`)；compile and diff checks PASS
+- RUNTIME_EVIDENCE: NONE；no real account/read request executed
+- SECURITY_EVIDENCE: Mapper deliberately excludes email and protocol metadata；validation error is generic and omits raw response；no credential/auth file access or raw payload logging；scan PASS
+- KNOWN_UNKNOWNS: AccountService and real authenticated/unauthenticated account/read behavior remain NOT_RUN
+- NEXT_TASK: TASK-0303 — AccountService
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -237,6 +249,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0302
-NEXT_ACTION: Implement TASK-0302 only.
+READY_TASK: TASK-0303
+NEXT_ACTION: Implement TASK-0303 only.
 ```

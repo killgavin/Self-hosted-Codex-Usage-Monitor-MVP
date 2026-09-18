@@ -8,9 +8,17 @@ outside this boundary and are deferred to later stages.
 from enum import Enum
 
 from app.codex.process import CodexProcess
-from app.codex.exceptions import AdapterStateError
-from app.codex.protocol import ClientInfo, InitializeParams, InitializeResponse, to_wire
+from app.codex.exceptions import AdapterStateError, ProcessCommunicationFailed
+from app.codex.protocol import (
+    ClientInfo,
+    GetAccountParams,
+    GetAccountResponse,
+    InitializeParams,
+    InitializeResponse,
+    to_wire,
+)
 from app.codex.transport import CodexTransport
+from pydantic import ValidationError
 
 
 class AdapterState(str, Enum):
@@ -84,6 +92,24 @@ class CodexAppServerAdapter:
         finally:
             if self._state is not AdapterState.STOPPED:
                 self._transition(AdapterState.STOPPED)
+
+    async def read_account(self, refresh_token: bool = False) -> GetAccountResponse:
+        """Read account status through the ready Codex protocol boundary."""
+
+        self._require_ready()
+        if self._transport is None:
+            raise AdapterStateError("Codex adapter transport is unavailable")
+        try:
+            result = await self._transport.request(
+                "account/read",
+                to_wire(GetAccountParams(refresh_token=refresh_token)),
+            )
+        except ProcessCommunicationFailed:
+            raise
+        try:
+            return GetAccountResponse.model_validate(result)
+        except ValidationError:
+            raise ProcessCommunicationFailed("Codex account response validation failed") from None
 
     def _require_ready(self) -> None:
         """Guard future adapter requests until initialization completed."""

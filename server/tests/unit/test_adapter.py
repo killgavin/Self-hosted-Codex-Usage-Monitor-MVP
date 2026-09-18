@@ -6,7 +6,8 @@ import json
 import pytest
 
 from app.codex.adapter import AdapterState, CodexAppServerAdapter
-from app.codex.exceptions import AdapterStateError
+from app.codex.exceptions import AdapterStateError, ProcessCommunicationFailed
+from app.codex.protocol import GetAccountResponse
 
 
 class _FakeWriter:
@@ -152,5 +153,70 @@ def test_initialize_failure_enters_failed_and_cleans_up() -> None:
         assert "do-not-leak" not in str(error.value)
         assert adapter.state is AdapterState.FAILED
         assert process.stopped is True
+
+    asyncio.run(scenario())
+
+
+def test_read_account_uses_default_refresh_and_returns_dto() -> None:
+    class FakeTransport:
+        def __init__(self) -> None:
+            self.calls = []
+
+        async def request(self, method, params):
+            self.calls.append((method, params))
+            return {"requiresOpenaiAuth": False, "account": None}
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        transport = FakeTransport()
+        adapter._transport = transport
+
+        response = await adapter.read_account()
+
+        assert isinstance(response, GetAccountResponse)
+        assert transport.calls == [("account/read", {"refreshToken": False})]
+
+    asyncio.run(scenario())
+
+
+def test_read_account_invalid_response_is_generic() -> None:
+    class FakeTransport:
+        async def request(self, method, params):
+            return {"requiresOpenaiAuth": "private-invalid-marker", "account": None}
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = FakeTransport()
+
+        with pytest.raises(ProcessCommunicationFailed) as error:
+            await adapter.read_account()
+        assert "private-invalid-marker" not in str(error.value)
+
+    asyncio.run(scenario())
+
+
+def test_read_account_preserves_transport_communication_error() -> None:
+    sentinel = ProcessCommunicationFailed("transport unavailable")
+
+    class FakeTransport:
+        async def request(self, method, params):
+            raise sentinel
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = FakeTransport()
+
+        with pytest.raises(ProcessCommunicationFailed) as error:
+            await adapter.read_account()
+        assert error.value is sentinel
 
     asyncio.run(scenario())

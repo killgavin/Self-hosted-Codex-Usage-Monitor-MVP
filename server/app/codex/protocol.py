@@ -61,6 +61,31 @@ class InitializedNotification(WireModel):
     method: Literal["initialized"] = "initialized"
 
 
+class GetAccountParams(WireModel):
+    """Parameters for account/read; refresh is opt-in and defaults off."""
+
+    refresh_token: bool = Field(default=False, alias="refreshToken")
+
+
+class AccountProtocol(WireModel):
+    """Forward-compatible account payload at the protocol boundary."""
+
+    type: str | None = None
+    email: str | None = None
+    plan_type: str | None = Field(default=None, alias="planType")
+    uses_codex_managed_credentials: bool | None = Field(
+        default=None,
+        alias="usesCodexManagedCredentials",
+    )
+
+
+class GetAccountResponse(WireModel):
+    """Account/read response with nullable account data."""
+
+    requires_openai_auth: bool = Field(alias="requiresOpenaiAuth")
+    account: AccountProtocol | None = None
+
+
 def to_wire(model: WireModel) -> dict[str, Any]:
     """Serialize a protocol DTO with wire aliases and no absent optionals."""
 
