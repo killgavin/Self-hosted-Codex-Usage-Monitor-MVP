@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 1 — Codex Process / Transport
-CURRENT_TASK: TASK-0102 — Process Start
-LAST_COMPLETED_TASK: TASK-0101 — Executable Config
+CURRENT_TASK: TASK-0103 — Process Stop
+LAST_COMPLETED_TASK: TASK-0102 — Process Start
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,11 +43,11 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101 DONE。TASK-0102 READY。TASK-0103～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0102 DONE。TASK-0103 READY。TASK-0104～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
-Codex executable、app-server startup、protocol initialize、account/read、device-code login、login completion、rateLimits/read、Docker startup、credential persistence：全部 NOT_RUN。
+Codex executable：PASS（Real Codex Verified, `codex-cli 0.155.0`）。app-server startup：PASS（Real Codex Verified）。protocol initialize、account/read、device-code login、login completion、rateLimits/read、Docker startup、credential persistence：NOT_RUN。
 
 ## Security Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stage 0 is complete. Executable configuration/detection is automated verified; real Codex executable and all Codex process/runtime behavior remain NOT_RUN.
+Stage 0 is complete. Real Codex executable and app-server startup are verified. Formal stop/no-orphan behavior and protocol/account/login/rate-limit runtime behavior remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -115,6 +115,18 @@ Stage 0 is complete. Executable configuration/detection is automated verified; r
 - KNOWN_UNKNOWNS: Real Codex detection and process startup/stop remain unverified
 - NEXT_TASK: TASK-0102 — Process Start
 
+### TASK-0102 — Process Start
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/codex/exceptions.py`, `server/app/codex/process.py`, `server/tests/integration/test_process_start.py`
+- TESTS: T-37 PASS（Automated Verified）；T-38 PASS（Real Codex Verified）；T-39 NOT_RUN
+- VALIDATION: `PYTHONPATH=server REAL_CODEX_EXECUTABLE=/tmp/codex-task-runtime-0.155.0/bin/codex python -m pytest -q server/tests/integration/test_process_start.py` PASS (`2 passed`)；app-server remained alive 2.1 seconds；post-test orphan check PASS；compile and diff checks PASS
+- RUNTIME_EVIDENCE: Official `codex-cli 0.155.0` executable started `app-server` with stdin/stdout/stderr pipes；no raw payload inspected or printed
+- SECURITY_EVIDENCE: Exact argv/no shell；no raw stdout/stderr logging；credential keyword scan PASS
+- KNOWN_UNKNOWNS: Formal stop/lifecycle cleanup remains NOT_RUN
+- NEXT_TASK: TASK-0103 — Process Stop
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -129,6 +141,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0102
-NEXT_ACTION: Implement TASK-0102 only.
+READY_TASK: TASK-0103
+NEXT_ACTION: Implement TASK-0103 only.
 ```
