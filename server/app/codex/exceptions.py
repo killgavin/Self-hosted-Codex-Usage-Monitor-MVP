@@ -15,3 +15,7 @@ class ProcessStopFailed(Exception):
 
 class ProcessCommunicationFailed(Exception):
     """A controlled failure occurred while communicating with the child."""
+
+
+class AdapterStateError(Exception):
+    """A requested adapter lifecycle transition is not permitted."""
