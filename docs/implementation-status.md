@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 1 — Codex Process / Transport
-CURRENT_TASK: TASK-0104 — JSON-RPC Transport
-LAST_COMPLETED_TASK: TASK-0103 — Process Stop
+CURRENT_TASK: TASK-0105 — Notifications and Concurrent Correlation
+LAST_COMPLETED_TASK: TASK-0104 — JSON-RPC Transport
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0103 DONE。TASK-0104 READY。TASK-0105～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0104 DONE。TASK-0105 READY。TASK-0106～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stage 0 is complete. Real Codex executable, app-server startup, and stop/no-orphan behavior are verified. Transport and protocol/account/login/rate-limit runtime behavior remain NOT_RUN.
+Stage 0 is complete. Real Codex process lifecycle is verified. Basic JSONL transport is automated verified; notification/concurrency acceptance and real protocol/account/login/rate-limit behavior remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -139,6 +139,18 @@ Stage 0 is complete. Real Codex executable, app-server startup, and stop/no-orph
 - KNOWN_UNKNOWNS: NONE within TASK-0103
 - NEXT_TASK: TASK-0104 — JSON-RPC Transport
 
+### TASK-0104 — JSON-RPC Transport
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/codex/transport.py`, `server/app/codex/exceptions.py`, `server/tests/unit/test_transport.py`
+- TESTS: Basic request serialization/correlation PASS；controlled error response PASS；close-fails-pending PASS（Automated Verified）；T-40～T-44 NOT_RUN
+- VALIDATION: `PYTHONPATH=server python -m pytest -q server/tests/unit/test_transport.py` PASS (`3 passed`)；compile and diff checks PASS
+- RUNTIME_EVIDENCE: NONE；Real Codex transport/protocol not exercised in this Task
+- SECURITY_EVIDENCE: No shell, raw payload logging, credential access, or `auth.json` access；credential scan PASS
+- KNOWN_UNKNOWNS: Notification dispatch, out-of-order concurrency, malformed JSON, and request timeout remain NOT_RUN
+- NEXT_TASK: TASK-0105 — Notifications and Concurrent Correlation
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -153,6 +165,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0104
-NEXT_ACTION: Implement TASK-0104 only.
+READY_TASK: TASK-0105
+NEXT_ACTION: Implement TASK-0105 only.
 ```
