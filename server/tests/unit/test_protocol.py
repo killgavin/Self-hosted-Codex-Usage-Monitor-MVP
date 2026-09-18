@@ -5,6 +5,8 @@ from pydantic import ValidationError
 
 from app.codex.protocol import (
     ClientInfo,
+    DeviceCodeLoginParams,
+    DeviceCodeLoginResponse,
     InitializeCapabilities,
     InitializeParams,
     InitializeResponse,
@@ -88,3 +90,33 @@ def test_initialized_notification_wire_shape() -> None:
     notification = InitializedNotification()
 
     assert to_wire(notification) == {"method": "initialized"}
+
+
+def test_device_code_login_shapes_and_unknown_fields() -> None:
+    response = DeviceCodeLoginResponse.model_validate(
+        {
+            "type": "chatgptDeviceCode",
+            "loginId": "synthetic-id",
+            "userCode": "synthetic-code",
+            "verificationUrl": "https://example.invalid/verify",
+            "futureField": True,
+        }
+    )
+
+    assert to_wire(DeviceCodeLoginParams()) == {"type": "chatgptDeviceCode"}
+    assert to_wire(response)["loginId"] == "synthetic-id"
+    assert response.model_extra == {"futureField": True}
+
+
+def test_device_code_login_required_fields_and_literal() -> None:
+    with pytest.raises(ValidationError):
+        DeviceCodeLoginResponse.model_validate({"type": "chatgptDeviceCode"})
+    with pytest.raises(ValidationError):
+        DeviceCodeLoginResponse.model_validate(
+            {
+                "type": "unsupported",
+                "loginId": "id",
+                "userCode": "code",
+                "verificationUrl": "url",
+            }
+        )

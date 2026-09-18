@@ -86,6 +86,21 @@ class GetAccountResponse(WireModel):
     account: AccountProtocol | None = None
 
 
+class DeviceCodeLoginParams(WireModel):
+    """Parameters for the supported device-code login start variant."""
+
+    type: Literal["chatgptDeviceCode"] = "chatgptDeviceCode"
+
+
+class DeviceCodeLoginResponse(WireModel):
+    """Required device-code fields returned by login start."""
+
+    type: Literal["chatgptDeviceCode"]
+    login_id: str = Field(alias="loginId")
+    user_code: str = Field(alias="userCode")
+    verification_url: str = Field(alias="verificationUrl")
+
+
 def to_wire(model: WireModel) -> dict[str, Any]:
     """Serialize a protocol DTO with wire aliases and no absent optionals."""
 

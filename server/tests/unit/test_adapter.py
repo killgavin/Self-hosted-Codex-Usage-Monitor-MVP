@@ -220,3 +220,79 @@ def test_read_account_preserves_transport_communication_error() -> None:
         assert error.value is sentinel
 
     asyncio.run(scenario())
+
+
+def test_start_login_uses_exact_method_and_params() -> None:
+    class FakeTransport:
+        def __init__(self) -> None:
+            self.calls = []
+
+        async def request(self, method, params):
+            self.calls.append((method, params))
+            return {
+                "type": "chatgptDeviceCode",
+                "loginId": "synthetic-id",
+                "userCode": "synthetic-code",
+                "verificationUrl": "https://example.invalid/verify",
+            }
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        transport = FakeTransport()
+        adapter._transport = transport
+        response = await adapter.start_login()
+        assert response.login_id == "synthetic-id"
+        assert transport.calls == [("account/login/start", {"type": "chatgptDeviceCode"})]
+
+    asyncio.run(scenario())
+
+
+def test_start_login_invalid_response_is_sanitized() -> None:
+    class FakeTransport:
+        async def request(self, method, params):
+            return {"type": "chatgptDeviceCode", "loginId": "private-marker"}
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = FakeTransport()
+        with pytest.raises(ProcessCommunicationFailed) as error:
+            await adapter.start_login()
+        assert "private-marker" not in str(error.value)
+
+    asyncio.run(scenario())
+
+
+def test_start_login_requires_ready_without_request() -> None:
+    adapter = CodexAppServerAdapter()
+
+    async def scenario() -> None:
+        with pytest.raises(AdapterStateError, match="not ready"):
+            await adapter.start_login()
+
+    asyncio.run(scenario())
+
+
+def test_start_login_preserves_transport_failure_identity() -> None:
+    sentinel = ProcessCommunicationFailed("controlled login transport failure")
+
+    class FakeTransport:
+        async def request(self, method, params):
+            raise sentinel
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = FakeTransport()
+        with pytest.raises(ProcessCommunicationFailed) as error:
+            await adapter.start_login()
+        assert error.value is sentinel
+
+    asyncio.run(scenario())

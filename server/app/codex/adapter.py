@@ -1,8 +1,8 @@
 """Codex app-server lifecycle and initialization boundary.
 
 This module owns process startup, the initialize/initialized handshake, and
-adapter state transitions. Account, login, and rate-limit methods remain
-outside this boundary and are deferred to later stages.
+adapter state transitions, account reads, and device-code login start. Login
+completion, cancellation, and rate-limit methods remain deferred.
 """
 
 from enum import Enum
@@ -11,6 +11,8 @@ from app.codex.process import CodexProcess
 from app.codex.exceptions import AdapterStateError, ProcessCommunicationFailed
 from app.codex.protocol import (
     ClientInfo,
+    DeviceCodeLoginParams,
+    DeviceCodeLoginResponse,
     GetAccountParams,
     GetAccountResponse,
     InitializeParams,
@@ -110,6 +112,24 @@ class CodexAppServerAdapter:
             return GetAccountResponse.model_validate(result)
         except ValidationError:
             raise ProcessCommunicationFailed("Codex account response validation failed") from None
+
+    async def start_login(self) -> DeviceCodeLoginResponse:
+        """Start the supported device-code login flow after initialization."""
+
+        self._require_ready()
+        if self._transport is None:
+            raise AdapterStateError("Codex adapter transport is unavailable")
+        try:
+            result = await self._transport.request(
+                "account/login/start",
+                to_wire(DeviceCodeLoginParams()),
+            )
+        except ProcessCommunicationFailed:
+            raise
+        try:
+            return DeviceCodeLoginResponse.model_validate(result)
+        except ValidationError:
+            raise ProcessCommunicationFailed("Codex login response validation failed") from None
 
     def _require_ready(self) -> None:
         """Guard future adapter requests until initialization completed."""

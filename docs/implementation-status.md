@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 4 — ChatGPT Login
-CURRENT_TASK: TASK-0402 — Device Code Login Start
-LAST_COMPLETED_TASK: TASK-0401 — AuthService State
+CURRENT_TASK: TASK-0403 — Login Completion
+LAST_COMPLETED_TASK: TASK-0402 — Device Code Login Start
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,11 +43,11 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401 DONE。TASK-0402 READY。TASK-0403～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0402 DONE。TASK-0403 READY。TASK-0404～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
-Codex executable：PASS（Real Codex Verified, `codex-cli 0.155.0`）。app-server startup：PASS（Real Codex Verified）。app-server stop/no orphan：PASS（Real Codex Verified）。protocol initialize：PASS（Real Codex Verified）。account/read：PASS（Real Codex Verified；authenticated current environment and unauthenticated isolated clean environment）。device-code login、login completion、rateLimits/read、Docker startup、credential persistence：NOT_RUN。
+Codex executable：PASS（Real Codex Verified, `codex-cli 0.155.0`）。app-server startup：PASS（Real Codex Verified）。app-server stop/no orphan：PASS（Real Codex Verified）。protocol initialize：PASS（Real Codex Verified）。account/read：PASS（Real Codex Verified；authenticated current environment and unauthenticated isolated clean environment）。device-code login start：PASS（Real Codex Verified in isolated clean environment）。login completion、rateLimits/read、Docker startup、credential persistence：NOT_RUN。
 
 ## Security Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–3 are complete. Local immutable AuthService state is automated verified. Device-code start、completion、cancel and login UI remain NOT_RUN.
+Stages 0–3 are complete. Local AuthService state is automated verified and device-code start T-49 is Real Codex Verified. Login completion、cancel and login UI remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -271,6 +271,18 @@ Stages 0–3 are complete. Local immutable AuthService state is automated verifi
 - KNOWN_UNKNOWNS: Device-code start、completion、cancel and UI behavior remain NOT_RUN
 - NEXT_TASK: TASK-0402 — Device Code Login Start
 
+### TASK-0402 — Device Code Login Start
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/codex/protocol.py`, `server/app/codex/adapter.py`, `server/app/services/auth.py`, `server/tests/unit/test_protocol.py`, `server/tests/unit/test_adapter.py`, `server/tests/unit/test_auth_service.py`, `server/tests/integration/test_login.py`
+- TESTS: T-49 PASS（Real Codex Verified）；focused protocol/adapter/service tests PASS (`30 passed`)；full unit regression PASS (`59 passed`)；T-50、T-51、T-59 NOT_RUN
+- VALIDATION: `REAL_CODEX_EXECUTABLE=/tmp/codex-task-runtime-0.155.0/bin/codex PYTHONPATH=server /tmp/task0003-review.C5k26h/bin/python -m pytest -q server/tests/integration/test_login.py` PASS (`1 passed in 8.41s`)；unit、compile、diff、allowed-scope and post-test orphan checks PASS
+- RUNTIME_EVIDENCE: Real `codex-cli 0.155.0` in an empty temporary `CODEX_HOME` completed production initialize and `account/login/start` through adapter/service；PENDING and all required structural fields were observed；child shut down/reaped with no orphan
+- SECURITY_EVIDENCE: Runtime login ID、verification URL、user code、raw response、paths、stdout/stderr and credentials were neither printed nor compared literally；no auth file/token access
+- KNOWN_UNKNOWNS: Completion notification T-50、cancel T-51 and UI T-59 remain NOT_RUN
+- NEXT_TASK: TASK-0403 — Login Completion
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -285,6 +297,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0402
-NEXT_ACTION: Implement and validate TASK-0402 only.
+READY_TASK: TASK-0403
+NEXT_ACTION: Implement and validate TASK-0403 only.
 ```
