@@ -70,6 +70,21 @@ class CodexTransport:
         finally:
             self._pending.pop(request_id, None)
 
+    async def send_notification(self, method: str, params: Any = None) -> None:
+        """Send one generic no-id JSONL notification through the child stdin."""
+
+        if self._closed or self._stdin is None or self._stdout is None:
+            raise ProcessCommunicationFailed("Codex transport is not available")
+        message: dict[str, Any] = {"method": method}
+        if params is not None:
+            message["params"] = params
+        try:
+            wire_message = (json.dumps(message, separators=(",", ":")) + "\n").encode()
+            self._stdin.write(wire_message)
+            await self._stdin.drain()
+        except (OSError, RuntimeError, AttributeError) as exc:
+            raise ProcessCommunicationFailed("Codex notification write failed") from exc
+
     async def next_notification(self) -> dict[str, Any]:
         """Deliver the next generic notification without interpreting its method."""
 

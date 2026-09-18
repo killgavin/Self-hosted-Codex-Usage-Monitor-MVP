@@ -51,6 +51,21 @@ def test_request_serialization_and_response_correlation() -> None:
     asyncio.run(scenario())
 
 
+def test_generic_notification_serialization() -> None:
+    async def scenario() -> None:
+        child = FakeChild()
+        transport = CodexTransport(child)
+        await transport.send_notification("example/event", {"enabled": True})
+
+        assert json.loads(child.stdin.writes[0]) == {
+            "method": "example/event",
+            "params": {"enabled": True},
+        }
+        await transport.close()
+
+    asyncio.run(scenario())
+
+
 def test_error_response_is_controlled() -> None:
     async def scenario() -> None:
         child = FakeChild()

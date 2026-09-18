@@ -1,12 +1,16 @@
-"""Lifecycle state boundary for the Codex app-server adapter.
+"""Codex app-server lifecycle and initialization boundary.
 
-This task defines state and transition guards only. Process startup,
-initialization, and protocol method calls are intentionally deferred.
+This module owns process startup, the initialize/initialized handshake, and
+adapter state transitions. Account, login, and rate-limit methods remain
+outside this boundary and are deferred to later stages.
 """
 
 from enum import Enum
 
+from app.codex.process import CodexProcess
 from app.codex.exceptions import AdapterStateError
+from app.codex.protocol import ClientInfo, InitializeParams, InitializeResponse, to_wire
+from app.codex.transport import CodexTransport
 
 
 class AdapterState(str, Enum):
@@ -33,10 +37,12 @@ _ALLOWED_TRANSITIONS: dict[AdapterState, frozenset[AdapterState]] = {
 
 
 class CodexAppServerAdapter:
-    """Hold adapter lifecycle state with a private guarded transition primitive."""
+    """Own the Codex lifecycle and initialization method boundary."""
 
-    def __init__(self) -> None:
+    def __init__(self, process: CodexProcess | None = None) -> None:
         self._state = AdapterState.STOPPED
+        self._process = process if process is not None else CodexProcess()
+        self._transport: CodexTransport | None = None
 
     @property
     def state(self) -> AdapterState:
@@ -44,9 +50,57 @@ class CodexAppServerAdapter:
 
         return self._state
 
+    async def initialize(self) -> InitializeResponse:
+        """Start, initialize, and mark the adapter ready after ``initialized``."""
+
+        if self._state not in {AdapterState.STOPPED, AdapterState.FAILED}:
+            raise AdapterStateError("Codex adapter is not ready to initialize")
+        self._transition(AdapterState.STARTING)
+        try:
+            await self._process.start()
+            self._transport = CodexTransport(self._process)
+            self._transition(AdapterState.INITIALIZING)
+            params = InitializeParams(
+                clientInfo=ClientInfo(
+                    name="self-hosted-codex-usage-monitor",
+                    version="0.1",
+                )
+            )
+            result = await self._transport.request("initialize", to_wire(params))
+            response = InitializeResponse.model_validate(result)
+            await self._transport.send_notification("initialized")
+            self._transition(AdapterState.READY)
+            return response
+        except Exception as exc:
+            self._transition(AdapterState.FAILED)
+            await self._cleanup_resources()
+            raise AdapterStateError("Codex initialize failed") from exc
+
+    async def shutdown(self) -> None:
+        """Boundedly close transport and stop the child, returning to STOPPED."""
+
+        try:
+            await self._cleanup_resources()
+        finally:
+            if self._state is not AdapterState.STOPPED:
+                self._transition(AdapterState.STOPPED)
+
+    def _require_ready(self) -> None:
+        """Guard future adapter requests until initialization completed."""
+
+        if self._state is not AdapterState.READY:
+            raise AdapterStateError("Codex adapter is not ready")
+
     def _transition(self, target: AdapterState) -> None:
         """Apply one explicitly allowed transition or raise a state error."""
 
         if target not in _ALLOWED_TRANSITIONS[self._state]:
             raise AdapterStateError("Invalid Codex adapter state transition")
         self._state = target
+
+    async def _cleanup_resources(self) -> None:
+        transport = self._transport
+        self._transport = None
+        if transport is not None:
+            await transport.close()
+        await self._process.stop()

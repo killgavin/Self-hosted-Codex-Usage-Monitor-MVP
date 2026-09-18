@@ -12,9 +12,9 @@
 ```text
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
-CURRENT_STAGE: Stage 2 — Protocol Initialization
-CURRENT_TASK: TASK-0203 — Initialize Handshake
-LAST_COMPLETED_TASK: TASK-0202 — Adapter States
+CURRENT_STAGE: Stage 3 — Account Read
+CURRENT_TASK: TASK-0301 — AccountStatus Domain Model
+LAST_COMPLETED_TASK: TASK-0203 — Initialize Handshake
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -31,8 +31,8 @@ DONE 必須有 Implementation + Test + Validation evidence。
 |---|---|
 | Stage 0 Repository Foundation | DONE |
 | Stage 1 Codex Process / Transport | DONE |
-| Stage 2 Protocol Initialization | IN_PROGRESS |
-| Stage 3 Account Read | NOT_STARTED |
+| Stage 2 Protocol Initialization | DONE |
+| Stage 3 Account Read | READY |
 | Stage 4 ChatGPT Login | NOT_STARTED |
 | Stage 5 Rate Limit Domain | NOT_STARTED |
 | Stage 6 REST API | NOT_STARTED |
@@ -43,11 +43,11 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0202 DONE。TASK-0203 READY。TASK-0301～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203 DONE。TASK-0301 READY。TASK-0302～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
-Codex executable：PASS（Real Codex Verified, `codex-cli 0.155.0`）。app-server startup：PASS（Real Codex Verified）。app-server stop/no orphan：PASS（Real Codex Verified）。protocol initialize、account/read、device-code login、login completion、rateLimits/read、Docker startup、credential persistence：NOT_RUN。
+Codex executable：PASS（Real Codex Verified, `codex-cli 0.155.0`）。app-server startup：PASS（Real Codex Verified）。app-server stop/no orphan：PASS（Real Codex Verified）。protocol initialize：PASS（Real Codex Verified）。account/read、device-code login、login completion、rateLimits/read、Docker startup、credential persistence：NOT_RUN。
 
 ## Security Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–1 are complete. Real Codex process lifecycle is verified; transport T-40–T-44, initialization DTOs, and adapter state guards are automated verified. Real protocol initialization and account/login/rate-limit behavior remain NOT_RUN.
+Stages 0–2 are complete. Real Codex process lifecycle and initialize/initialized handshake are verified. Account/login/rate-limit behavior remains NOT_RUN.
 
 ## Completed Task Record
 
@@ -199,6 +199,18 @@ Stages 0–1 are complete. Real Codex process lifecycle is verified; transport T
 - KNOWN_UNKNOWNS: Adapter lifecycle integration and real initialize handshake remain NOT_RUN
 - NEXT_TASK: TASK-0203 — Initialize Handshake
 
+### TASK-0203 — Initialize Handshake
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/codex/adapter.py`, `server/app/codex/transport.py`, `server/tests/unit/test_adapter.py`, `server/tests/unit/test_transport.py`, `server/tests/integration/test_initialize.py`
+- TESTS: Adapter/transport regression PASS (`16 passed`)；T-45 PASS（Real Codex Verified）；T-46 PASS（Automated Verified）
+- VALIDATION: Official `codex-cli 0.155.0` completed production initialize/initialized handshake and reached READY；production shutdown returned STOPPED and left no orphan；failure path reached FAILED and cleaned process；compile and diff checks PASS
+- RUNTIME_EVIDENCE: Real app-server initialize response validated without printing values or `codexHome`；initialized notification sent；READY observed
+- SECURITY_EVIDENCE: No raw response, path, stdout/stderr, credential, or auth payload logging；generic failure omitted synthetic private marker；scan PASS
+- KNOWN_UNKNOWNS: account/read and later protocol flows remain NOT_RUN
+- NEXT_TASK: TASK-0301 — AccountStatus Domain Model
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -213,6 +225,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0203
-NEXT_ACTION: Implement TASK-0203 only.
+READY_TASK: TASK-0301
+NEXT_ACTION: Implement TASK-0301 only.
 ```
