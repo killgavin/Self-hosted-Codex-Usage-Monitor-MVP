@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 3 — Account Read
-CURRENT_TASK: TASK-0301 — AccountStatus Domain Model
-LAST_COMPLETED_TASK: TASK-0203 — Initialize Handshake
+CURRENT_TASK: TASK-0302 — Account Read Mapping
+LAST_COMPLETED_TASK: TASK-0301 — AccountStatus Domain Model
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -32,7 +32,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 | Stage 0 Repository Foundation | DONE |
 | Stage 1 Codex Process / Transport | DONE |
 | Stage 2 Protocol Initialization | DONE |
-| Stage 3 Account Read | READY |
+| Stage 3 Account Read | IN_PROGRESS |
 | Stage 4 ChatGPT Login | NOT_STARTED |
 | Stage 5 Rate Limit Domain | NOT_STARTED |
 | Stage 6 REST API | NOT_STARTED |
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203 DONE。TASK-0301 READY。TASK-0302～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301 DONE。TASK-0302 READY。TASK-0303～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–2 are complete. Real Codex process lifecycle and initialize/initialized handshake are verified. Account/login/rate-limit behavior remains NOT_RUN.
+Stages 0–2 are complete. AccountStatus domain behavior T-18–T-20 is automated verified. account/read protocol mapping and runtime behavior remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -211,6 +211,18 @@ Stages 0–2 are complete. Real Codex process lifecycle and initialize/initializ
 - KNOWN_UNKNOWNS: account/read and later protocol flows remain NOT_RUN
 - NEXT_TASK: TASK-0301 — AccountStatus Domain Model
 
+### TASK-0301 — AccountStatus Domain Model
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/models/account.py`, `server/app/models/__init__.py`, `server/tests/unit/test_account_model.py`
+- TESTS: T-18 PASS；T-19 PASS；T-20 PASS；immutability PASS（Automated Verified, `4 passed`）
+- VALIDATION: Pure standard-library frozen dataclass with exactly authenticated/auth_mode/plan_type；compile and diff checks PASS
+- RUNTIME_EVIDENCE: NONE；no account/read request executed
+- SECURITY_EVIDENCE: Domain contains no credential, token, raw metadata, protocol, web, or process dependency；scan PASS
+- KNOWN_UNKNOWNS: Protocol DTO/mapping, service, and real account/read remain NOT_RUN
+- NEXT_TASK: TASK-0302 — Account Read Mapping
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -225,6 +237,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0301
-NEXT_ACTION: Implement TASK-0301 only.
+READY_TASK: TASK-0302
+NEXT_ACTION: Implement TASK-0302 only.
 ```
