@@ -1,4 +1,13 @@
-"""Application entry-point boundary for the MVP server.
+"""Minimal FastAPI application entry point for the MVP server."""
 
-Runtime behavior is intentionally deferred to later implementation tasks.
-"""
+from fastapi import FastAPI
+
+
+app = FastAPI(title="Self-hosted Codex Usage Monitor")
+
+
+@app.get("/health")
+async def health() -> dict[str, str]:
+    """Return the basic process health contract for the Stage 0 smoke test."""
+
+    return {"status": "ok"}

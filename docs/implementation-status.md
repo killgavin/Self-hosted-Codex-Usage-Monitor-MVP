@@ -12,9 +12,9 @@
 ```text
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
-CURRENT_STAGE: Stage 0 — Repository Foundation
-CURRENT_TASK: TASK-0003 — FastAPI Skeleton
-LAST_COMPLETED_TASK: TASK-0002 — Python Dependencies
+CURRENT_STAGE: Stage 1 — Codex Process / Transport
+CURRENT_TASK: TASK-0101 — Executable Config
+LAST_COMPLETED_TASK: TASK-0003 — FastAPI Skeleton
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -29,8 +29,8 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 | Stage | Status |
 |---|---|
-| Stage 0 Repository Foundation | IN_PROGRESS |
-| Stage 1 Codex Process / Transport | NOT_STARTED |
+| Stage 0 Repository Foundation | DONE |
+| Stage 1 Codex Process / Transport | READY |
 | Stage 2 Protocol Initialization | NOT_STARTED |
 | Stage 3 Account Read | NOT_STARTED |
 | Stage 4 ChatGPT Login | NOT_STARTED |
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0002 DONE。TASK-0003 READY。TASK-0101～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003 DONE。TASK-0101 READY。TASK-0102～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Project skeleton and dependency manifests exist. FastAPI runtime behavior has not yet been implemented or verified.
+Stage 0 is complete. Basic `/health` behavior is automated verified; full `/api/v1/status` and all Codex runtime behavior remain unimplemented or NOT_RUN.
 
 ## Completed Task Record
 
@@ -91,6 +91,18 @@ Project skeleton and dependency manifests exist. FastAPI runtime behavior has no
 - KNOWN_UNKNOWNS: NONE within TASK-0002
 - NEXT_TASK: TASK-0003 — FastAPI Skeleton
 
+### TASK-0003 — FastAPI Skeleton
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/main.py`, `server/tests/integration/test_health.py`
+- TESTS: Stage 0 health smoke PASS（Automated Verified）；T-54 subset PASS（Automated Verified）；full T-54 `/api/v1/status` NOT_RUN
+- VALIDATION: Fresh temporary venv install PASS；`PYTHONPATH=server python -m pytest -q server/tests/integration/test_health.py` PASS (`1 passed`)；`python -m compileall -q server/app server/tests` PASS；`git diff --check` PASS
+- RUNTIME_EVIDENCE: Local FastAPI ASGI request returned HTTP 200 and exact JSON `{"status":"ok"}`；Codex runtime evidence NONE
+- SECURITY_EVIDENCE: Changed-file credential keyword scan PASS；no credential material found
+- KNOWN_UNKNOWNS: Full T-54 and Codex runtime remain NOT_RUN by task scope
+- NEXT_TASK: TASK-0101 — Executable Config
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -105,6 +117,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0003
-NEXT_ACTION: Implement TASK-0003 only.
+READY_TASK: TASK-0101
+NEXT_ACTION: Implement TASK-0101 only.
 ```
