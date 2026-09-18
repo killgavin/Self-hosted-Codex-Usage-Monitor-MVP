@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 1 — Codex Process / Transport
-CURRENT_TASK: TASK-0105 — Notifications and Concurrent Correlation
-LAST_COMPLETED_TASK: TASK-0104 — JSON-RPC Transport
+CURRENT_TASK: TASK-0106 — Malformed JSON and Timeout Handling
+LAST_COMPLETED_TASK: TASK-0105 — Notifications and Concurrent Correlation
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0104 DONE。TASK-0105 READY。TASK-0106～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0105 DONE。TASK-0106 READY。TASK-0201～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stage 0 is complete. Real Codex process lifecycle is verified. Basic JSONL transport is automated verified; notification/concurrency acceptance and real protocol/account/login/rate-limit behavior remain NOT_RUN.
+Stage 0 is complete. Real Codex process lifecycle is verified. Basic JSONL transport plus notification/concurrent correlation are automated verified; malformed/timeout acceptance and real protocol/account/login/rate-limit behavior remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -151,6 +151,18 @@ Stage 0 is complete. Real Codex process lifecycle is verified. Basic JSONL trans
 - KNOWN_UNKNOWNS: Notification dispatch, out-of-order concurrency, malformed JSON, and request timeout remain NOT_RUN
 - NEXT_TASK: TASK-0105 — Notifications and Concurrent Correlation
 
+### TASK-0105 — Notifications and Concurrent Correlation
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/codex/transport.py`, `server/tests/unit/test_transport.py`
+- TESTS: TASK-0104 regression PASS；T-40 PASS；T-41 PASS；T-42 PASS（Automated Verified）；T-43～T-44 NOT_RUN
+- VALIDATION: `PYTHONPATH=server python -m pytest -q server/tests/unit/test_transport.py` PASS (`6 passed`)；compile and diff checks PASS
+- RUNTIME_EVIDENCE: NONE；in-memory transport evidence only，Real Codex protocol NOT_RUN
+- SECURITY_EVIDENCE: Notifications retained only in transport memory；no raw payload logging, credential access, or `auth.json` access；scan PASS
+- KNOWN_UNKNOWNS: Malformed JSON and request timeout behavior remain NOT_RUN
+- NEXT_TASK: TASK-0106 — Malformed JSON and Timeout Handling
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -165,6 +177,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0105
-NEXT_ACTION: Implement TASK-0105 only.
+READY_TASK: TASK-0106
+NEXT_ACTION: Implement TASK-0106 only.
 ```

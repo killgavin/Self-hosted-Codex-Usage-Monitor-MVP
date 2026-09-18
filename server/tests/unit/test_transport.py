@@ -77,3 +77,57 @@ def test_close_fails_pending_request_safely() -> None:
         await transport.close(timeout=0.1)
 
     asyncio.run(scenario())
+
+
+def test_concurrent_requests_correlate_out_of_order_responses() -> None:
+    async def scenario() -> None:
+        child = FakeChild()
+        transport = CodexTransport(child)
+        first = asyncio.create_task(transport.request("first"))
+        second = asyncio.create_task(transport.request("second"))
+        await asyncio.sleep(0)
+
+        assert [json.loads(data)["id"] for data in child.stdin.writes] == [1, 2]
+        await child.stdout.lines.put(b'{"id":2,"result":"second-result"}\n')
+        await child.stdout.lines.put(b'{"id":1,"result":"first-result"}\n')
+        assert await first == "first-result"
+        assert await second == "second-result"
+        await transport.close()
+
+    asyncio.run(scenario())
+
+
+def test_notification_between_responses_does_not_break_correlation() -> None:
+    async def scenario() -> None:
+        child = FakeChild()
+        transport = CodexTransport(child)
+        request = asyncio.create_task(transport.request("request"))
+        await asyncio.sleep(0)
+        await child.stdout.lines.put(b'{"method":"known/event","params":{"value":1}}\n')
+        notification = await transport.next_notification()
+        assert notification == {"method": "known/event", "params": {"value": 1}}
+        await child.stdout.lines.put(b'{"id":1,"result":"ok"}\n')
+        assert await request == "ok"
+        await transport.close()
+
+    asyncio.run(scenario())
+
+
+def test_unknown_notification_is_delivered_generically() -> None:
+    async def scenario() -> None:
+        child = FakeChild()
+        transport = CodexTransport(child)
+        request = asyncio.create_task(transport.request("request"))
+        await asyncio.sleep(0)
+        unknown = {
+            "method": "future/unknown",
+            "params": {"opaque": True},
+            "new_field": "preserved",
+        }
+        await child.stdout.lines.put((json.dumps(unknown) + "\n").encode())
+        assert await transport.next_notification() == unknown
+        await child.stdout.lines.put(b'{"id":1,"result":null}\n')
+        assert await request is None
+        await transport.close()
+
+    asyncio.run(scenario())

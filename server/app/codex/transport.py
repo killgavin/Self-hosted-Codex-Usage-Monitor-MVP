@@ -22,6 +22,7 @@ class CodexTransport:
         self._stdout = getattr(child, "stdout", None)
         self._next_id = 1
         self._pending: dict[int, asyncio.Future[Any]] = {}
+        self._notifications: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
         self._reader_task: asyncio.Task[None] | None = None
         self._closed = False
 
@@ -57,6 +58,16 @@ class CodexTransport:
         finally:
             self._pending.pop(request_id, None)
 
+    async def next_notification(self) -> dict[str, Any]:
+        """Deliver the next generic notification without interpreting its method."""
+
+        if self._closed and self._notifications.empty():
+            raise ProcessCommunicationFailed("Codex transport closed")
+        notification = await self._notifications.get()
+        if notification is None:
+            raise ProcessCommunicationFailed("Codex transport closed")
+        return notification
+
     async def close(self, timeout: float = 1.0) -> None:
         """Boundedly cancel reader work and fail pending requests.
 
@@ -69,6 +80,7 @@ class CodexTransport:
         if self._closed:
             return
         self._closed = True
+        self._notifications.put_nowait(None)
         error = ProcessCommunicationFailed("Codex transport closed")
         for future in self._pending.values():
             if not future.done():
@@ -94,7 +106,10 @@ class CodexTransport:
                 message = json.loads(line)
                 response_id = message.get("id")
                 if not isinstance(response_id, int):
-                    # Notification dispatch is deliberately outside this task.
+                    # Keep notification semantics generic; domain dispatch is
+                    # deliberately outside this transport boundary.
+                    if isinstance(message, dict):
+                        self._notifications.put_nowait(message)
                     continue
                 future = self._pending.get(response_id)
                 if future is None or future.done():
