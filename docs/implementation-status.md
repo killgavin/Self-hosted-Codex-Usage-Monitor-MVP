@@ -10,11 +10,11 @@
 ## Current Project Status
 
 ```text
-PROJECT_STATUS: READY_TO_IMPLEMENT
+PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 0 — Repository Foundation
-CURRENT_TASK: TASK-0001 — Create Project Skeleton
-LAST_COMPLETED_TASK: NONE
+CURRENT_TASK: TASK-0002 — Python Dependencies
+LAST_COMPLETED_TASK: TASK-0001 — Create Project Skeleton
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -29,7 +29,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 | Stage | Status |
 |---|---|
-| Stage 0 Repository Foundation | READY |
+| Stage 0 Repository Foundation | IN_PROGRESS |
 | Stage 1 Codex Process / Transport | NOT_STARTED |
 | Stage 2 Protocol Initialization | NOT_STARTED |
 | Stage 3 Account Read | NOT_STARTED |
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001 READY。TASK-0002～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001 DONE。TASK-0002 READY。TASK-0003～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,11 +63,21 @@ NONE.
 
 ## Known Limitations
 
-MVP implementation has not started. No runtime behavior has been verified.
+Project skeleton exists. Dependencies and runtime behavior have not yet been implemented or verified.
 
 ## Completed Task Record
 
-NONE.
+### TASK-0001 — Create Project Skeleton
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `.gitignore`, `README.md`, `server/app/**`, `server/tests/**`
+- TESTS: T-xx NOT_APPLICABLE；Structural validation PASS；Python compile validation PASS
+- VALIDATION: `python3 -m compileall -q server/app` PASS；`git diff --check` PASS；required paths and allowed-file scope PASS
+- RUNTIME_EVIDENCE: NONE；all real runtime ledger entries remain NOT_RUN
+- SECURITY_EVIDENCE: New-file credential keyword scan PASS；no credential material found
+- KNOWN_UNKNOWNS: NONE within TASK-0001；runtime behavior intentionally deferred
+- NEXT_TASK: TASK-0002 — Python Dependencies
 
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
@@ -83,6 +93,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0001
-NEXT_ACTION: Implement TASK-0001 only.
+READY_TASK: TASK-0002
+NEXT_ACTION: Implement TASK-0002 only.
 ```
