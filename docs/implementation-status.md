@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 1 — Codex Process / Transport
-CURRENT_TASK: TASK-0101 — Executable Config
-LAST_COMPLETED_TASK: TASK-0003 — FastAPI Skeleton
+CURRENT_TASK: TASK-0102 — Process Start
+LAST_COMPLETED_TASK: TASK-0101 — Executable Config
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -30,7 +30,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 | Stage | Status |
 |---|---|
 | Stage 0 Repository Foundation | DONE |
-| Stage 1 Codex Process / Transport | READY |
+| Stage 1 Codex Process / Transport | IN_PROGRESS |
 | Stage 2 Protocol Initialization | NOT_STARTED |
 | Stage 3 Account Read | NOT_STARTED |
 | Stage 4 ChatGPT Login | NOT_STARTED |
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003 DONE。TASK-0101 READY。TASK-0102～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101 DONE。TASK-0102 READY。TASK-0103～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stage 0 is complete. Basic `/health` behavior is automated verified; full `/api/v1/status` and all Codex runtime behavior remain unimplemented or NOT_RUN.
+Stage 0 is complete. Executable configuration/detection is automated verified; real Codex executable and all Codex process/runtime behavior remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -103,6 +103,18 @@ Stage 0 is complete. Basic `/health` behavior is automated verified; full `/api/
 - KNOWN_UNKNOWNS: Full T-54 and Codex runtime remain NOT_RUN by task scope
 - NEXT_TASK: TASK-0101 — Executable Config
 
+### TASK-0101 — Executable Config
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/config.py`, `server/tests/unit/test_config.py`
+- TESTS: T-36 PASS（Automated Verified with harmless executable）；Real Codex detection NOT_RUN；T-37～T-39 NOT_RUN
+- VALIDATION: `PYTHONPATH=server python -m pytest -q server/tests/unit/test_config.py` PASS (`5 passed`)；`python -m compileall -q server/app server/tests` PASS；`git diff --check` PASS
+- RUNTIME_EVIDENCE: Harmless executable path resolution only；Real Codex evidence NONE
+- SECURITY_EVIDENCE: Changed-file credential keyword scan PASS；no credential material found
+- KNOWN_UNKNOWNS: Real Codex detection and process startup/stop remain unverified
+- NEXT_TASK: TASK-0102 — Process Start
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -117,6 +129,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0101
-NEXT_ACTION: Implement TASK-0101 only.
+READY_TASK: TASK-0102
+NEXT_ACTION: Implement TASK-0102 only.
 ```
