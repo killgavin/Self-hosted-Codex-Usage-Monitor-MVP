@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 3 — Account Read
-CURRENT_TASK: TASK-0303 — AccountService
-LAST_COMPLETED_TASK: TASK-0302 — Account Read Mapping
+CURRENT_TASK: TASK-0304 — Real Account Validation
+LAST_COMPLETED_TASK: TASK-0303 — AccountService
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0302 DONE。TASK-0303 READY。TASK-0304～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0303 DONE。TASK-0304 READY。TASK-0401～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–2 are complete. AccountStatus domain behavior T-18–T-20 and account/read DTO/mapping are automated verified. AccountService and real account/read remain NOT_RUN.
+Stages 0–2 are complete. AccountStatus, account/read DTO/mapping, and AccountService behavior are automated verified. Real account/read T-47/T-48 remains NOT_RUN.
 
 ## Completed Task Record
 
@@ -235,6 +235,18 @@ Stages 0–2 are complete. AccountStatus domain behavior T-18–T-20 and account
 - KNOWN_UNKNOWNS: AccountService and real authenticated/unauthenticated account/read behavior remain NOT_RUN
 - NEXT_TASK: TASK-0303 — AccountService
 
+### TASK-0303 — AccountService
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/services/account.py`, `server/app/services/__init__.py`, `server/tests/unit/test_account_service.py`
+- TESTS: T-18 PASS；T-19 PASS；T-20 PASS；exactly-one adapter call、unknown/missing type preservation、unchanged failure propagation PASS（Automated Verified）；T-47～T-48 NOT_RUN
+- VALIDATION: `PYTHONPATH=server /tmp/task0003-review.C5k26h/bin/python -m pytest -q server/tests/unit` PASS (`46 passed`)；compile and diff checks PASS
+- RUNTIME_EVIDENCE: NONE；service tests use injected DTO-returning fake only，no real account/read request executed
+- SECURITY_EVIDENCE: Service accepts typed DTO boundary and returns only pure `AccountStatus`；no subprocess、JSON-RPC wire handling、raw response logging、credential/auth file access；scan PASS
+- KNOWN_UNKNOWNS: Real authenticated and clean-environment unauthenticated account/read behavior remain NOT_RUN
+- NEXT_TASK: TASK-0304 — Real Account Validation
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -249,6 +261,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0303
-NEXT_ACTION: Implement TASK-0303 only.
+READY_TASK: TASK-0304
+NEXT_ACTION: Execute TASK-0304 only.
 ```
