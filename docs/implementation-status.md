@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 2 — Protocol Initialization
-CURRENT_TASK: TASK-0201 — Initialization DTO
-LAST_COMPLETED_TASK: TASK-0106 — Malformed JSON and Timeout Handling
+CURRENT_TASK: TASK-0202 — Adapter States
+LAST_COMPLETED_TASK: TASK-0201 — Initialization DTO
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -31,7 +31,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 |---|---|
 | Stage 0 Repository Foundation | DONE |
 | Stage 1 Codex Process / Transport | DONE |
-| Stage 2 Protocol Initialization | READY |
+| Stage 2 Protocol Initialization | IN_PROGRESS |
 | Stage 3 Account Read | NOT_STARTED |
 | Stage 4 ChatGPT Login | NOT_STARTED |
 | Stage 5 Rate Limit Domain | NOT_STARTED |
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106 DONE。TASK-0201 READY。TASK-0202～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201 DONE。TASK-0202 READY。TASK-0203～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–1 are complete. Real Codex process lifecycle is verified; transport T-40–T-44 are automated verified. Real protocol initialization and account/login/rate-limit behavior remain NOT_RUN.
+Stages 0–1 are complete. Real Codex process lifecycle is verified; transport T-40–T-44 and initialization DTOs are automated verified. Real protocol initialization and account/login/rate-limit behavior remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -175,6 +175,18 @@ Stages 0–1 are complete. Real Codex process lifecycle is verified; transport T
 - KNOWN_UNKNOWNS: Real Codex protocol initialization remains NOT_RUN
 - NEXT_TASK: TASK-0201 — Initialization DTO
 
+### TASK-0201 — Initialization DTO
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/codex/protocol.py`, `server/tests/unit/test_protocol.py`
+- TESTS: Initialization DTO unit suite PASS (`7 passed`, Automated Verified)；T-45～T-46 NOT_RUN
+- VALIDATION: DTO fields reconciled with official `codex-cli 0.155.0` generated schema；camelCase aliases, required/optional validation, and unknown-field preservation PASS；compile and diff checks PASS
+- RUNTIME_EVIDENCE: NONE；initialize request was not sent
+- SECURITY_EVIDENCE: Synthetic protocol path only；no real home/auth path, credential access, or raw payload logging；scan PASS
+- KNOWN_UNKNOWNS: Adapter state transitions and real initialization remain NOT_RUN
+- NEXT_TASK: TASK-0202 — Adapter States
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -189,6 +201,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0201
-NEXT_ACTION: Implement TASK-0201 only.
+READY_TASK: TASK-0202
+NEXT_ACTION: Implement TASK-0202 only.
 ```
