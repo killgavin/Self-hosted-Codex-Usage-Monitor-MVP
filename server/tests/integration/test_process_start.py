@@ -28,18 +28,12 @@ def test_real_codex_app_server_starts_and_stays_alive() -> None:
 
     async def scenario() -> None:
         codex_process = CodexProcess(Settings(executable))
-        child = await codex_process.start()
+        await codex_process.start()
         try:
             await asyncio.sleep(2.1)
             assert codex_process.is_alive
             assert codex_process.argv == (executable, "app-server")
-            assert child.stdin is not None
-            assert child.stdout is not None
-            assert child.stderr is not None
         finally:
-            # TASK-0102 deliberately has no public stop API. This teardown is
-            # scoped to the child created by this test only.
-            child.kill()
-            await child.wait()
+            await codex_process.stop()
 
     asyncio.run(scenario())
