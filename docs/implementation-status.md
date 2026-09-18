@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 0 — Repository Foundation
-CURRENT_TASK: TASK-0002 — Python Dependencies
-LAST_COMPLETED_TASK: TASK-0001 — Create Project Skeleton
+CURRENT_TASK: TASK-0003 — FastAPI Skeleton
+LAST_COMPLETED_TASK: TASK-0002 — Python Dependencies
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001 DONE。TASK-0002 READY。TASK-0003～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0002 DONE。TASK-0003 READY。TASK-0101～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Project skeleton exists. Dependencies and runtime behavior have not yet been implemented or verified.
+Project skeleton and dependency manifests exist. FastAPI runtime behavior has not yet been implemented or verified.
 
 ## Completed Task Record
 
@@ -79,6 +79,18 @@ Project skeleton exists. Dependencies and runtime behavior have not yet been imp
 - KNOWN_UNKNOWNS: NONE within TASK-0001；runtime behavior intentionally deferred
 - NEXT_TASK: TASK-0002 — Python Dependencies
 
+### TASK-0002 — Python Dependencies
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/requirements.txt`, `server/requirements-dev.txt`
+- TESTS: T-xx NOT_APPLICABLE；Dependency manifest validation PASS；pip resolver dry-run PASS
+- VALIDATION: `python3 -m pip install --dry-run -r server/requirements-dev.txt` PASS；runtime manifest contains only FastAPI, uvicorn, Pydantic；dev adds only pytest；`git diff --check` PASS
+- RUNTIME_EVIDENCE: NONE；dependency resolution is not Codex or feature runtime evidence
+- SECURITY_EVIDENCE: Dependency manifest credential keyword scan PASS；no credential material found
+- KNOWN_UNKNOWNS: NONE within TASK-0002
+- NEXT_TASK: TASK-0003 — FastAPI Skeleton
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -93,6 +105,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0002
-NEXT_ACTION: Implement TASK-0002 only.
+READY_TASK: TASK-0003
+NEXT_ACTION: Implement TASK-0003 only.
 ```
