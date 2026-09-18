@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 4 — ChatGPT Login
-CURRENT_TASK: TASK-0401 — AuthService State
-LAST_COMPLETED_TASK: TASK-0304 — Real Account Validation
+CURRENT_TASK: TASK-0402 — Device Code Login Start
+LAST_COMPLETED_TASK: TASK-0401 — AuthService State
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304 DONE。TASK-0401 READY。TASK-0402～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401 DONE。TASK-0402 READY。TASK-0403～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–3 are complete. T-47/T-48 are Real Codex Verified with sanitized evidence. ChatGPT login state and runtime behavior remain NOT_RUN.
+Stages 0–3 are complete. Local immutable AuthService state is automated verified. Device-code start、completion、cancel and login UI remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -259,6 +259,18 @@ Stages 0–3 are complete. T-47/T-48 are Real Codex Verified with sanitized evid
 - KNOWN_UNKNOWNS: NONE for T-47/T-48；login start/completion/cancel remains NOT_RUN
 - NEXT_TASK: TASK-0401 — AuthService State
 
+### TASK-0401 — AuthService State
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/services/auth.py`, `server/app/services/__init__.py`, `server/tests/unit/test_auth_service.py`
+- TESTS: TASK-0401 local state unit tests PASS（Automated Verified, `4 passed`）；full unit regression PASS (`50 passed`)；T-49～T-51、T-59 NOT_RUN
+- VALIDATION: `PYTHONPATH=server /tmp/task0003-review.C5k26h/bin/python -m pytest -q server/tests/unit` PASS (`50 passed`)；compile and diff checks PASS
+- RUNTIME_EVIDENCE: NONE；no Codex login method or UI executed
+- SECURITY_EVIDENCE: Immutable status has exactly state、login_id、verification_url、user_code；no credential、token、error payload、raw protocol field or logging
+- KNOWN_UNKNOWNS: Device-code start、completion、cancel and UI behavior remain NOT_RUN
+- NEXT_TASK: TASK-0402 — Device Code Login Start
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -273,6 +285,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0401
-NEXT_ACTION: Implement TASK-0401 only.
+READY_TASK: TASK-0402
+NEXT_ACTION: Implement and validate TASK-0402 only.
 ```
