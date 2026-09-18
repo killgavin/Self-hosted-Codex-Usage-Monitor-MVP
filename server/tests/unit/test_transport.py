@@ -131,3 +131,45 @@ def test_unknown_notification_is_delivered_generically() -> None:
         await transport.close()
 
     asyncio.run(scenario())
+
+
+def test_malformed_json_fails_pending_without_raw_line_leak() -> None:
+    async def scenario() -> None:
+        child = FakeChild()
+        transport = CodexTransport(child)
+        notification_waiter = asyncio.create_task(transport.next_notification())
+        await asyncio.sleep(0)
+        request = asyncio.create_task(transport.request("request"))
+        await asyncio.sleep(0)
+        raw_line = b'{not-json-with-private-payload}\n'
+        await child.stdout.lines.put(raw_line)
+        with pytest.raises(ProcessCommunicationFailed) as error:
+            await request
+        assert "private-payload" not in str(error.value)
+        with pytest.raises(ProcessCommunicationFailed, match="transport closed"):
+            await asyncio.wait_for(notification_waiter, 0.2)
+        with pytest.raises(ProcessCommunicationFailed, match="not available"):
+            await transport.request("after-failure")
+        await transport.close()
+
+    asyncio.run(scenario())
+
+
+def test_request_timeout_cleans_pending_and_ignores_late_response() -> None:
+    async def scenario() -> None:
+        child = FakeChild()
+        transport = CodexTransport(child)
+        with pytest.raises(ProcessCommunicationFailed, match="request timed out"):
+            await transport.request("slow", timeout=0.01)
+        assert transport._pending == {}
+
+        # The reader remains safe after a timed-out request; this late response
+        # has no pending future and must not affect the next request.
+        await child.stdout.lines.put(b'{"id":1,"result":"late"}\n')
+        next_request = asyncio.create_task(transport.request("next", timeout=0.1))
+        await asyncio.sleep(0)
+        await child.stdout.lines.put(b'{"id":2,"result":"current"}\n')
+        assert await next_request == "current"
+        await transport.close()
+
+    asyncio.run(scenario())

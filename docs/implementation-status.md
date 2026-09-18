@@ -12,9 +12,9 @@
 ```text
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
-CURRENT_STAGE: Stage 1 — Codex Process / Transport
-CURRENT_TASK: TASK-0106 — Malformed JSON and Timeout Handling
-LAST_COMPLETED_TASK: TASK-0105 — Notifications and Concurrent Correlation
+CURRENT_STAGE: Stage 2 — Protocol Initialization
+CURRENT_TASK: TASK-0201 — Initialization DTO
+LAST_COMPLETED_TASK: TASK-0106 — Malformed JSON and Timeout Handling
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -30,8 +30,8 @@ DONE 必須有 Implementation + Test + Validation evidence。
 | Stage | Status |
 |---|---|
 | Stage 0 Repository Foundation | DONE |
-| Stage 1 Codex Process / Transport | IN_PROGRESS |
-| Stage 2 Protocol Initialization | NOT_STARTED |
+| Stage 1 Codex Process / Transport | DONE |
+| Stage 2 Protocol Initialization | READY |
 | Stage 3 Account Read | NOT_STARTED |
 | Stage 4 ChatGPT Login | NOT_STARTED |
 | Stage 5 Rate Limit Domain | NOT_STARTED |
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0105 DONE。TASK-0106 READY。TASK-0201～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106 DONE。TASK-0201 READY。TASK-0202～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stage 0 is complete. Real Codex process lifecycle is verified. Basic JSONL transport plus notification/concurrent correlation are automated verified; malformed/timeout acceptance and real protocol/account/login/rate-limit behavior remain NOT_RUN.
+Stages 0–1 are complete. Real Codex process lifecycle is verified; transport T-40–T-44 are automated verified. Real protocol initialization and account/login/rate-limit behavior remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -163,6 +163,18 @@ Stage 0 is complete. Real Codex process lifecycle is verified. Basic JSONL trans
 - KNOWN_UNKNOWNS: Malformed JSON and request timeout behavior remain NOT_RUN
 - NEXT_TASK: TASK-0106 — Malformed JSON and Timeout Handling
 
+### TASK-0106 — Malformed JSON and Timeout Handling
+
+- STATUS: DONE
+- COMPLETED: 2026-09-18
+- CHANGED_FILES: `server/app/codex/transport.py`, `server/tests/unit/test_transport.py`
+- TESTS: TASK-0104/TASK-0105 regression PASS；T-43 PASS；T-44 PASS（Automated Verified）
+- VALIDATION: `PYTHONASYNCIODEBUG=1 PYTHONPATH=server python -m pytest -q server/tests/unit/test_transport.py` PASS (`8 passed`)；malformed input boundedly failed pending request and blocked notification waiter；no unretrieved task warnings；compile and diff checks PASS
+- RUNTIME_EVIDENCE: NONE；in-memory transport evidence only，Real Codex protocol NOT_RUN
+- SECURITY_EVIDENCE: Malformed raw line excluded from exceptions/logs；no credential access or `auth.json` access；scan PASS
+- KNOWN_UNKNOWNS: Real Codex protocol initialization remains NOT_RUN
+- NEXT_TASK: TASK-0201 — Initialization DTO
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -177,6 +189,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0106
-NEXT_ACTION: Implement TASK-0106 only.
+READY_TASK: TASK-0201
+NEXT_ACTION: Implement TASK-0201 only.
 ```

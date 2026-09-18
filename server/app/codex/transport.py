@@ -16,6 +16,8 @@ from app.codex.exceptions import ProcessCommunicationFailed
 class CodexTransport:
     """Correlate basic JSONL requests with responses from a child stdout pipe."""
 
+    DEFAULT_REQUEST_TIMEOUT = 10.0
+
     def __init__(self, process_or_child: Any) -> None:
         child = getattr(process_or_child, "process", process_or_child)
         self._stdin = getattr(child, "stdin", None)
@@ -23,12 +25,20 @@ class CodexTransport:
         self._next_id = 1
         self._pending: dict[int, asyncio.Future[Any]] = {}
         self._notifications: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
+        self._notification_waiters = 0
         self._reader_task: asyncio.Task[None] | None = None
         self._closed = False
 
-    async def request(self, method: str, params: Any = None) -> Any:
-        """Write one request and await its correlated result or controlled error."""
+    async def request(
+        self,
+        method: str,
+        params: Any = None,
+        timeout: float = DEFAULT_REQUEST_TIMEOUT,
+    ) -> Any:
+        """Write one request and await its result within a bounded timeout."""
 
+        if timeout <= 0:
+            raise ValueError("request timeout must be positive")
         if self._closed or self._stdin is None or self._stdout is None:
             raise ProcessCommunicationFailed("Codex transport is not available")
 
@@ -54,7 +64,9 @@ class CodexTransport:
             raise ProcessCommunicationFailed("Codex request write failed") from exc
 
         try:
-            return await future
+            return await asyncio.wait_for(future, timeout)
+        except asyncio.TimeoutError as exc:
+            raise ProcessCommunicationFailed("Codex request timed out") from exc
         finally:
             self._pending.pop(request_id, None)
 
@@ -63,7 +75,11 @@ class CodexTransport:
 
         if self._closed and self._notifications.empty():
             raise ProcessCommunicationFailed("Codex transport closed")
-        notification = await self._notifications.get()
+        self._notification_waiters += 1
+        try:
+            notification = await self._notifications.get()
+        finally:
+            self._notification_waiters -= 1
         if notification is None:
             raise ProcessCommunicationFailed("Codex transport closed")
         return notification
@@ -80,7 +96,7 @@ class CodexTransport:
         if self._closed:
             return
         self._closed = True
-        self._notifications.put_nowait(None)
+        self._wake_notification_waiters()
         error = ProcessCommunicationFailed("Codex transport closed")
         for future in self._pending.values():
             if not future.done():
@@ -101,9 +117,14 @@ class CodexTransport:
             while True:
                 line = await self._stdout.readline()
                 if not line:
-                    self._fail_pending("Codex stdout closed")
+                    self._mark_failed("Codex stdout closed")
                     return
-                message = json.loads(line)
+                try:
+                    message = json.loads(line)
+                except (TypeError, ValueError) as exc:
+                    # Never include the malformed line in an exception.
+                    self._mark_failed("Codex response contained invalid JSON")
+                    return
                 response_id = message.get("id")
                 if not isinstance(response_id, int):
                     # Keep notification semantics generic; domain dispatch is
@@ -120,12 +141,19 @@ class CodexTransport:
                     future.set_result(message.get("result"))
         except asyncio.CancelledError:
             raise
-        except Exception as exc:
-            self._fail_pending("Codex response read failed")
-            raise ProcessCommunicationFailed("Codex response read failed") from exc
+        except Exception:
+            self._mark_failed("Codex response read failed")
 
-    def _fail_pending(self, message: str) -> None:
+    def _mark_failed(self, message: str) -> None:
+        self._closed = True
+        self._wake_notification_waiters()
         error = ProcessCommunicationFailed(message)
         for future in self._pending.values():
             if not future.done():
                 future.set_exception(error)
+
+    def _wake_notification_waiters(self) -> None:
+        """Wake every blocked notification consumer with a generic sentinel."""
+
+        for _ in range(self._notification_waiters):
+            self._notifications.put_nowait(None)
