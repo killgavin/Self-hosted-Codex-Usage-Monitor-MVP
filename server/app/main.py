@@ -1,6 +1,10 @@
 """Minimal FastAPI application entry point for the MVP server."""
 
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.login import router as login_router
 from app.codex.adapter import CodexAppServerAdapter
@@ -15,6 +19,14 @@ def create_app(auth_service: AuthService | None = None) -> FastAPI:
         auth_service if auth_service is not None else AuthService(CodexAppServerAdapter())
     )
     application.include_router(login_router)
+    web_root = Path(__file__).resolve().parents[2] / "web"
+    application.mount("/assets", StaticFiles(directory=web_root / "assets"), name="assets")
+
+    @application.get("/")
+    async def index() -> FileResponse:
+        """Serve the server-hosted login page."""
+
+        return FileResponse(web_root / "index.html", media_type="text/html")
 
     @application.get("/health")
     async def health() -> dict[str, str]:

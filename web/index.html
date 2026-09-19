@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Codex login</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <main class="login-shell" aria-labelledby="page-title">
+      <h1 id="page-title">Codex login</h1>
+      <p id="login-state" role="status">Checking login status…</p>
+      <p id="login-error" class="error" role="alert" hidden></p>
+      <section id="device-code" aria-labelledby="device-code-title" hidden>
+        <h2 id="device-code-title">Device verification</h2>
+        <p><a id="verification-link" target="_blank" rel="noopener noreferrer" hidden>Open verification page</a></p>
+        <p id="user-code-label" hidden>User code: <strong id="user-code"></strong></p>
+        <button id="cancel-button" type="button">Cancel</button>
+      </section>
+      <div class="actions">
+        <button id="login-button" type="button">Log in</button>
+        <button id="logout-button" type="button" hidden>Log out</button>
+      </div>
+    </main>
+    <script type="module" src="/assets/app.mjs"></script>
+  </body>
+</html>

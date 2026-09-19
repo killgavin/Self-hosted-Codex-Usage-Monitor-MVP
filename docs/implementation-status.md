@@ -12,9 +12,9 @@
 ```text
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
-CURRENT_STAGE: Stage 4 — ChatGPT Login
-CURRENT_TASK: TASK-0406 — Minimal Login UI
-LAST_COMPLETED_TASK: TASK-0405 — Minimal Login REST
+CURRENT_STAGE: Stage 5 — Rate Limit Domain
+CURRENT_TASK: TASK-0501 — RateLimitWindow
+LAST_COMPLETED_TASK: TASK-0406 — Minimal Login UI
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -34,7 +34,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 | Stage 2 Protocol Initialization | DONE |
 | Stage 3 Account Read | DONE |
 | Stage 4 ChatGPT Login | IN_PROGRESS |
-| Stage 5 Rate Limit Domain | NOT_STARTED |
+| Stage 5 Rate Limit Domain | IN_PROGRESS |
 | Stage 6 REST API | NOT_STARTED |
 | Stage 7 Web Dashboard | NOT_STARTED |
 | Stage 8 Security Hardening | NOT_STARTED |
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0405 DONE。TASK-0406 READY。TASK-0501～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406 DONE。TASK-0501 READY。TASK-0502～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–3 are complete. Minimal login REST and safe schemas/errors are automated verified；device-code start T-49 and cancel T-51 are Real Codex Verified。Real completion T-50、real logout and login UI T-59 remain NOT_RUN；default app runtime initialization remains deferred.
+Stages 0–3 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because real completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred.
 
 ## Completed Task Record
 
@@ -319,6 +319,18 @@ Stages 0–3 are complete. Minimal login REST and safe schemas/errors are automa
 - KNOWN_UNKNOWNS: Real T-50、real logout、T-59 and default app runtime initialization remain NOT_RUN/deferred；server API token protection belongs to TASK-0601
 - NEXT_TASK: TASK-0406 — Minimal Login UI
 
+### TASK-0406 — Minimal Login UI
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- CHANGED_FILES: `web/index.html`, `web/assets/styles.css`, `web/assets/app.mjs`, `server/app/main.py`, `server/tests/integration/test_login_ui.py`, `server/tests/fixtures/login_ui_behavior.mjs`
+- TESTS: T-59 PASS（Automated/Mock Verified；served assets plus dependency-free Node DOM behavior）；deterministic unit/API/UI/health regression PASS (`103 passed`)；T-50、T-58、T-60～T-63 NOT_RUN
+- VALIDATION: `node server/tests/fixtures/login_ui_behavior.mjs` PASS；`PYTHONPATH=server /tmp/codex-review.lTnq3j/bin/python -m pytest -q server/tests/unit server/tests/integration/test_health.py server/tests/integration/test_login_api.py server/tests/integration/test_login_ui.py` PASS (`103 passed`)；compile、diff、scope and security checks PASS
+- RUNTIME_EVIDENCE: NONE；no real browser or human login completion executed
+- SECURITY_EVIDENCE: Browser code calls only same-server REST；no loginId/raw protocol/token/localStorage/direct OpenAI/Codex access；user code and messages use textContent；only http/https verification URLs become active hrefs；page contains no fake quota data
+- KNOWN_UNKNOWNS: T-59 is not Real Browser Verified；real T-50、real logout and future dashboard/browser tests remain NOT_RUN
+- NEXT_TASK: TASK-0501 — RateLimitWindow
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -333,6 +345,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0406
-NEXT_ACTION: Implement and validate TASK-0406 only.
+READY_TASK: TASK-0501
+NEXT_ACTION: Implement and validate TASK-0501 only.
 ```
