@@ -14,3 +14,9 @@ button { padding: .55rem 1rem; cursor: pointer; }
 button:disabled { cursor: wait; opacity: .65; }
 .error { color: #c62828; }
 .last-updated { color: GrayText; text-align: right; }
+#rate-limit-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.rate-limit-card { padding: 1rem; border: 1px solid GrayText; border-radius: .6rem; }
+.rate-limit-card h3 { margin: 0 0 1rem; }
+.rate-limit-window + .rate-limit-window { margin-top: 1rem; }
+.rate-limit-window h4, .rate-limit-summary { margin: 0 0 .35rem; }
+.rate-limit-window progress { width: 100%; }

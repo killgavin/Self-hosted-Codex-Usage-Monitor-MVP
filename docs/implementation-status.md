@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 7 — Web Dashboard
-CURRENT_TASK: TASK-0702 — Generic RateLimitCard
-LAST_COMPLETED_TASK: TASK-0701 — Web Shell
+CURRENT_TASK: TASK-0703 — Browser-Local Time
+LAST_COMPLETED_TASK: TASK-0702 — Generic RateLimitCard
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701 DONE。TASK-0702 READY。TASK-0703～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0702 DONE。TASK-0703 READY。TASK-0704～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ Human completed the official Codex device-auth flow to restore the current CLI s
 
 ## Known Limitations
 
-Stages 0–3、5 and 6 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 dashboard shell is structurally verified，but T-58～T-63 remain NOT_RUN for the Stage 7 E2E gate. Logging redaction T-29～T-32 and TASK-0802 security revalidation remain NOT_RUN；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
+Stages 0–3、5 and 6 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 shell and generic cards T-60/T-61 are Automated Verified，while T-58、T-62、T-63 and the full Stage 7 E2E gate remain NOT_RUN. Logging redaction T-29～T-32 and TASK-0802 security revalidation remain NOT_RUN；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
 
 ## Completed Task Record
 
@@ -507,6 +507,19 @@ Stages 0–3、5 and 6 are complete. Stage 4 implementation tasks are complete b
 - KNOWN_UNKNOWNS: Connect/data-fetch behavior、generic cards、unknown fallback、browser-local time、360px layout and full E2E remain TASK-0702～TASK-0705；T-58～T-63 remain NOT_RUN
 - NEXT_TASK: TASK-0702 — Generic RateLimitCard
 
+### TASK-0702 — Generic RateLimitCard
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- EXECUTION_AGENT: Sol fallback under the same bounded-task contract after the GPT-5.6 Luna execution environment failed to start repository actions
+- CHANGED_FILES: `web/assets/app.mjs`, `web/assets/styles.css`, `server/tests/fixtures/rate_limit_card_behavior.mjs`, `server/tests/integration/test_rate_limit_card_ui.py`, `docs/implementation-status.md`
+- TESTS: T-60 PASS；T-61 PASS（Automated Verified with dependency-free Node DOM fixture）；focused card/login UI regression PASS (`4 passed`)；deterministic regression PASS (`203 passed`)
+- VALIDATION: `PYTHONPATH=server /tmp/task0507-venv.9dQyC0/bin/python -m pytest -q server/tests/integration/test_rate_limit_card_ui.py server/tests/integration/test_login_ui.py` PASS (`4 passed`)；full deterministic unit/noninteractive REST/UI regression PASS (`203 passed`)；compile、`git diff --check`、DOM injection/storage and hard-coded limit ID scans PASS
+- RUNTIME_EVIDENCE: Dependency-free Node execution created one generic card per supplied limit，validated known duration labels、unknown ID/title fallback、nullable windows、progress and empty state. No real browser、Codex or account request occurred
+- SECURITY_EVIDENCE: Renderer uses `createElement`/`textContent` only，does not use HTML injection APIs，does not interpret unknown/raw fields and does not persist credentials
+- KNOWN_UNKNOWNS: Reset time/browser-local formatting T-62、360px T-63 and full dashboard data-fetch/E2E T-58 remain NOT_RUN until TASK-0703～TASK-0705
+- NEXT_TASK: TASK-0703 — Browser-Local Time
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -521,6 +534,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0702
-NEXT_ACTION: Implement and validate TASK-0702 only.
+READY_TASK: TASK-0703
+NEXT_ACTION: Implement and validate TASK-0703 only.
 ```

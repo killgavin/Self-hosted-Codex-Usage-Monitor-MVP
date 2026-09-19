@@ -1,5 +1,75 @@
 const SAFE_STATES = new Set(["IDLE", "PENDING", "COMPLETED", "FAILED", "CANCELED"]);
 
+function safeLabel(value, fallback) {
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function safePercent(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Math.max(0, Math.min(100, numeric)) : null;
+}
+
+function windowLabel(window, fallback) {
+  if (window?.windowDurationMinutes === 300) return "5 Hours";
+  if (window?.windowDurationMinutes === 10080) return "Weekly";
+  return fallback;
+}
+
+function appendWindow(document, card, window, fallbackLabel) {
+  const section = document.createElement("section");
+  section.className = "rate-limit-window";
+  const heading = document.createElement("h4");
+  heading.textContent = windowLabel(window, fallbackLabel);
+  section.appendChild(heading);
+  if (!window) {
+    const unavailable = document.createElement("p");
+    unavailable.textContent = "Not available";
+    section.appendChild(unavailable);
+    card.appendChild(section);
+    return;
+  }
+
+  const used = safePercent(window.usedPercent);
+  const remaining = safePercent(window.remainingPercent);
+  const summary = document.createElement("p");
+  summary.className = "rate-limit-summary";
+  summary.textContent = used === null || remaining === null
+    ? "Usage unavailable"
+    : `${used}% used · ${remaining}% remaining`;
+  section.appendChild(summary);
+
+  const progress = document.createElement("progress");
+  progress.max = 100;
+  progress.value = remaining ?? 0;
+  progress.setAttribute("aria-label", `${heading.textContent} remaining percentage`);
+  section.appendChild(progress);
+  card.appendChild(section);
+}
+
+/** Build one generic, text-only card from the stable REST rate-limit schema. */
+export function createRateLimitCard(document, limit = {}) {
+  const card = document.createElement("article");
+  card.className = "rate-limit-card";
+  const heading = document.createElement("h3");
+  heading.textContent = safeLabel(limit.name, safeLabel(limit.id, "Unknown limit"));
+  card.appendChild(heading);
+  appendWindow(document, card, limit.primary, "Primary");
+  appendWindow(document, card, limit.secondary, "Secondary");
+  return card;
+}
+
+/** Replace a list with one card per limit, without interpreting unknown fields. */
+export function renderRateLimitCards(document, container, limits) {
+  container.replaceChildren();
+  if (!Array.isArray(limits) || limits.length === 0) {
+    const empty = document.createElement("p");
+    empty.textContent = "No rate limits available.";
+    container.appendChild(empty);
+    return;
+  }
+  for (const limit of limits) container.appendChild(createRateLimitCard(document, limit));
+}
+
 function safeVerificationUrl(value) {
   // Only activate ordinary web links; never turn protocol-controlled schemes into hrefs.
   try {
