@@ -21,7 +21,12 @@ const limits = [
   {
     id: "known-id",
     name: "Team limit",
-    primary: { usedPercent: "25", remainingPercent: "75", windowDurationMinutes: 300 },
+    primary: {
+      usedPercent: "25",
+      remainingPercent: "75",
+      windowDurationMinutes: 300,
+      resetAt: "2023-11-14T22:13:20Z",
+    },
     secondary: { usedPercent: "50", remainingPercent: "50", windowDurationMinutes: 10080 },
   },
   {
@@ -40,6 +45,8 @@ if (known.className !== "rate-limit-card" || known.children[0].textContent !== "
 if (known.children[1].children[0].textContent !== "5 Hours") throw new Error("five-hour label");
 if (known.children[2].children[0].textContent !== "Weekly") throw new Error("weekly label");
 if (known.children[1].children[2].value !== 75) throw new Error("remaining progress");
+const resetTime = known.children[1].children[3].children[1];
+if (resetTime.attributes.datetime !== "2023-11-14T22:13:20Z" || !resetTime.textContent) throw new Error("local reset time");
 
 const future = container.children[1];
 if (future.children[0].textContent !== "future-limit") throw new Error("unknown id fallback");

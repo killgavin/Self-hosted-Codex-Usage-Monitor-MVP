@@ -15,6 +15,32 @@ function windowLabel(window, fallback) {
   return fallback;
 }
 
+/** Format canonical server UTC values in the browser's active locale/timezone. */
+export function formatLocalTime(value) {
+  if (typeof value !== "string" || !value) return "Unknown reset time";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Unknown reset time";
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function appendResetTime(document, section, value) {
+  if (value === null || value === undefined) return;
+  const row = document.createElement("p");
+  row.className = "reset-time";
+  const prefix = document.createElement("span");
+  prefix.textContent = "Resets ";
+  row.appendChild(prefix);
+  const time = document.createElement("time");
+  const formatted = formatLocalTime(value);
+  time.textContent = formatted;
+  if (formatted !== "Unknown reset time") time.setAttribute("datetime", value);
+  row.appendChild(time);
+  section.appendChild(row);
+}
+
 function appendWindow(document, card, window, fallbackLabel) {
   const section = document.createElement("section");
   section.className = "rate-limit-window";
@@ -43,6 +69,7 @@ function appendWindow(document, card, window, fallbackLabel) {
   progress.value = remaining ?? 0;
   progress.setAttribute("aria-label", `${heading.textContent} remaining percentage`);
   section.appendChild(progress);
+  appendResetTime(document, section, window.resetAt);
   card.appendChild(section);
 }
 

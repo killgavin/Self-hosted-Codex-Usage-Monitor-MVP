@@ -20,3 +20,4 @@ button:disabled { cursor: wait; opacity: .65; }
 .rate-limit-window + .rate-limit-window { margin-top: 1rem; }
 .rate-limit-window h4, .rate-limit-summary { margin: 0 0 .35rem; }
 .rate-limit-window progress { width: 100%; }
+.reset-time { margin: .35rem 0 0; color: GrayText; font-size: .875rem; }
