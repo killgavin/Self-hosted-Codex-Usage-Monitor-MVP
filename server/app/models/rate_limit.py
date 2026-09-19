@@ -1,8 +1,11 @@
-"""Pure immutable rate-limit window domain model."""
+"""Pure immutable generic rate-limit domain models."""
 
+import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation, localcontext
+from types import MappingProxyType
 from typing import Any
 
 
@@ -62,3 +65,39 @@ class RateLimitWindow:
 
         used = _decimal_percent(used_percent)
         return cls(used, window_duration_minutes, _reset_iso(reset_at))
+
+
+def _readonly_metadata(value: Any) -> Any:
+    """Freeze JSON-compatible compatibility metadata recursively."""
+
+    if isinstance(value, Mapping):
+        frozen = {}
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise TypeError("raw_metadata keys must be strings")
+            frozen[key] = _readonly_metadata(item)
+        return MappingProxyType(frozen)
+    if isinstance(value, list):
+        return tuple(_readonly_metadata(item) for item in value)
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if isinstance(value, float) and math.isfinite(value):
+        return value
+    raise TypeError("raw_metadata must contain only JSON-compatible values")
+
+
+@dataclass(frozen=True)
+class RateLimit:
+    """Generic quota identity preserving unknown upstream values unchanged."""
+
+    id: str | None
+    name: str | None
+    primary: RateLimitWindow | None
+    secondary: RateLimitWindow | None
+    reached_type: str | None
+    # This is a read-only internal compatibility bag, not a raw protocol payload.
+    raw_metadata: Mapping[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        if self.raw_metadata is not None:
+            object.__setattr__(self, "raw_metadata", _readonly_metadata(self.raw_metadata))
