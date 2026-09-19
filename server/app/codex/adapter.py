@@ -2,7 +2,7 @@
 
 This module owns process startup, the initialize/initialized handshake,
 adapter state transitions, account reads, and device-code login lifecycle.
-Rate-limit methods remain deferred.
+Rate-limit reads are exposed through the typed app-server boundary.
 """
 
 import asyncio
@@ -23,6 +23,7 @@ from app.codex.protocol import (
     DeviceCodeLoginParams,
     DeviceCodeLoginResponse,
     GetAccountParams,
+    GetAccountRateLimitsResponse,
     GetAccountResponse,
     InitializeParams,
     InitializeResponse,
@@ -125,6 +126,21 @@ class CodexAppServerAdapter:
             return GetAccountResponse.model_validate(result)
         except ValidationError:
             raise ProcessCommunicationFailed("Codex account response validation failed") from None
+
+    async def read_rate_limits(self) -> GetAccountRateLimitsResponse:
+        """Read rate limits through the ready official Codex boundary."""
+
+        self._require_ready()
+        if self._transport is None:
+            raise AdapterStateError("Codex adapter transport is unavailable")
+        try:
+            result = await self._transport.request("account/rateLimits/read")
+        except ProcessCommunicationFailed:
+            raise
+        try:
+            return GetAccountRateLimitsResponse.model_validate(result)
+        except ValidationError:
+            raise ProcessCommunicationFailed("Codex rate limits response validation failed") from None
 
     async def start_login(self) -> DeviceCodeLoginResponse:
         """Start the supported device-code login flow after initialization."""

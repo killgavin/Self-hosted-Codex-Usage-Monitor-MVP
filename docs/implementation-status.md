@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 5 — Rate Limit Domain
-CURRENT_TASK: TASK-0506 — RateLimitService
-LAST_COMPLETED_TASK: TASK-0505 — Rate Limit Mapping
+CURRENT_TASK: TASK-0507 — Real Rate Limit Validation
+LAST_COMPLETED_TASK: TASK-0506 — RateLimitService
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0505 DONE。TASK-0506 READY。TASK-0507～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0506 DONE。TASK-0507 READY。TASK-0601～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–3 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because real completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 Domain、protocol DTO and mapping are Automated Verified；multiple-limit preservation and T-72/T-73/T-74 are synthetic-only，while adapter/service and real `account/rateLimits/read` remain NOT_RUN.
+Stages 0–3 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because real completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 implementation through adapter/service is Automated/Mock Verified；multiple-limit preservation and T-72/T-73/T-74 are synthetic-only，while real `account/rateLimits/read` T-52/T-53 remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -391,6 +391,18 @@ Stages 0–3 are complete. Stage 4 implementation tasks are complete but the sta
 - KNOWN_UNKNOWNS: Adapter/service orchestration and real current-account response remain NOT_RUN；actual multiple-limit availability remains unknown until TASK-0507
 - NEXT_TASK: TASK-0506 — RateLimitService
 
+### TASK-0506 — RateLimitService
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- CHANGED_FILES: `server/app/codex/adapter.py`, `server/app/services/rate_limits.py`, `server/app/services/__init__.py`, `server/tests/unit/test_rate_limit_service.py`
+- TESTS: Adapter/service orchestration PASS（Automated/Mock Verified）；focused adapter/service/mapping suite `52 passed`；deterministic regression `168 passed`；T-52/T-53 Real Codex NOT_RUN
+- VALIDATION: `PYTHONPATH=server /tmp/codex-review.lTnq3j/bin/python -m pytest -q server/tests/unit/test_rate_limit_service.py server/tests/unit/test_adapter.py server/tests/unit/test_rate_limit_mapping.py` PASS (`52 passed`)；full deterministic suite PASS (`168 passed`)；compile、diff、scope and security/private-endpoint checks PASS
+- RUNTIME_EVIDENCE: NONE；the adapter used fake transports only，so `account/rateLimits/read` is not Real Codex Verified
+- SECURITY_EVIDENCE: Adapter validation errors use a fixed sanitized message and never include response data；service adds no logging、cache、retry、credential handling or raw protocol exposure
+- KNOWN_UNKNOWNS: T-52/T-53 and actual current-account rate-limit/reset-credit shapes remain NOT_RUN until TASK-0507
+- NEXT_TASK: TASK-0507 — Real Rate Limit Validation
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -405,6 +417,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0506
-NEXT_ACTION: Implement and validate TASK-0506 only.
+READY_TASK: TASK-0507
+NEXT_ACTION: Implement and validate TASK-0507 only.
 ```
