@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 6 — REST API
-CURRENT_TASK: TASK-0602 — Status Endpoint
-LAST_COMPLETED_TASK: TASK-0601 — Server API Token
+CURRENT_TASK: TASK-0603 — Account Endpoint
+LAST_COMPLETED_TASK: TASK-0602 — Status Endpoint
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601 DONE。TASK-0602 READY。TASK-0603～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0602 DONE。TASK-0603 READY。TASK-0604～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ Human completed the official Codex device-auth flow to restore the current CLI s
 
 ## Known Limitations
 
-Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 server-token authentication is implemented as a reusable boundary；application to the planned status/account/rate-limit routes begins with TASK-0602，while existing Stage 4 login/UI behavior remains unchanged.
+Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 server-token authentication and authenticated status schema T-54 are Automated Verified；Codex degraded/exit/upstream status behavior T-69～T-71 remains NOT_RUN until TASK-0804，and existing Stage 4 login/UI behavior remains unchanged.
 
 ## Completed Task Record
 
@@ -429,6 +429,19 @@ Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete
 - KNOWN_UNKNOWNS: The reusable dependency is not globally applied to existing Stage 4 login/UI routes；planned Stage 6 data routes will attach it beginning in TASK-0602. Redaction logging and account/rate-limit endpoint isolation remain future bounded tasks
 - NEXT_TASK: TASK-0602 — Status Endpoint
 
+### TASK-0602 — Status Endpoint
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- EXECUTION_AGENT: Sol fallback under the same bounded-task contract after two independent GPT-5.6 Luna agents failed to start any repository action
+- CHANGED_FILES: `server/app/api/status.py`, `server/app/main.py`, `server/tests/integration/test_status_api.py`, `docs/implementation-status.md`
+- TESTS: T-54 PASS（Automated Verified through authenticated ASGI requests）；server-token rejection on the concrete route PASS；deterministic regression PASS (`177 passed`)
+- VALIDATION: `PYTHONPATH=server /tmp/task0507-venv.9dQyC0/bin/python -m pytest -q server/tests/integration/test_status_api.py` PASS (`2 passed`)；deterministic unit/login API/login UI/health/server-token/status regression PASS (`177 passed`)；compile、`git diff --check`、scope and live-credential pattern checks PASS
+- RUNTIME_EVIDENCE: Local ASGI request with the configured monitor Bearer token returned HTTP 200 and exact JSON `{"status":"ok"}`；missing token returned fixed HTTP 401；no Codex/OpenAI runtime call occurred
+- SECURITY_EVIDENCE: The concrete status route attaches `ServerTokenAuth` and the application installs only the fixed invalid-token handler；the response contains no credential、account、protocol or process detail
+- KNOWN_UNKNOWNS: T-69～T-71 degraded/process-exit/upstream behavior remains NOT_RUN until TASK-0804；status currently reports HTTP process availability only and deliberately does not start or probe Codex
+- NEXT_TASK: TASK-0603 — Account Endpoint
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -443,6 +456,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0602
-NEXT_ACTION: Implement and validate TASK-0602 only.
+READY_TASK: TASK-0603
+NEXT_ACTION: Implement and validate TASK-0603 only.
 ```
