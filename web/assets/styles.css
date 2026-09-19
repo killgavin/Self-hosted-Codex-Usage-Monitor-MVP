@@ -1,10 +1,11 @@
 :root { color-scheme: light dark; font: 16px/1.5 system-ui, sans-serif; }
+*, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; background: Canvas; color: CanvasText; }
 .dashboard-shell { box-sizing: border-box; width: min(100% - 2rem, 64rem); margin: 3rem auto; }
 .page-header { margin-bottom: 1.5rem; }
 .eyebrow { margin: 0; color: GrayText; font-size: .875rem; letter-spacing: .08em; text-transform: uppercase; }
 .page-header h1 { margin: .25rem 0 0; }
-.panel { margin-bottom: 1rem; padding: 1.25rem; border: 1px solid GrayText; border-radius: .75rem; }
+.panel { min-width: 0; margin-bottom: 1rem; padding: 1.25rem; border: 1px solid GrayText; border-radius: .75rem; overflow-wrap: anywhere; }
 .panel h2, .panel h3 { margin-top: 0; }
 .dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .token-row { display: flex; gap: .75rem; margin-top: .35rem; }
@@ -21,3 +22,10 @@ button:disabled { cursor: wait; opacity: .65; }
 .rate-limit-window h4, .rate-limit-summary { margin: 0 0 .35rem; }
 .rate-limit-window progress { width: 100%; }
 .reset-time { margin: .35rem 0 0; color: GrayText; font-size: .875rem; }
+
+@media (max-width: 40rem) {
+  .dashboard-shell { margin: 1rem auto; }
+  .dashboard-grid, #rate-limit-list { grid-template-columns: minmax(0, 1fr); }
+  .token-row, .actions { flex-direction: column; }
+  .token-row button, .actions button { width: 100%; }
+}

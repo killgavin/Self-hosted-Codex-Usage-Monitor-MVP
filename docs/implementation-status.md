@@ -10,13 +10,13 @@
 ## Current Project Status
 
 ```text
-PROJECT_STATUS: IN_PROGRESS
+PROJECT_STATUS: BLOCKED
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 7 — Web Dashboard
 CURRENT_TASK: TASK-0704 — 360px Layout
 LAST_COMPLETED_TASK: TASK-0703 — Browser-Local Time
-BLOCKED: NO
-HUMAN_REQUIRED: NO
+BLOCKED: YES
+HUMAN_REQUIRED: YES
 ```
 
 ## Status Rules
@@ -36,14 +36,14 @@ DONE 必須有 Implementation + Test + Validation evidence。
 | Stage 4 ChatGPT Login | IN_PROGRESS |
 | Stage 5 Rate Limit Domain | DONE |
 | Stage 6 REST API | DONE |
-| Stage 7 Web Dashboard | IN_PROGRESS |
+| Stage 7 Web Dashboard | BLOCKED |
 | Stage 8 Security Hardening | NOT_STARTED |
 | Stage 9 Docker Deployment | NOT_STARTED |
 | Stage 10 Final MVP Validation | NOT_STARTED |
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0703 DONE。TASK-0704 READY。TASK-0705～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0703 DONE。TASK-0704 BLOCKED / HUMAN_REQUIRED。TASK-0705～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -55,15 +55,17 @@ Server API token authentication：PASS（Automated Verified；T-25～T-28）。A
 
 ## Known Blockers
 
-NONE.
+TASK-0704 T-63 lacks a runnable browser layout engine in the current workspace. Playwright is installed，but its expected Chromium executable is absent. Two default 30-second official CDN attempts timed out；a 120-second attempt returned a zero-byte/non-ZIP artifact and failed extraction. The cloud Chrome surface rejected localhost with `ERR_BLOCKED_BY_CLIENT` and rejected `data:` navigation under an explicit no-workaround policy. CSS/static tests and the full deterministic suite pass，but they cannot replace the required 360px layout measurement.
 
 ## Human Decisions
 
 Human completed the official Codex device-auth flow to restore the current CLI session. No further decision is required for TASK-0507. This action is not counted as production AuthService/app-server login completion T-50.
 
+Human must make a compatible Chromium/Chrome executable available to this workspace or run the opt-in T-63 fixture in an environment with Playwright Chromium and return its complete sanitized PASS output. Sol must then review T-63 before TASK-0705 may start.
+
 ## Known Limitations
 
-Stages 0–3、5 and 6 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified，while T-58、T-63 and the full Stage 7 E2E gate remain NOT_RUN. Logging redaction T-29～T-32 and TASK-0802 security revalidation remain NOT_RUN；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
+Stages 0–3、5 and 6 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0704 CSS/static validation and full regression PASS (`208 passed`)，but T-63 is BLOCKED because no browser executable is available. T-58 and the full Stage 7 E2E gate remain NOT_RUN. Logging redaction T-29～T-32 and TASK-0802 security revalidation remain NOT_RUN；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
 
 ## Completed Task Record
 
@@ -546,7 +548,7 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 ## Current Next Action
 
 ```text
-STATUS: ACTIVE
-READY_TASK: TASK-0704
-NEXT_ACTION: Implement and validate TASK-0704 only.
+STATUS: HUMAN_REQUIRED
+BLOCKED_TASK: TASK-0704
+NEXT_ACTION: Provide a compatible Chromium/Chrome executable or run `DASHBOARD_URL=http://127.0.0.1:8765 node server/tests/fixtures/mobile_layout_browser.mjs` with Playwright Chromium available；then rerun/review T-63 only.
 ```
