@@ -4,7 +4,9 @@ from decimal import Decimal
 from typing import Any
 
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import JSONResponse
 
+from app.api.errors import error_response
 from app.models.rate_limit import RateLimit, RateLimitWindow, ResetCredit, ResetCredits
 from app.security.server_token import ServerTokenAuth
 from app.services.rate_limits import RateLimitService
@@ -72,13 +74,16 @@ def create_rate_limits_router(server_api_token: str | None) -> APIRouter:
         dependencies=[Depends(ServerTokenAuth(server_api_token))],
     )
 
-    @router.get("/rate-limits")
-    async def rate_limits(request: Request) -> dict[str, Any]:
+    @router.get("/rate-limits", response_model=None)
+    async def rate_limits(request: Request) -> dict[str, Any] | JSONResponse:
         service: RateLimitService = request.app.state.rate_limit_service
-        limits, reset_credits = await service.get_rate_limits()
-        return {
-            "limits": [serialize_limit(limit) for limit in limits],
-            "resetCredits": serialize_reset_credits(reset_credits),
-        }
+        try:
+            limits, reset_credits = await service.get_rate_limits()
+            return {
+                "limits": [serialize_limit(limit) for limit in limits],
+                "resetCredits": serialize_reset_credits(reset_credits),
+            }
+        except Exception as error:
+            return error_response(error)
 
     return router

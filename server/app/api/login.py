@@ -6,12 +6,9 @@ from typing import Any
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
-from app.codex.exceptions import AdapterStateError, ProcessCommunicationFailed
+from app.api.errors import error_response
 from app.services.auth import (
     AuthService,
-    LoginAlreadyPending,
-    LoginCancellationFailed,
-    LoginNotPending,
     LoginStatus,
 )
 
@@ -27,24 +24,6 @@ def serialize_status(status: LoginStatus) -> dict[str, Any]:
         "verificationUrl": status.verification_url,
         "userCode": status.user_code,
     }
-
-
-def error_response(error: Exception) -> JSONResponse:
-    """Map known failures to fixed sanitized REST errors."""
-
-    if isinstance(error, LoginAlreadyPending):
-        code, message, status = "CODEX_LOGIN_PENDING", "Login is already pending", 409
-    elif isinstance(error, LoginNotPending):
-        code, message, status = "CODEX_NOT_AUTHENTICATED", "Login is not pending", 409
-    elif isinstance(error, LoginCancellationFailed):
-        code, message, status = "CODEX_PROTOCOL_ERROR", "Login cancellation failed", 502
-    elif isinstance(error, AdapterStateError):
-        code, message, status = "UPSTREAM_UNAVAILABLE", "Codex is unavailable", 503
-    elif isinstance(error, ProcessCommunicationFailed):
-        code, message, status = "CODEX_PROTOCOL_ERROR", "Codex protocol error", 502
-    else:
-        code, message, status = "INTERNAL_ERROR", "Internal error", 500
-    return JSONResponse(status_code=status, content={"error": {"code": code, "message": message}})
 
 
 def _service(request: Request) -> AuthService:

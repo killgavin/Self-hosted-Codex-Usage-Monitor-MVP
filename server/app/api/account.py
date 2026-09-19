@@ -3,7 +3,9 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import JSONResponse
 
+from app.api.errors import error_response
 from app.models.account import AccountStatus
 from app.security.server_token import ServerTokenAuth
 from app.services.account import AccountService
@@ -28,11 +30,14 @@ def create_account_router(server_api_token: str | None) -> APIRouter:
         dependencies=[Depends(ServerTokenAuth(server_api_token))],
     )
 
-    @router.get("/account")
-    async def account(request: Request) -> dict[str, Any]:
+    @router.get("/account", response_model=None)
+    async def account(request: Request) -> dict[str, Any] | JSONResponse:
         """Return one AccountService result without protocol metadata."""
 
         service: AccountService = request.app.state.account_service
-        return serialize_account(await service.get_status())
+        try:
+            return serialize_account(await service.get_status())
+        except Exception as error:
+            return error_response(error)
 
     return router
