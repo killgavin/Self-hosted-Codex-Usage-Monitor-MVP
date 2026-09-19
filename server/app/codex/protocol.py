@@ -4,6 +4,7 @@ These models define only the wire boundary. They do not send requests, manage
 adapter state, or expose protocol fields to domain or REST layers.
 """
 
+from decimal import Decimal
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -115,6 +116,58 @@ class CancelLoginResponse(WireModel):
 
 class LogoutAccountResponse(WireModel):
     """Forward-compatible object returned by account/logout."""
+
+
+class RateLimitWindowProtocol(WireModel):
+    """Wire rate window retaining lossless usage and nullable metadata."""
+
+    used_percent: Decimal = Field(alias="usedPercent")
+    window_duration_minutes: int | None = Field(default=None, alias="windowDurationMins")
+    resets_at: int | None = Field(default=None, alias="resetsAt")
+
+
+class RateLimitSnapshotProtocol(WireModel):
+    """Wire snapshot with nullable generic identities and raw enum strings."""
+
+    limit_id: str | None = Field(default=None, alias="limitId")
+    limit_name: str | None = Field(default=None, alias="limitName")
+    plan_type: str | None = Field(default=None, alias="planType")
+    primary: RateLimitWindowProtocol | None = None
+    secondary: RateLimitWindowProtocol | None = None
+    rate_limit_reached_type: str | None = Field(default=None, alias="rateLimitReachedType")
+
+
+class RateLimitResetCreditProtocol(WireModel):
+    """Wire reset-credit detail preserving required and optional fields."""
+
+    id: str
+    status: str
+    granted_at: int = Field(alias="grantedAt")
+    reset_type: str = Field(alias="resetType")
+    expires_at: int | None = Field(default=None, alias="expiresAt")
+    title: str | None = None
+    description: str | None = None
+
+
+class RateLimitResetCreditsProtocol(WireModel):
+    """Wire reset-credit summary preserving null versus empty details."""
+
+    available_count: int = Field(alias="availableCount")
+    credits: list[RateLimitResetCreditProtocol] | None = None
+
+
+class GetAccountRateLimitsResponse(WireModel):
+    """Verified account/rateLimits response DTO; mapping is a later boundary."""
+
+    rate_limits: RateLimitSnapshotProtocol = Field(alias="rateLimits")
+    rate_limits_by_limit_id: dict[str, RateLimitSnapshotProtocol] | None = Field(
+        default=None,
+        alias="rateLimitsByLimitId",
+    )
+    rate_limit_reset_credits: RateLimitResetCreditsProtocol | None = Field(
+        default=None,
+        alias="rateLimitResetCredits",
+    )
 
 
 class AccountLoginCompletedNotification(WireModel):

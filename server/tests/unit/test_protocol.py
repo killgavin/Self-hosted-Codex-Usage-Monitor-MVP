@@ -1,20 +1,27 @@
 """Automated tests for version-specific initialization DTOs."""
 
+from decimal import Decimal
+
 import pytest
 from pydantic import ValidationError
 
 from app.codex.protocol import (
-    ClientInfo,
-    DeviceCodeLoginParams,
-    DeviceCodeLoginResponse,
-    LogoutAccountResponse,
     AccountLoginCompletedNotification,
     CancelLoginParams,
     CancelLoginResponse,
+    ClientInfo,
+    DeviceCodeLoginParams,
+    DeviceCodeLoginResponse,
+    GetAccountRateLimitsResponse,
     InitializeCapabilities,
     InitializeParams,
     InitializeResponse,
     InitializedNotification,
+    LogoutAccountResponse,
+    RateLimitResetCreditProtocol,
+    RateLimitResetCreditsProtocol,
+    RateLimitSnapshotProtocol,
+    RateLimitWindowProtocol,
     to_wire,
 )
 
@@ -167,3 +174,81 @@ def test_cancel_login_dtos_use_aliases_and_preserve_unknown_fields() -> None:
 def test_logout_response_accepts_empty_or_future_fields() -> None:
     assert to_wire(LogoutAccountResponse()) == {}
     assert LogoutAccountResponse.model_validate({"future": True}).model_extra == {"future": True}
+
+
+def test_rate_limit_protocol_aliases_decimals_nullability_and_unknown_fields() -> None:
+    response = GetAccountRateLimitsResponse.model_validate(
+        {
+            "rateLimits": {
+                "limitId": None,
+                "limitName": None,
+                "planType": "future-plan",
+                "rateLimitReachedType": "future-reached",
+                "primary": {"usedPercent": "12.345678901234567890", "futureWindow": True},
+                "secondary": None,
+                "futureSnapshot": {"safe": True},
+            },
+            "rateLimitsByLimitId": {
+                "future-limit-key": {"limitId": "opaque-key", "primary": None, "secondary": None}
+            },
+            "futureTopLevel": "preserved",
+        }
+    )
+    assert response.rate_limits.plan_type == "future-plan"
+    assert response.rate_limits.rate_limit_reached_type == "future-reached"
+    assert response.rate_limits.primary.used_percent == Decimal("12.345678901234567890")
+    assert response.rate_limits.secondary is None
+    assert response.rate_limits_by_limit_id["future-limit-key"].limit_id == "opaque-key"
+    assert response.rate_limits_by_limit_id["future-limit-key"].primary is None
+    assert response.rate_limits_by_limit_id["future-limit-key"].secondary is None
+    assert response.rate_limits.primary.model_extra == {"futureWindow": True}
+    assert response.rate_limits.model_extra == {"futureSnapshot": {"safe": True}}
+    assert response.model_extra == {"futureTopLevel": "preserved"}
+    assert to_wire(response)["rateLimits"]["primary"]["usedPercent"] == Decimal("12.345678901234567890")
+    null_windows = RateLimitSnapshotProtocol.model_validate({"primary": None, "secondary": None})
+    assert null_windows.primary is None and null_windows.secondary is None
+
+
+def test_rate_limit_protocol_required_fields_and_optional_defaults() -> None:
+    with pytest.raises(ValidationError):
+        RateLimitWindowProtocol.model_validate({})
+    with pytest.raises(ValidationError):
+        GetAccountRateLimitsResponse.model_validate({})
+    with pytest.raises(ValidationError):
+        RateLimitResetCreditProtocol.model_validate({"id": "id", "status": "status"})
+    assert RateLimitWindowProtocol(usedPercent=1).window_duration_minutes is None
+    assert RateLimitSnapshotProtocol().limit_id is None
+    assert RateLimitResetCreditsProtocol(availableCount=2).credits is None
+
+
+def test_reset_credit_protocol_aliases_null_empty_and_unknown_detail_fields() -> None:
+    detail = RateLimitResetCreditProtocol.model_validate(
+        {
+            "id": "opaque",
+            "status": "future-status",
+            "grantedAt": 1700000000,
+            "resetType": "future-type",
+            "expiresAt": 1700000100,
+            "title": "future-title",
+            "description": "future-description",
+            "futureDetail": {"safe": True},
+        }
+    )
+    response = GetAccountRateLimitsResponse.model_validate(
+        {
+            "rateLimits": {"primary": None, "secondary": None},
+            "rateLimitResetCredits": {"availableCount": 2, "credits": [detail.model_dump(by_alias=True)]},
+        }
+    )
+    assert response.rate_limit_reset_credits.available_count == 2
+    assert response.rate_limit_reset_credits.credits[0].id == "opaque"
+    assert response.rate_limit_reset_credits.credits[0].status == "future-status"
+    assert response.rate_limit_reset_credits.credits[0].reset_type == "future-type"
+    assert response.rate_limit_reset_credits.credits[0].granted_at == 1700000000
+    assert response.rate_limit_reset_credits.credits[0].expires_at == 1700000100
+    assert response.rate_limit_reset_credits.credits[0].title == "future-title"
+    assert response.rate_limit_reset_credits.credits[0].description == "future-description"
+    assert detail.model_extra == {"futureDetail": {"safe": True}}
+    assert RateLimitResetCreditsProtocol(availableCount=2, credits=None).credits is None
+    assert RateLimitResetCreditsProtocol(availableCount=0, credits=[]).credits == []
+    assert to_wire(detail)["grantedAt"] == 1700000000

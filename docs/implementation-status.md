@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 5 — Rate Limit Domain
-CURRENT_TASK: TASK-0504 — Rate Limit Protocol DTO
-LAST_COMPLETED_TASK: TASK-0503 — ResetCredits
+CURRENT_TASK: TASK-0505 — Rate Limit Mapping
+LAST_COMPLETED_TASK: TASK-0504 — Rate Limit Protocol DTO
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0503 DONE。TASK-0504 READY。TASK-0505～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0504 DONE。TASK-0505 READY。TASK-0506～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–3 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because real completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 pure Domain models are verified；T-12 and T-72/T-73 are Domain-level Automated Verified only，while Codex protocol/mapping/service and real `account/rateLimits/read` remain NOT_RUN.
+Stages 0–3 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because real completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 Domain and protocol DTOs are Automated Verified；T-72/T-73/T-74 are Protocol DTO Verified but not Real Codex Verified，while mapping/service and real `account/rateLimits/read` remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -367,6 +367,18 @@ Stages 0–3 are complete. Stage 4 implementation tasks are complete but the sta
 - KNOWN_UNKNOWNS: T-12 proves only the Domain representation of an absent summary as `None`；raw null/detail mapping awaits TASK-0504/TASK-0505，and real reset-credit behavior remains NOT_RUN
 - NEXT_TASK: TASK-0504 — Rate Limit Protocol DTO
 
+### TASK-0504 — Rate Limit Protocol DTO
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- CHANGED_FILES: `server/app/codex/protocol.py`, `server/tests/unit/test_protocol.py`
+- TESTS: Protocol-scope T-10～T-15 and T-72～T-74 PASS（Automated Verified with synthetic payloads；protocol suite `16 passed`）；deterministic unit/API/UI/health regression PASS (`146 passed`)
+- VALIDATION: `PYTHONPATH=server /tmp/codex-review.lTnq3j/bin/python -m pytest -q server/tests/unit/test_protocol.py` PASS (`16 passed`)；full deterministic suite PASS (`146 passed`)；compile、diff、scope and security/private-endpoint keyword checks PASS
+- RUNTIME_EVIDENCE: NONE；DTOs were validated with synthetic payloads only，and `account/rateLimits/read` was not called
+- SECURITY_EVIDENCE: Unknown fields remain confined to the protocol DTO boundary；no REST serialization、raw payload logging、credential handling、private endpoint or usage-read method was added
+- KNOWN_UNKNOWNS: Domain mapping、adapter method、service and real current-account response remain NOT_RUN；upstream enum/field compatibility is synthetic-only until TASK-0507
+- NEXT_TASK: TASK-0505 — Rate Limit Mapping
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -381,6 +393,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0504
-NEXT_ACTION: Implement and validate TASK-0504 only.
+READY_TASK: TASK-0505
+NEXT_ACTION: Implement and validate TASK-0505 only.
 ```
