@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 6 — REST API
-CURRENT_TASK: TASK-0601 — Server API Token
-LAST_COMPLETED_TASK: TASK-0507 — Real Rate Limit Validation
+CURRENT_TASK: TASK-0602 — Status Endpoint
+LAST_COMPLETED_TASK: TASK-0601 — Server API Token
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507 DONE。TASK-0601 READY。TASK-0602～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601 DONE。TASK-0602 READY。TASK-0603～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -51,7 +51,7 @@ Codex executable：PASS（Real Codex Verified, latest rerun `codex-cli 0.155.1`�
 
 ## Security Validation Ledger
 
-Authorization redaction、Access Token、Refresh Token、Cookie、Account API isolation、Rate Limit API isolation、Error sanitization、Raw protocol isolation：全部 NOT_RUN。
+Server API token authentication：PASS（Automated Verified；T-25～T-28）。Authorization redaction、Access Token、Refresh Token、Cookie、Account API isolation、Rate Limit API isolation、Error sanitization、Raw protocol isolation：全部 NOT_RUN。
 
 ## Known Blockers
 
@@ -63,7 +63,7 @@ Human completed the official Codex device-auth flow to restore the current CLI s
 
 ## Known Limitations
 
-Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded.
+Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 server-token authentication is implemented as a reusable boundary；application to the planned status/account/rate-limit routes begins with TASK-0602，while existing Stage 4 login/UI behavior remains unchanged.
 
 ## Completed Task Record
 
@@ -416,6 +416,19 @@ Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete
 - KNOWN_UNKNOWNS: Production AuthService/app-server login completion T-50 remains NOT_RUN；Docker startup and credential persistence remain NOT_RUN for their planned stages
 - NEXT_TASK: TASK-0601 — Server API Token
 
+### TASK-0601 — Server API Token
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- EXECUTION_AGENT: Sol fallback；a fresh GPT-5.6 Luna agent was assigned the bounded contract but did not start a command or file change and returned no blocker，so Sol executed the identical bounded scope
+- CHANGED_FILES: `server/app/config.py`, `server/app/security/__init__.py`, `server/app/security/server_token.py`, `server/tests/integration/test_server_token.py`, `docs/implementation-status.md`
+- TESTS: T-25 PASS；T-26 PASS；T-27 PASS；T-28 PASS（Automated Verified through a protected ASGI route）；configuration source isolation PASS；deterministic regression PASS (`175 passed`)
+- VALIDATION: `PYTHONPATH=server /tmp/task0507-venv.9dQyC0/bin/python -m pytest -q server/tests/integration/test_server_token.py` PASS (`7 passed`)；deterministic unit/login API/login UI/health/server-token regression PASS (`175 passed`)；compile、`git diff --check`、scope、forbidden-integration and live-credential pattern checks PASS
+- RUNTIME_EVIDENCE: Local ASGI requests proved valid monitor Bearer access and fixed HTTP 401 rejection for missing、invalid and OpenAI-style non-monitor credentials；no Codex/OpenAI runtime call occurred
+- SECURITY_EVIDENCE: `CODEX_MONITOR_API_TOKEN` is the only accepted configuration source and is excluded from `Settings` repr；comparison is timing-safe and exact；errors contain only the fixed `INVALID_SERVER_TOKEN` envelope and never echo authorization input；T-29～T-32 remain NOT_RUN
+- KNOWN_UNKNOWNS: The reusable dependency is not globally applied to existing Stage 4 login/UI routes；planned Stage 6 data routes will attach it beginning in TASK-0602. Redaction logging and account/rate-limit endpoint isolation remain future bounded tasks
+- NEXT_TASK: TASK-0602 — Status Endpoint
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -430,6 +443,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0601
-NEXT_ACTION: Implement and validate TASK-0601 only.
+READY_TASK: TASK-0602
+NEXT_ACTION: Implement and validate TASK-0602 only.
 ```
