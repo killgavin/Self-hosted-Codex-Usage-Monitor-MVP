@@ -37,7 +37,9 @@ def create_app(
         account_service if account_service is not None else AccountService(adapter)
     )
     application.state.rate_limit_service = (
-        rate_limit_service if rate_limit_service is not None else RateLimitService(adapter)
+        rate_limit_service
+        if rate_limit_service is not None
+        else RateLimitService(adapter, ttl_seconds=active_settings.cache_ttl_seconds)
     )
     application.add_exception_handler(InvalidServerToken, invalid_server_token_handler)
     application.include_router(login_router)

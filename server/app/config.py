@@ -1,15 +1,13 @@
-"""Small configuration boundary for the Codex executable.
-
-This module only reads configuration and resolves an executable name. Process
-startup and lifecycle management belong to a later task.
-"""
+"""Environment-backed server configuration without runtime side effects."""
 
 from dataclasses import dataclass, field
+import math
 import os
 import shutil
 
 
 DEFAULT_CODEX_EXECUTABLE = "codex"
+DEFAULT_CACHE_TTL_SECONDS = 60.0
 
 
 @dataclass(frozen=True)
@@ -18,6 +16,7 @@ class Settings:
 
     codex_executable: str = DEFAULT_CODEX_EXECUTABLE
     server_api_token: str | None = field(default=None, repr=False)
+    cache_ttl_seconds: float = DEFAULT_CACHE_TTL_SECONDS
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -32,9 +31,20 @@ class Settings:
             executable = configured_executable.strip() or DEFAULT_CODEX_EXECUTABLE
 
         configured_token = os.getenv("CODEX_MONITOR_API_TOKEN")
+        configured_ttl = os.getenv("CACHE_TTL_SECONDS")
+        if configured_ttl is None:
+            cache_ttl_seconds = DEFAULT_CACHE_TTL_SECONDS
+        else:
+            try:
+                cache_ttl_seconds = float(configured_ttl)
+            except ValueError as error:
+                raise ValueError("CACHE_TTL_SECONDS must be a positive finite number") from error
+            if not math.isfinite(cache_ttl_seconds) or cache_ttl_seconds <= 0:
+                raise ValueError("CACHE_TTL_SECONDS must be a positive finite number")
         return cls(
             codex_executable=executable,
             server_api_token=configured_token or None,
+            cache_ttl_seconds=cache_ttl_seconds,
         )
 
 

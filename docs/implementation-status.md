@@ -12,9 +12,9 @@
 ```text
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
-CURRENT_STAGE: Stage 6 — REST API
-CURRENT_TASK: TASK-0606 — TTL Cache
-LAST_COMPLETED_TASK: TASK-0605 — REST Error Mapping
+CURRENT_STAGE: Stage 7 — Web Dashboard
+CURRENT_TASK: TASK-0701 — Web Shell
+LAST_COMPLETED_TASK: TASK-0606 — TTL Cache
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -35,15 +35,15 @@ DONE 必須有 Implementation + Test + Validation evidence。
 | Stage 3 Account Read | DONE |
 | Stage 4 ChatGPT Login | IN_PROGRESS |
 | Stage 5 Rate Limit Domain | DONE |
-| Stage 6 REST API | IN_PROGRESS |
-| Stage 7 Web Dashboard | NOT_STARTED |
+| Stage 6 REST API | DONE |
+| Stage 7 Web Dashboard | IN_PROGRESS |
 | Stage 8 Security Hardening | NOT_STARTED |
 | Stage 9 Docker Deployment | NOT_STARTED |
 | Stage 10 Final MVP Validation | NOT_STARTED |
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0605 DONE。TASK-0606 READY。TASK-0701～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606 DONE。TASK-0701 READY。TASK-0702～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ Human completed the official Codex device-auth flow to restore the current CLI s
 
 ## Known Limitations
 
-Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 server-token authentication、status/account/rate-limit schemas and fixed REST error mapping are Automated Verified；REST tests use injected services and are not Real Codex evidence. Logging redaction T-29～T-32 and TASK-0802 security revalidation remain NOT_RUN；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
+Stages 0–3、5 and 6 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Logging redaction T-29～T-32 and TASK-0802 security revalidation remain NOT_RUN；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
 
 ## Completed Task Record
 
@@ -481,6 +481,19 @@ Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete
 - KNOWN_UNKNOWNS: Logging redaction T-29～T-32 remains NOT_RUN until TASK-0801；T-33～T-35/T-76 security revalidation remains TASK-0802；degraded/runtime-exit handling remains TASK-0804
 - NEXT_TASK: TASK-0606 — TTL Cache
 
+### TASK-0606 — TTL Cache
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- EXECUTION_AGENT: Sol fallback under the same bounded-task contract after the GPT-5.6 Luna execution environment failed to start repository actions
+- CHANGED_FILES: `server/app/config.py`, `server/app/services/rate_limits.py`, `server/app/main.py`, `server/tests/unit/test_rate_limit_cache.py`, `docs/implementation-status.md`
+- TESTS: T-21 PASS；T-22 PASS；T-23 PASS；T-24 PASS（Automated Verified with deterministic fake clock and reader）；focused cache/service/config suite PASS (`23 passed`)；deterministic regression PASS (`201 passed`)
+- VALIDATION: `PYTHONPATH=server /tmp/task0507-venv.9dQyC0/bin/python -m pytest -q server/tests/unit/test_rate_limit_cache.py server/tests/unit/test_rate_limit_service.py server/tests/unit/test_config.py` PASS (`23 passed`)；full deterministic unit/noninteractive REST/UI regression PASS (`201 passed`)；compile、`git diff --check`、scope and live-credential pattern checks PASS
+- RUNTIME_EVIDENCE: NONE；cache behavior used an injected reader and deterministic clock，with no Codex/OpenAI runtime call
+- SECURITY_EVIDENCE: Cache is process-local and stores only immutable mapped domain tuples；no credential、raw protocol payload、disk persistence、DB or external cache was added
+- KNOWN_UNKNOWNS: Concurrent first-miss coalescing and Phase 2 cache enhancements are out of MVP scope；end-to-end cache behavior with real Codex remains NOT_RUN/not required by T-21～T-24
+- NEXT_TASK: TASK-0701 — Web Shell
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -495,6 +508,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0606
-NEXT_ACTION: Implement and validate TASK-0606 only.
+READY_TASK: TASK-0701
+NEXT_ACTION: Implement and validate TASK-0701 only.
 ```
