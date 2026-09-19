@@ -7,7 +7,15 @@ import pytest
 
 from app.codex.exceptions import ProcessCommunicationFailed
 from app.codex.protocol import AccountLoginCompletedNotification, DeviceCodeLoginResponse
-from app.services.auth import AuthService, LoginAlreadyPending, LoginNotPending, LoginState, LoginStatus
+from app.codex.protocol import CancelLoginResponse
+from app.services.auth import (
+    AuthService,
+    LoginAlreadyPending,
+    LoginCancellationFailed,
+    LoginNotPending,
+    LoginState,
+    LoginStatus,
+)
 
 
 class FakeLoginStarter:
@@ -15,6 +23,7 @@ class FakeLoginStarter:
         self.response = response
         self.failure = failure
         self.calls = 0
+        self.cancel_calls = []
 
     async def start_login(self):
         self.calls += 1
@@ -24,6 +33,12 @@ class FakeLoginStarter:
 
     async def wait_login_completion(self, login_id, timeout=10.0):
         self.calls += 1
+        if self.failure is not None:
+            raise self.failure
+        return self.response
+
+    async def cancel_login(self, login_id):
+        self.cancel_calls.append(login_id)
         if self.failure is not None:
             raise self.failure
         return self.response
@@ -170,6 +185,68 @@ def test_completion_requires_pending_and_failure_preserves_pending() -> None:
         pending = service.status
         with pytest.raises(ProcessCommunicationFailed) as error:
             await service.wait_for_completion()
+        assert error.value is failure
+        assert service.status == pending
+
+    asyncio.run(scenario())
+
+
+def test_cancel_success_clears_pending_fields() -> None:
+    async def scenario() -> None:
+        starter = FakeLoginStarter(
+            DeviceCodeLoginResponse(type="chatgptDeviceCode", loginId="id", userCode="code", verificationUrl="url")
+        )
+        service = AuthService(starter)
+        await service.start_login()
+        starter.response = CancelLoginResponse(status="canceled")
+        status = await service.cancel_login()
+        assert status == LoginStatus(state=LoginState.CANCELED)
+        assert starter.cancel_calls == ["id"]
+
+    asyncio.run(scenario())
+
+
+def test_cancel_requires_pending_and_does_not_call_adapter() -> None:
+    async def scenario() -> None:
+        starter = FakeLoginStarter()
+        service = AuthService(starter)
+        with pytest.raises(LoginNotPending):
+            await service.cancel_login()
+        assert starter.cancel_calls == []
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("status", ["notFound", "future-status"])
+def test_cancel_non_success_is_generic_and_preserves_pending(status: str) -> None:
+    async def scenario() -> None:
+        starter = FakeLoginStarter(
+            DeviceCodeLoginResponse(type="chatgptDeviceCode", loginId="id", userCode="code", verificationUrl="url")
+        )
+        service = AuthService(starter)
+        await service.start_login()
+        pending = service.status
+        starter.response = CancelLoginResponse(status=status)
+        with pytest.raises(LoginCancellationFailed) as error:
+            await service.cancel_login()
+        assert str(error.value) == "Login cancellation failed"
+        assert service.status == pending
+
+    asyncio.run(scenario())
+
+
+def test_cancel_transport_failure_preserves_pending_and_identity() -> None:
+    async def scenario() -> None:
+        starter = FakeLoginStarter(
+            DeviceCodeLoginResponse(type="chatgptDeviceCode", loginId="id", userCode="code", verificationUrl="url")
+        )
+        service = AuthService(starter)
+        await service.start_login()
+        failure = ProcessCommunicationFailed("cancel transport failure")
+        starter.failure = failure
+        pending = service.status
+        with pytest.raises(ProcessCommunicationFailed) as error:
+            await service.cancel_login()
         assert error.value is failure
         assert service.status == pending
 

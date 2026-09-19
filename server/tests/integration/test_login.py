@@ -38,3 +38,36 @@ def test_real_device_code_login_start(tmp_path, monkeypatch) -> None:
         assert child.returncode is not None
 
     asyncio.run(scenario())
+
+
+def test_real_device_code_login_cancel(tmp_path, monkeypatch) -> None:
+    executable = os.environ.get("REAL_CODEX_EXECUTABLE")
+    if not executable:
+        raise AssertionError("REAL_CODEX_EXECUTABLE is required")
+    monkeypatch.setenv("CODEX_HOME", str(tmp_path))
+
+    async def scenario() -> None:
+        process = CodexProcess(Settings(executable))
+        adapter = CodexAppServerAdapter(process)
+        service = AuthService(adapter)
+        child = None
+        try:
+            await adapter.initialize()
+            await service.start_login()
+            pending = service.status
+            child = process.process
+            status = await service.cancel_login()
+            assert pending.state is LoginState.PENDING
+            assert status.state is LoginState.CANCELED
+            assert status.login_id is None
+            assert status.verification_url is None
+            assert status.user_code is None
+        finally:
+            await adapter.shutdown()
+
+        assert adapter.state is AdapterState.STOPPED
+        assert process.process is None
+        assert child is not None
+        assert child.returncode is not None
+
+    asyncio.run(scenario())

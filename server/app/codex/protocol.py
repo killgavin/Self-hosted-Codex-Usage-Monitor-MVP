@@ -101,6 +101,18 @@ class DeviceCodeLoginResponse(WireModel):
     verification_url: str = Field(alias="verificationUrl")
 
 
+class CancelLoginParams(WireModel):
+    """Parameters for canceling one pending device-code login."""
+
+    login_id: str = Field(alias="loginId")
+
+
+class CancelLoginResponse(WireModel):
+    """Forward-compatible result from account/login/cancel."""
+
+    status: str
+
+
 class AccountLoginCompletedNotification(WireModel):
     """Boundary DTO for the account/login/completed notification params."""
 

@@ -1,14 +1,18 @@
 """Local login state plus typed device-code start/completion orchestration.
 
-The service exposes only UI-safe state and delegates device-code start to an
-injected adapter. Cancellation remains deferred.
+The service exposes only UI-safe state and delegates device-code lifecycle
+operations to an injected adapter.
 """
 
 from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol
 
-from app.codex.protocol import AccountLoginCompletedNotification, DeviceCodeLoginResponse
+from app.codex.protocol import (
+    AccountLoginCompletedNotification,
+    CancelLoginResponse,
+    DeviceCodeLoginResponse,
+)
 
 
 class LoginState(str, Enum):
@@ -36,11 +40,15 @@ class LoginAlreadyPending(Exception):
 
 
 class LoginNotPending(Exception):
-    """A login completion was requested without a pending login."""
+    """A login operation was requested without a pending login."""
+
+
+class LoginCancellationFailed(Exception):
+    """The Codex server did not confirm cancellation of a pending login."""
 
 
 class LoginStarter(Protocol):
-    """Minimal injected adapter boundary for login start and completion."""
+    """Minimal injected adapter boundary for the login lifecycle."""
 
     async def start_login(self) -> DeviceCodeLoginResponse:
         """Start device-code login through the adapter."""
@@ -50,9 +58,12 @@ class LoginStarter(Protocol):
     ) -> AccountLoginCompletedNotification:
         """Wait for the correlated completion notification."""
 
+    async def cancel_login(self, login_id: str) -> CancelLoginResponse:
+        """Cancel one pending login and return its typed protocol response."""
+
 
 class AuthService:
-    """Expose immutable local state and device-code start/completion operations."""
+    """Expose immutable local state and device-code login operations."""
 
     def __init__(self, adapter: LoginStarter) -> None:
         self._status = LoginStatus(state=LoginState.IDLE)
@@ -87,4 +98,15 @@ class AuthService:
         self._status = LoginStatus(
             state=LoginState.COMPLETED if completion.success else LoginState.FAILED
         )
+        return self._status
+
+    async def cancel_login(self) -> LoginStatus:
+        """Cancel the pending login, publishing CANCELED only on exact success."""
+
+        if self._status.state is not LoginState.PENDING or self._status.login_id is None:
+            raise LoginNotPending("Login is not pending")
+        response = await self._adapter.cancel_login(self._status.login_id)
+        if response.status != "canceled":
+            raise LoginCancellationFailed("Login cancellation failed")
+        self._status = LoginStatus(state=LoginState.CANCELED)
         return self._status

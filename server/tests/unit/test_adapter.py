@@ -298,6 +298,77 @@ def test_start_login_preserves_transport_failure_identity() -> None:
     asyncio.run(scenario())
 
 
+def test_cancel_login_uses_exact_method_and_params() -> None:
+    class FakeTransport:
+        def __init__(self) -> None:
+            self.calls = []
+
+        async def request(self, method, params):
+            self.calls.append((method, params))
+            return {"status": "canceled", "future": True}
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        transport = FakeTransport()
+        adapter._transport = transport
+        response = await adapter.cancel_login("synthetic-id")
+        assert response.status == "canceled"
+        assert transport.calls == [("account/login/cancel", {"loginId": "synthetic-id"})]
+
+    asyncio.run(scenario())
+
+
+def test_cancel_login_requires_ready_without_request() -> None:
+    adapter = CodexAppServerAdapter()
+
+    async def scenario() -> None:
+        with pytest.raises(AdapterStateError, match="not ready"):
+            await adapter.cancel_login("synthetic-id")
+
+    asyncio.run(scenario())
+
+
+def test_cancel_login_invalid_response_is_sanitized() -> None:
+    class FakeTransport:
+        async def request(self, method, params):
+            return {"unexpected": "private-marker"}
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = FakeTransport()
+        with pytest.raises(ProcessCommunicationFailed) as error:
+            await adapter.cancel_login("synthetic-id")
+        assert "private-marker" not in str(error.value)
+
+    asyncio.run(scenario())
+
+
+def test_cancel_login_preserves_transport_failure_identity() -> None:
+    sentinel = ProcessCommunicationFailed("controlled cancellation transport failure")
+
+    class FakeTransport:
+        async def request(self, method, params):
+            raise sentinel
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = FakeTransport()
+        with pytest.raises(ProcessCommunicationFailed) as error:
+            await adapter.cancel_login("synthetic-id")
+        assert error.value is sentinel
+
+    asyncio.run(scenario())
+
+
 def test_wait_login_completion_filters_and_correlates_notifications() -> None:
     class FakeTransport:
         def __init__(self) -> None:

@@ -8,6 +8,8 @@ from app.codex.protocol import (
     DeviceCodeLoginParams,
     DeviceCodeLoginResponse,
     AccountLoginCompletedNotification,
+    CancelLoginParams,
+    CancelLoginResponse,
     InitializeCapabilities,
     InitializeParams,
     InitializeResponse,
@@ -144,3 +146,18 @@ def test_login_completed_success_is_required_and_optional_fields_are_nullable() 
 
     with pytest.raises(ValidationError):
         AccountLoginCompletedNotification.model_validate({"loginId": "id"})
+
+
+def test_cancel_login_dtos_use_aliases_and_preserve_unknown_fields() -> None:
+    params = CancelLoginParams.model_validate({"loginId": "synthetic-id", "future": True})
+    response = CancelLoginResponse.model_validate({"status": "future-status", "future": {"x": 1}})
+
+    assert to_wire(params) == {"loginId": "synthetic-id", "future": True}
+    assert response.status == "future-status"
+    assert response.model_extra == {"future": {"x": 1}}
+    assert to_wire(response)["status"] == "future-status"
+
+    with pytest.raises(ValidationError):
+        CancelLoginParams.model_validate({})
+    with pytest.raises(ValidationError):
+        CancelLoginResponse.model_validate({})

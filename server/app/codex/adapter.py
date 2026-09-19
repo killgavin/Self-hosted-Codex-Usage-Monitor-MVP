@@ -1,8 +1,8 @@
 """Codex app-server lifecycle and initialization boundary.
 
-This module owns process startup, the initialize/initialized handshake, and
-adapter state transitions, account reads, device-code login start, and login
-completion waiting. Cancellation and rate-limit methods remain deferred.
+This module owns process startup, the initialize/initialized handshake,
+adapter state transitions, account reads, and device-code login lifecycle.
+Rate-limit methods remain deferred.
 """
 
 import asyncio
@@ -14,6 +14,8 @@ from app.codex.exceptions import AdapterStateError, ProcessCommunicationFailed
 from app.codex.protocol import (
     ClientInfo,
     AccountLoginCompletedNotification,
+    CancelLoginParams,
+    CancelLoginResponse,
     DeviceCodeLoginParams,
     DeviceCodeLoginResponse,
     GetAccountParams,
@@ -168,6 +170,24 @@ class CodexAppServerAdapter:
             if params.login_id is not None and params.login_id != login_id:
                 continue
             return params
+
+    async def cancel_login(self, login_id: str) -> CancelLoginResponse:
+        """Cancel one pending device-code login through the ready boundary."""
+
+        self._require_ready()
+        if self._transport is None:
+            raise AdapterStateError("Codex adapter transport is unavailable")
+        try:
+            result = await self._transport.request(
+                "account/login/cancel",
+                to_wire(CancelLoginParams(loginId=login_id)),
+            )
+        except ProcessCommunicationFailed:
+            raise
+        try:
+            return CancelLoginResponse.model_validate(result)
+        except ValidationError:
+            raise ProcessCommunicationFailed("Codex login cancellation response validation failed") from None
 
     def _require_ready(self) -> None:
         """Guard future adapter requests until initialization completed."""
