@@ -31,16 +31,24 @@ def request(app, method: str, path: str) -> tuple[int, bytes, str]:
     return start["status"], body["body"], content_type
 
 
-def test_root_assets_and_rest_remain_reachable() -> None:
+def test_dashboard_shell_assets_and_rest_remain_reachable() -> None:
     app = create_app()
     status, body, content_type = request(app, "GET", "/")
     html = body.decode()
     assert status == 200 and "text/html" in content_type
-    for required in ("login-button", "login-state", "verification-link", "user-code", "cancel-button", "logout-button", "/assets/app.mjs"):
+    for required in (
+        "dashboard-shell", "server-token", "connect-button", "connection-status",
+        "account-summary", "rate-limit-list", "reset-credit-summary", "last-updated",
+        "login-button", "login-state", "verification-link", "user-code", "cancel-button",
+        "logout-button", "/assets/app.mjs",
+    ):
         assert required in html
-    assert all(value not in html.lower() for value in ("quota", "rate-limit", "progress"))
+    assert 'id="server-token"' in html and 'type="password"' in html
+    assert 'id="server-token"' in html and 'value=' not in html
+    assert all(value not in html for value in ("usedPercent", "remainingPercent", "windowDurationMinutes"))
     status, body, content_type = request(app, "GET", "/assets/app.mjs")
-    assert status == 200 and "javascript" in content_type and b"localStorage" not in body
+    assert status == 200 and "javascript" in content_type
+    assert all(value not in body for value in (b"localStorage", b"sessionStorage", b"document.cookie"))
     status, _, _ = request(app, "GET", "/health")
     assert status == 200
     status, _, _ = request(app, "GET", "/assets/missing.txt")
