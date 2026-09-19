@@ -7,6 +7,7 @@ from app.codex.protocol import (
     ClientInfo,
     DeviceCodeLoginParams,
     DeviceCodeLoginResponse,
+    LogoutAccountResponse,
     AccountLoginCompletedNotification,
     CancelLoginParams,
     CancelLoginResponse,
@@ -161,3 +162,8 @@ def test_cancel_login_dtos_use_aliases_and_preserve_unknown_fields() -> None:
         CancelLoginParams.model_validate({})
     with pytest.raises(ValidationError):
         CancelLoginResponse.model_validate({})
+
+
+def test_logout_response_accepts_empty_or_future_fields() -> None:
+    assert to_wire(LogoutAccountResponse()) == {}
+    assert LogoutAccountResponse.model_validate({"future": True}).model_extra == {"future": True}

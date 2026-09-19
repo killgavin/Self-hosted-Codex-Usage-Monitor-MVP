@@ -17,5 +17,9 @@ class ProcessCommunicationFailed(Exception):
     """A controlled failure occurred while communicating with the child."""
 
 
+class LoginCompletionTimeout(ProcessCommunicationFailed):
+    """The bounded wait for a login completion notification expired."""
+
+
 class AdapterStateError(Exception):
     """A requested adapter lifecycle transition is not permitted."""

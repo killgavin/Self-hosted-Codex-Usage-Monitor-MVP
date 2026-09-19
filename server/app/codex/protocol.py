@@ -113,6 +113,10 @@ class CancelLoginResponse(WireModel):
     status: str
 
 
+class LogoutAccountResponse(WireModel):
+    """Forward-compatible object returned by account/logout."""
+
+
 class AccountLoginCompletedNotification(WireModel):
     """Boundary DTO for the account/login/completed notification params."""
 

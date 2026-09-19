@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 4 — ChatGPT Login
-CURRENT_TASK: TASK-0405 — Minimal Login REST
-LAST_COMPLETED_TASK: TASK-0404 — Login Cancel
+CURRENT_TASK: TASK-0406 — Minimal Login UI
+LAST_COMPLETED_TASK: TASK-0405 — Minimal Login REST
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0404 DONE。TASK-0405 READY。TASK-0406～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0405 DONE。TASK-0406 READY。TASK-0501～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–3 are complete. Device-code start T-49 and cancel T-51 are Real Codex Verified；completion handling is automated verified but real T-50 remains NOT_RUN. Login REST and UI remain NOT_RUN.
+Stages 0–3 are complete. Minimal login REST and safe schemas/errors are automated verified；device-code start T-49 and cancel T-51 are Real Codex Verified。Real completion T-50、real logout and login UI T-59 remain NOT_RUN；default app runtime initialization remains deferred.
 
 ## Completed Task Record
 
@@ -307,6 +307,18 @@ Stages 0–3 are complete. Device-code start T-49 and cancel T-51 are Real Codex
 - KNOWN_UNKNOWNS: One earlier standalone T-49 run timed out but did not reproduce in Sol's complete integration rerun；real T-50 and UI T-59 remain NOT_RUN
 - NEXT_TASK: TASK-0405 — Minimal Login REST
 
+### TASK-0405 — Minimal Login REST
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- CHANGED_FILES: `server/app/codex/exceptions.py`, `server/app/codex/protocol.py`, `server/app/codex/adapter.py`, `server/app/services/auth.py`, `server/app/api/login.py`, `server/app/main.py`, `server/tests/unit/test_protocol.py`, `server/tests/unit/test_adapter.py`, `server/tests/unit/test_auth_service.py`, `server/tests/integration/test_login_api.py`
+- TESTS: TASK-0405 protocol/adapter/service/REST suite PASS（Automated Verified）；deterministic unit/API/health regression PASS (`101 passed`)；T-49 PASS（Real Codex Verified）；T-51 PASS（Real Codex Verified）；T-50、T-59 NOT_RUN
+- VALIDATION: `PYTHONPATH=server /tmp/codex-review.lTnq3j/bin/python -m pytest -q server/tests/unit server/tests/integration/test_health.py server/tests/integration/test_login_api.py` PASS (`101 passed`)；`REAL_CODEX_EXECUTABLE=/tmp/codex-task-runtime-0.155.1/bin/codex ... server/tests/integration/test_login.py` PASS (`2 passed in 24.05s`)；compile、diff、scope、security and orphan checks PASS
+- RUNTIME_EVIDENCE: Official `codex-cli 0.155.1` reverified real device-code start/cancel with the dedicated 30-second start timeout；children were shut down/reaped。REST and logout behavior are Automated Verified only；real logout was not run
+- SECURITY_EVIDENCE: REST success exposes exactly state、verificationUrl、userCode and omits loginId/protocol DTO；known and unexpected errors use fixed sanitized envelopes；no import-time subprocess、raw payload、auth file、token or credential output
+- KNOWN_UNKNOWNS: Real T-50、real logout、T-59 and default app runtime initialization remain NOT_RUN/deferred；server API token protection belongs to TASK-0601
+- NEXT_TASK: TASK-0406 — Minimal Login UI
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -321,6 +333,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0405
-NEXT_ACTION: Implement and validate TASK-0405 only.
+READY_TASK: TASK-0406
+NEXT_ACTION: Implement and validate TASK-0406 only.
 ```

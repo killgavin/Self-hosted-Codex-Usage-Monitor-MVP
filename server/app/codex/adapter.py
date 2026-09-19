@@ -10,7 +10,11 @@ import time
 from enum import Enum
 
 from app.codex.process import CodexProcess
-from app.codex.exceptions import AdapterStateError, ProcessCommunicationFailed
+from app.codex.exceptions import (
+    AdapterStateError,
+    LoginCompletionTimeout,
+    ProcessCommunicationFailed,
+)
 from app.codex.protocol import (
     ClientInfo,
     AccountLoginCompletedNotification,
@@ -22,10 +26,14 @@ from app.codex.protocol import (
     GetAccountResponse,
     InitializeParams,
     InitializeResponse,
+    LogoutAccountResponse,
     to_wire,
 )
 from app.codex.transport import CodexTransport
 from pydantic import ValidationError
+
+
+DEVICE_CODE_LOGIN_START_TIMEOUT = 30.0
 
 
 class AdapterState(str, Enum):
@@ -128,6 +136,7 @@ class CodexAppServerAdapter:
             result = await self._transport.request(
                 "account/login/start",
                 to_wire(DeviceCodeLoginParams()),
+                timeout=DEVICE_CODE_LOGIN_START_TIMEOUT,
             )
         except ProcessCommunicationFailed:
             raise
@@ -150,13 +159,13 @@ class CodexAppServerAdapter:
         while True:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
-                raise ProcessCommunicationFailed("Codex login completion timed out")
+                raise LoginCompletionTimeout("Codex login completion timed out")
             try:
                 notification = await asyncio.wait_for(
                     self._transport.next_notification(), remaining
                 )
             except asyncio.TimeoutError as exc:
-                raise ProcessCommunicationFailed("Codex login completion timed out") from exc
+                raise LoginCompletionTimeout("Codex login completion timed out") from exc
             if notification.get("method") != "account/login/completed":
                 continue
             try:
@@ -188,6 +197,21 @@ class CodexAppServerAdapter:
             return CancelLoginResponse.model_validate(result)
         except ValidationError:
             raise ProcessCommunicationFailed("Codex login cancellation response validation failed") from None
+
+    async def logout(self) -> LogoutAccountResponse:
+        """Log out through the ready Codex protocol boundary."""
+
+        self._require_ready()
+        if self._transport is None:
+            raise AdapterStateError("Codex adapter transport is unavailable")
+        try:
+            result = await self._transport.request("account/logout")
+        except ProcessCommunicationFailed:
+            raise
+        try:
+            return LogoutAccountResponse.model_validate(result)
+        except ValidationError:
+            raise ProcessCommunicationFailed("Codex logout response validation failed") from None
 
     def _require_ready(self) -> None:
         """Guard future adapter requests until initialization completed."""

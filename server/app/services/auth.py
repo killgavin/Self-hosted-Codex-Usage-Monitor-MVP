@@ -8,10 +8,12 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol
 
+from app.codex.exceptions import LoginCompletionTimeout
 from app.codex.protocol import (
     AccountLoginCompletedNotification,
     CancelLoginResponse,
     DeviceCodeLoginResponse,
+    LogoutAccountResponse,
 )
 
 
@@ -61,6 +63,9 @@ class LoginStarter(Protocol):
     async def cancel_login(self, login_id: str) -> CancelLoginResponse:
         """Cancel one pending login and return its typed protocol response."""
 
+    async def logout(self) -> LogoutAccountResponse:
+        """Log out through the typed adapter boundary."""
+
 
 class AuthService:
     """Expose immutable local state and device-code login operations."""
@@ -100,6 +105,16 @@ class AuthService:
         )
         return self._status
 
+    async def get_status(self, wait_timeout: float = 0.05) -> LoginStatus:
+        """Return status, briefly polling only while a login remains pending."""
+
+        if self._status.state is not LoginState.PENDING:
+            return self._status
+        try:
+            return await self.wait_for_completion(timeout=wait_timeout)
+        except LoginCompletionTimeout:
+            return self._status
+
     async def cancel_login(self) -> LoginStatus:
         """Cancel the pending login, publishing CANCELED only on exact success."""
 
@@ -109,4 +124,13 @@ class AuthService:
         if response.status != "canceled":
             raise LoginCancellationFailed("Login cancellation failed")
         self._status = LoginStatus(state=LoginState.CANCELED)
+        return self._status
+
+    async def logout(self) -> LoginStatus:
+        """Log out unless a device-code login is currently pending."""
+
+        if self._status.state is LoginState.PENDING:
+            raise LoginAlreadyPending("Login is already pending")
+        await self._adapter.logout()
+        self._status = LoginStatus(state=LoginState.IDLE)
         return self._status
