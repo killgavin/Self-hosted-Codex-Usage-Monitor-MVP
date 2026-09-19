@@ -6,8 +6,8 @@ from dataclasses import FrozenInstanceError, fields
 import pytest
 
 from app.codex.exceptions import ProcessCommunicationFailed
-from app.codex.protocol import DeviceCodeLoginResponse
-from app.services.auth import AuthService, LoginAlreadyPending, LoginState, LoginStatus
+from app.codex.protocol import AccountLoginCompletedNotification, DeviceCodeLoginResponse
+from app.services.auth import AuthService, LoginAlreadyPending, LoginNotPending, LoginState, LoginStatus
 
 
 class FakeLoginStarter:
@@ -17,6 +17,12 @@ class FakeLoginStarter:
         self.calls = 0
 
     async def start_login(self):
+        self.calls += 1
+        if self.failure is not None:
+            raise self.failure
+        return self.response
+
+    async def wait_login_completion(self, login_id, timeout=10.0):
         self.calls += 1
         if self.failure is not None:
             raise self.failure
@@ -114,5 +120,57 @@ def test_start_failure_preserves_prior_status_and_error() -> None:
         assert error.value is failure
         assert service.status.state is LoginState.IDLE
         assert starter.calls == 1
+
+    asyncio.run(scenario())
+
+
+def test_completion_transitions_to_completed_and_clears_fields() -> None:
+    async def scenario() -> None:
+        starter = FakeLoginStarter(
+            DeviceCodeLoginResponse(type="chatgptDeviceCode", loginId="id", userCode="code", verificationUrl="url")
+        )
+        service = AuthService(starter)
+        await service.start_login()
+        starter.response = AccountLoginCompletedNotification(success=True, loginId="id")
+        status = await service.wait_for_completion(timeout=0.1)
+        assert status == LoginStatus(state=LoginState.COMPLETED)
+
+    asyncio.run(scenario())
+
+
+def test_failed_completion_transitions_to_failed_and_clears_fields() -> None:
+    async def scenario() -> None:
+        starter = FakeLoginStarter(
+            DeviceCodeLoginResponse(type="chatgptDeviceCode", loginId="id", userCode="code", verificationUrl="url")
+        )
+        service = AuthService(starter)
+        await service.start_login()
+        starter.response = AccountLoginCompletedNotification(success=False, loginId="id", error="private")
+        status = await service.wait_for_completion()
+        assert status == LoginStatus(state=LoginState.FAILED)
+
+    asyncio.run(scenario())
+
+
+def test_completion_requires_pending_and_failure_preserves_pending() -> None:
+    async def scenario() -> None:
+        idle_starter = FakeLoginStarter()
+        idle_service = AuthService(idle_starter)
+        with pytest.raises(LoginNotPending):
+            await idle_service.wait_for_completion(timeout=0.1)
+        assert idle_starter.calls == 0
+
+        failure = ProcessCommunicationFailed("completion failed")
+        starter = FakeLoginStarter(
+            DeviceCodeLoginResponse(type="chatgptDeviceCode", loginId="id", userCode="code", verificationUrl="url")
+        )
+        service = AuthService(starter)
+        await service.start_login()
+        starter.failure = failure
+        pending = service.status
+        with pytest.raises(ProcessCommunicationFailed) as error:
+            await service.wait_for_completion()
+        assert error.value is failure
+        assert service.status == pending
 
     asyncio.run(scenario())

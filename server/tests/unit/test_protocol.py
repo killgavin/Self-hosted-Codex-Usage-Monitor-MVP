@@ -7,6 +7,7 @@ from app.codex.protocol import (
     ClientInfo,
     DeviceCodeLoginParams,
     DeviceCodeLoginResponse,
+    AccountLoginCompletedNotification,
     InitializeCapabilities,
     InitializeParams,
     InitializeResponse,
@@ -120,3 +121,26 @@ def test_device_code_login_required_fields_and_literal() -> None:
                 "verificationUrl": "url",
             }
         )
+
+
+def test_login_completed_notification_aliases_and_unknown_fields() -> None:
+    notification = AccountLoginCompletedNotification.model_validate(
+        {"success": False, "loginId": "synthetic-id", "error": "synthetic", "future": True}
+    )
+
+    assert notification.login_id == "synthetic-id"
+    assert notification.model_extra == {"future": True}
+
+
+def test_login_completed_success_is_required_and_optional_fields_are_nullable() -> None:
+    notification = AccountLoginCompletedNotification.model_validate(
+        {"success": False, "future": "kept"}
+    )
+
+    assert notification.success is False
+    assert notification.login_id is None
+    assert notification.error is None
+    assert notification.model_extra == {"future": "kept"}
+
+    with pytest.raises(ValidationError):
+        AccountLoginCompletedNotification.model_validate({"loginId": "id"})

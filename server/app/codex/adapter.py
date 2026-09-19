@@ -1,16 +1,19 @@
 """Codex app-server lifecycle and initialization boundary.
 
 This module owns process startup, the initialize/initialized handshake, and
-adapter state transitions, account reads, and device-code login start. Login
-completion, cancellation, and rate-limit methods remain deferred.
+adapter state transitions, account reads, device-code login start, and login
+completion waiting. Cancellation and rate-limit methods remain deferred.
 """
 
+import asyncio
+import time
 from enum import Enum
 
 from app.codex.process import CodexProcess
 from app.codex.exceptions import AdapterStateError, ProcessCommunicationFailed
 from app.codex.protocol import (
     ClientInfo,
+    AccountLoginCompletedNotification,
     DeviceCodeLoginParams,
     DeviceCodeLoginResponse,
     GetAccountParams,
@@ -130,6 +133,41 @@ class CodexAppServerAdapter:
             return DeviceCodeLoginResponse.model_validate(result)
         except ValidationError:
             raise ProcessCommunicationFailed("Codex login response validation failed") from None
+
+    async def wait_login_completion(
+        self, login_id: str, timeout: float = 10.0
+    ) -> AccountLoginCompletedNotification:
+        """Wait for one correlated completion notification within one deadline."""
+
+        self._require_ready()
+        if self._transport is None:
+            raise AdapterStateError("Codex adapter transport is unavailable")
+        if timeout <= 0:
+            raise ValueError("login completion timeout must be positive")
+        deadline = time.monotonic() + timeout
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise ProcessCommunicationFailed("Codex login completion timed out")
+            try:
+                notification = await asyncio.wait_for(
+                    self._transport.next_notification(), remaining
+                )
+            except asyncio.TimeoutError as exc:
+                raise ProcessCommunicationFailed("Codex login completion timed out") from exc
+            if notification.get("method") != "account/login/completed":
+                continue
+            try:
+                params = AccountLoginCompletedNotification.model_validate(
+                    notification.get("params", {})
+                )
+            except ValidationError:
+                raise ProcessCommunicationFailed(
+                    "Codex login completion was invalid"
+                ) from None
+            if params.login_id is not None and params.login_id != login_id:
+                continue
+            return params
 
     def _require_ready(self) -> None:
         """Guard future adapter requests until initialization completed."""

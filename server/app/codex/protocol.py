@@ -101,6 +101,14 @@ class DeviceCodeLoginResponse(WireModel):
     verification_url: str = Field(alias="verificationUrl")
 
 
+class AccountLoginCompletedNotification(WireModel):
+    """Boundary DTO for the account/login/completed notification params."""
+
+    success: bool
+    login_id: str | None = Field(default=None, alias="loginId")
+    error: str | None = None
+
+
 def to_wire(model: WireModel) -> dict[str, Any]:
     """Serialize a protocol DTO with wire aliases and no absent optionals."""
 

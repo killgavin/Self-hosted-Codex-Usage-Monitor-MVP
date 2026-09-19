@@ -296,3 +296,164 @@ def test_start_login_preserves_transport_failure_identity() -> None:
         assert error.value is sentinel
 
     asyncio.run(scenario())
+
+
+def test_wait_login_completion_filters_and_correlates_notifications() -> None:
+    class FakeTransport:
+        def __init__(self) -> None:
+            self.notifications = iter(
+                [
+                    {"method": "other/event", "params": {}},
+                    {"method": "account/login/completed", "params": {"success": True, "loginId": "other"}},
+                    {"method": "account/login/completed", "params": {"success": True}},
+                ]
+            )
+
+        async def next_notification(self):
+            return next(self.notifications)
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = FakeTransport()
+        result = await adapter.wait_login_completion("expected", timeout=0.2)
+        assert result.success is True
+        assert result.login_id is None
+
+    asyncio.run(scenario())
+
+
+def test_wait_login_completion_failure_dto_is_preserved_at_boundary() -> None:
+    class FakeTransport:
+        async def next_notification(self):
+            return {"method": "account/login/completed", "params": {"success": False, "error": "private-marker"}}
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = FakeTransport()
+        result = await adapter.wait_login_completion("expected")
+        assert result.success is False
+        assert result.error == "private-marker"
+
+    asyncio.run(scenario())
+
+
+def test_wait_login_completion_timeout_is_bounded() -> None:
+    class FakeTransport:
+        async def next_notification(self):
+            await asyncio.sleep(1)
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = FakeTransport()
+        with pytest.raises(ProcessCommunicationFailed, match="timed out"):
+            await adapter.wait_login_completion("expected", timeout=0.01)
+
+    asyncio.run(scenario())
+
+
+def test_wait_login_completion_invalid_params_are_sanitized() -> None:
+    class FakeTransport:
+        async def next_notification(self):
+            return {
+                "method": "account/login/completed",
+                "params": {"success": "private-marker"},
+            }
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = FakeTransport()
+        with pytest.raises(ProcessCommunicationFailed) as error:
+            await adapter.wait_login_completion("expected")
+        assert "private-marker" not in str(error.value)
+
+    asyncio.run(scenario())
+
+
+def test_wait_login_completion_uses_one_overall_deadline() -> None:
+    class FakeTransport:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def next_notification(self):
+            self.calls += 1
+            if self.calls == 1:
+                return {"method": "unrelated", "params": {}}
+            await asyncio.sleep(1)
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        transport = FakeTransport()
+        adapter._transport = transport
+        with pytest.raises(ProcessCommunicationFailed, match="timed out"):
+            await adapter.wait_login_completion("expected", timeout=0.02)
+        assert transport.calls == 2
+
+    asyncio.run(scenario())
+
+
+def test_wait_login_completion_preserves_transport_failure() -> None:
+    sentinel = ProcessCommunicationFailed("completion transport failure")
+
+    class FakeTransport:
+        async def next_notification(self):
+            raise sentinel
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = FakeTransport()
+        with pytest.raises(ProcessCommunicationFailed) as error:
+            await adapter.wait_login_completion("expected")
+        assert error.value is sentinel
+
+    asyncio.run(scenario())
+
+
+def test_wait_login_completion_requires_ready_without_consuming_notification() -> None:
+    class FakeTransport:
+        def __init__(self) -> None:
+            self.consumed = False
+
+        async def next_notification(self):
+            self.consumed = True
+            return {"method": "account/login/completed", "params": {"success": True}}
+
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        transport = FakeTransport()
+        adapter._transport = transport
+        with pytest.raises(AdapterStateError, match="not ready"):
+            await adapter.wait_login_completion("expected")
+        assert transport.consumed is False
+
+    asyncio.run(scenario())
+
+
+def test_wait_login_completion_rejects_non_positive_timeout() -> None:
+    async def scenario() -> None:
+        adapter = CodexAppServerAdapter()
+        adapter._transition(AdapterState.STARTING)
+        adapter._transition(AdapterState.INITIALIZING)
+        adapter._transition(AdapterState.READY)
+        adapter._transport = object()
+        with pytest.raises(ValueError, match="positive"):
+            await adapter.wait_login_completion("expected", timeout=0)
+
+    asyncio.run(scenario())

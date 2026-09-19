@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 4 — ChatGPT Login
-CURRENT_TASK: TASK-0403 — Login Completion
-LAST_COMPLETED_TASK: TASK-0402 — Device Code Login Start
+CURRENT_TASK: TASK-0404 — Login Cancel
+LAST_COMPLETED_TASK: TASK-0403 — Login Completion
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,11 +43,11 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0402 DONE。TASK-0403 READY。TASK-0404～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0403 DONE。TASK-0404 READY。TASK-0405～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
-Codex executable：PASS（Real Codex Verified, `codex-cli 0.155.0`）。app-server startup：PASS（Real Codex Verified）。app-server stop/no orphan：PASS（Real Codex Verified）。protocol initialize：PASS（Real Codex Verified）。account/read：PASS（Real Codex Verified；authenticated current environment and unauthenticated isolated clean environment）。device-code login start：PASS（Real Codex Verified in isolated clean environment）。login completion、rateLimits/read、Docker startup、credential persistence：NOT_RUN。
+Codex executable：PASS（Real Codex Verified, latest rerun `codex-cli 0.155.1`）。app-server startup：PASS（Real Codex Verified）。app-server stop/no orphan：PASS（Real Codex Verified）。protocol initialize：PASS（Real Codex Verified）。account/read：PASS（Real Codex Verified；authenticated current environment and unauthenticated isolated clean environment）。device-code login start：PASS（Real Codex Verified in isolated clean environment）。login completion、rateLimits/read、Docker startup、credential persistence：NOT_RUN。
 
 ## Security Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–3 are complete. Local AuthService state is automated verified and device-code start T-49 is Real Codex Verified. Login completion、cancel and login UI remain NOT_RUN.
+Stages 0–3 are complete. Login completion handling is automated verified and T-49 was reverified against real `codex-cli 0.155.1`; real completion T-50 remains NOT_RUN. Cancel and login UI remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -283,6 +283,18 @@ Stages 0–3 are complete. Local AuthService state is automated verified and dev
 - KNOWN_UNKNOWNS: Completion notification T-50、cancel T-51 and UI T-59 remain NOT_RUN
 - NEXT_TASK: TASK-0403 — Login Completion
 
+### TASK-0403 — Login Completion
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- CHANGED_FILES: `server/app/codex/protocol.py`, `server/app/codex/adapter.py`, `server/app/services/auth.py`, `server/tests/unit/test_protocol.py`, `server/tests/unit/test_adapter.py`, `server/tests/unit/test_auth_service.py`
+- TESTS: TASK-0403 completion DTO/adapter/service suite PASS（Automated Verified, `43 passed`）；full unit regression PASS (`72 passed`)；T-49 regression PASS（Real Codex Verified）；T-50、T-51、T-59 NOT_RUN
+- VALIDATION: `PYTHONPATH=server /tmp/codex-review.lTnq3j/bin/python -m pytest -q server/tests/unit` PASS (`72 passed`)；`REAL_CODEX_EXECUTABLE=/tmp/codex-task-runtime-0.155.1/bin/codex ... server/tests/integration/test_login.py` PASS (`1 passed in 9.01s`)；compile、diff、scope、security and orphan checks PASS
+- RUNTIME_EVIDENCE: Completion behavior is Automated Verified only；no real completion occurred。T-49 device-code start was reverified with official `codex-cli 0.155.1` and the child was shut down/reaped
+- SECURITY_EVIDENCE: Upstream completion error remains boundary-only and is never stored in UI-safe state；invalid payload/timeout errors are generic；no runtime login values、raw notification、auth file、token or credential output
+- KNOWN_UNKNOWNS: Real human login completion T-50、cancel T-51 and UI T-59 remain NOT_RUN
+- NEXT_TASK: TASK-0404 — Login Cancel
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -297,6 +309,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0403
-NEXT_ACTION: Implement and validate TASK-0403 only.
+READY_TASK: TASK-0404
+NEXT_ACTION: Implement and validate TASK-0404 only.
 ```
