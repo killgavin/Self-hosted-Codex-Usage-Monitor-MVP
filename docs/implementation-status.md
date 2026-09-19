@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 5 — Rate Limit Domain
-CURRENT_TASK: TASK-0501 — RateLimitWindow
-LAST_COMPLETED_TASK: TASK-0406 — Minimal Login UI
+CURRENT_TASK: TASK-0502 — Generic RateLimit
+LAST_COMPLETED_TASK: TASK-0501 — RateLimitWindow
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406 DONE。TASK-0501 READY。TASK-0502～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501 DONE。TASK-0502 READY。TASK-0503～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–3 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because real completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred.
+Stages 0–3 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because real completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 has a verified pure RateLimitWindow domain model；generic limits、protocol integration and real `account/rateLimits/read` remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -331,6 +331,18 @@ Stages 0–3 are complete. Stage 4 implementation tasks are complete but the sta
 - KNOWN_UNKNOWNS: T-59 is not Real Browser Verified；real T-50、real logout and future dashboard/browser tests remain NOT_RUN
 - NEXT_TASK: TASK-0501 — RateLimitWindow
 
+### TASK-0501 — RateLimitWindow
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- CHANGED_FILES: `server/app/models/rate_limit.py`, `server/app/models/__init__.py`, `server/tests/unit/test_rate_limit_window.py`
+- TESTS: T-01～T-06、T-16～T-17 PASS（Automated Verified, focused `19 passed`）；deterministic unit/API/UI/health regression PASS (`122 passed`)
+- VALIDATION: `PYTHONPATH=server /tmp/codex-review.lTnq3j/bin/python -m pytest -q server/tests/unit server/tests/integration/test_health.py server/tests/integration/test_login_api.py server/tests/integration/test_login_ui.py` PASS (`122 passed`)；compile、diff and changed-file credential keyword checks PASS
+- RUNTIME_EVIDENCE: NONE；pure domain validation only，no Codex executable、app-server or account runtime call occurred
+- SECURITY_EVIDENCE: Model and tests contain no credential source、auth payload、logging or external dependency；remaining percentage is derived internally and cannot be supplied by callers
+- KNOWN_UNKNOWNS: Generic RateLimit、protocol DTO/mapping/service、REST and real `account/rateLimits/read` remain NOT_RUN by task scope
+- NEXT_TASK: TASK-0502 — Generic RateLimit
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -345,6 +357,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0501
-NEXT_ACTION: Implement and validate TASK-0501 only.
+READY_TASK: TASK-0502
+NEXT_ACTION: Implement and validate TASK-0502 only.
 ```
