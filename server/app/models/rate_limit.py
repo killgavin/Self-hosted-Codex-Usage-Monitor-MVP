@@ -21,18 +21,18 @@ def _decimal_percent(value: Any) -> Decimal:
     return result
 
 
-def _reset_iso(reset_at: Any) -> str | None:
+def _timestamp_iso(value: Any, field_name: str) -> str | None:
     """Normalize Unix seconds to an explicit UTC ISO-8601 value."""
 
-    if reset_at is None:
+    if value is None:
         return None
     try:
-        timestamp = Decimal(str(reset_at))
+        timestamp = Decimal(str(value))
         if not timestamp.is_finite():
             raise ValueError
         return datetime.fromtimestamp(float(timestamp), tz=UTC).isoformat().replace("+00:00", "Z")
     except (InvalidOperation, ValueError, TypeError, OverflowError, OSError) as exc:
-        raise ValueError("reset_at must be a valid Unix timestamp") from exc
+        raise ValueError(f"{field_name} must be a valid Unix timestamp") from exc
 
 
 @dataclass(frozen=True)
@@ -52,7 +52,7 @@ class RateLimitWindow:
         object.__setattr__(self, "used_percent", used)
         object.__setattr__(self, "remaining_percent", remaining)
         if self.reset_at is not None and not isinstance(self.reset_at, str):
-            object.__setattr__(self, "reset_at", _reset_iso(self.reset_at))
+            object.__setattr__(self, "reset_at", _timestamp_iso(self.reset_at, "reset_at"))
 
     @classmethod
     def from_values(
@@ -64,7 +64,7 @@ class RateLimitWindow:
         """Build a window, clamping only the computed remaining percentage."""
 
         used = _decimal_percent(used_percent)
-        return cls(used, window_duration_minutes, _reset_iso(reset_at))
+        return cls(used, window_duration_minutes, _timestamp_iso(reset_at, "reset_at"))
 
 
 def _readonly_metadata(value: Any) -> Any:
@@ -101,3 +101,44 @@ class RateLimit:
     def __post_init__(self) -> None:
         if self.raw_metadata is not None:
             object.__setattr__(self, "raw_metadata", _readonly_metadata(self.raw_metadata))
+
+
+@dataclass(frozen=True)
+class ResetCredit:
+    """One opaque reset credit detail with canonical UTC timestamps."""
+
+    id: str
+    status: str
+    granted_at: str
+    expires_at: str | None = None
+    title: str | None = None
+    description: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.granted_at, str):
+            object.__setattr__(self, "granted_at", _timestamp_iso(self.granted_at, "granted_at"))
+        if self.expires_at is not None and not isinstance(self.expires_at, str):
+            object.__setattr__(self, "expires_at", _timestamp_iso(self.expires_at, "expires_at"))
+
+
+@dataclass(frozen=True)
+class ResetCredits:
+    """Present reset-credit summary; absent summaries remain Python ``None``."""
+
+    available_count: int
+    credits: tuple[ResetCredit, ...] | None
+
+    def __post_init__(self) -> None:
+        if isinstance(self.available_count, bool) or not isinstance(self.available_count, int):
+            raise TypeError("available_count must be an integer")
+        if self.credits is None:
+            return
+        if isinstance(self.credits, (str, bytes, Mapping)):
+            raise TypeError("credits must be an iterable of ResetCredit values")
+        try:
+            credits = tuple(self.credits)
+        except TypeError as exc:
+            raise TypeError("credits must be an iterable of ResetCredit values") from exc
+        if any(not isinstance(credit, ResetCredit) for credit in credits):
+            raise TypeError("credits must contain only ResetCredit values")
+        object.__setattr__(self, "credits", credits)

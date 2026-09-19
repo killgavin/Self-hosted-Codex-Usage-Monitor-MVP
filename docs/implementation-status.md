@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 5 — Rate Limit Domain
-CURRENT_TASK: TASK-0503 — ResetCredits
-LAST_COMPLETED_TASK: TASK-0502 — Generic RateLimit
+CURRENT_TASK: TASK-0504 — Rate Limit Protocol DTO
+LAST_COMPLETED_TASK: TASK-0503 — ResetCredits
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0502 DONE。TASK-0503 READY。TASK-0504～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0503 DONE。TASK-0504 READY。TASK-0505～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -63,7 +63,7 @@ NONE.
 
 ## Known Limitations
 
-Stages 0–3 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because real completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 has verified pure RateLimitWindow and generic RateLimit domain models；T-72/T-73 are Domain-level Automated Verified only，while ResetCredits、Codex protocol/mapping/service and real `account/rateLimits/read` remain NOT_RUN.
+Stages 0–3 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because real completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 pure Domain models are verified；T-12 and T-72/T-73 are Domain-level Automated Verified only，while Codex protocol/mapping/service and real `account/rateLimits/read` remain NOT_RUN.
 
 ## Completed Task Record
 
@@ -355,6 +355,18 @@ Stages 0–3 are complete. Stage 4 implementation tasks are complete but the sta
 - KNOWN_UNKNOWNS: T-72/T-73 prove Domain-level unknown metadata safety only；protocol DTO/mapping forward compatibility awaits TASK-0504/TASK-0505，and real `account/rateLimits/read` remains NOT_RUN
 - NEXT_TASK: TASK-0503 — ResetCredits
 
+### TASK-0503 — ResetCredits
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- CHANGED_FILES: `server/app/models/rate_limit.py`, `server/app/models/__init__.py`, `server/tests/unit/test_reset_credits.py`
+- TESTS: T-12～T-15 PASS（Automated Verified at Domain scope；focused Stage 5 domain suite `40 passed`）；deterministic unit/API/UI/health regression PASS (`143 passed`)
+- VALIDATION: `PYTHONPATH=server /tmp/codex-review.lTnq3j/bin/python -m pytest -q server/tests/unit/test_reset_credits.py server/tests/unit/test_rate_limit.py server/tests/unit/test_rate_limit_window.py` PASS (`40 passed`)；full deterministic suite PASS (`143 passed`)；compile、diff and changed-file security keyword checks PASS
+- RUNTIME_EVIDENCE: NONE；pure domain validation only，no Codex executable、app-server or account runtime call occurred
+- SECURITY_EVIDENCE: Models are immutable and read-only；no protocol payload、reset-credit mutation/redeem path、credential source or logging was added
+- KNOWN_UNKNOWNS: T-12 proves only the Domain representation of an absent summary as `None`；raw null/detail mapping awaits TASK-0504/TASK-0505，and real reset-credit behavior remains NOT_RUN
+- NEXT_TASK: TASK-0504 — Rate Limit Protocol DTO
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -369,6 +381,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0503
-NEXT_ACTION: Implement and validate TASK-0503 only.
+READY_TASK: TASK-0504
+NEXT_ACTION: Implement and validate TASK-0504 only.
 ```
