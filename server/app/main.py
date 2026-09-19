@@ -8,18 +8,21 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.account import create_account_router
 from app.api.login import router as login_router
+from app.api.rate_limits import create_rate_limits_router
 from app.api.status import create_status_router
 from app.codex.adapter import CodexAppServerAdapter
 from app.config import Settings, get_settings
 from app.security.server_token import InvalidServerToken, invalid_server_token_handler
 from app.services.account import AccountService
 from app.services.auth import AuthService
+from app.services.rate_limits import RateLimitService
 
 
 def create_app(
     auth_service: AuthService | None = None,
     settings: Settings | None = None,
     account_service: AccountService | None = None,
+    rate_limit_service: RateLimitService | None = None,
 ) -> FastAPI:
     """Create the server without starting Codex or making network requests."""
 
@@ -33,10 +36,14 @@ def create_app(
     application.state.account_service = (
         account_service if account_service is not None else AccountService(adapter)
     )
+    application.state.rate_limit_service = (
+        rate_limit_service if rate_limit_service is not None else RateLimitService(adapter)
+    )
     application.add_exception_handler(InvalidServerToken, invalid_server_token_handler)
     application.include_router(login_router)
     application.include_router(create_status_router(active_settings.server_api_token))
     application.include_router(create_account_router(active_settings.server_api_token))
+    application.include_router(create_rate_limits_router(active_settings.server_api_token))
     web_root = Path(__file__).resolve().parents[2] / "web"
     application.mount("/assets", StaticFiles(directory=web_root / "assets"), name="assets")
 

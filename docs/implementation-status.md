@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 6 — REST API
-CURRENT_TASK: TASK-0604 — Rate Limits Endpoint
-LAST_COMPLETED_TASK: TASK-0603 — Account Endpoint
+CURRENT_TASK: TASK-0605 — REST Error Mapping
+LAST_COMPLETED_TASK: TASK-0604 — Rate Limits Endpoint
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0603 DONE。TASK-0604 READY。TASK-0605～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0604 DONE。TASK-0605 READY。TASK-0606～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
@@ -51,7 +51,7 @@ Codex executable：PASS（Real Codex Verified, latest rerun `codex-cli 0.155.1`�
 
 ## Security Validation Ledger
 
-Server API token authentication：PASS（Automated Verified；T-25～T-28）。Account API isolation：PASS（Automated Verified；T-33/T-55）。Authorization redaction、Access Token、Refresh Token、Cookie、Rate Limit API isolation、Error sanitization、Raw protocol isolation：全部 NOT_RUN。
+Server API token authentication：PASS（Automated Verified；T-25～T-28）。Account API isolation：PASS（Automated Verified；T-33/T-55）。Rate Limit API isolation and successful-response raw protocol isolation：PASS（Automated Verified；T-34/T-56/T-57/T-75/T-76）。Authorization redaction、Access Token、Refresh Token、Cookie、Error sanitization：全部 NOT_RUN。
 
 ## Known Blockers
 
@@ -63,7 +63,7 @@ Human completed the official Codex device-auth flow to restore the current CLI s
 
 ## Known Limitations
 
-Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 server-token authentication、status T-54 and account T-33/T-55 are Automated Verified；the account REST evidence uses an injected service and is not Real Codex evidence. Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
+Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 server-token authentication、status、account and rate-limit success schemas are Automated Verified；REST tests use injected services and are not Real Codex evidence. General REST exception sanitization remains TASK-0605/TASK-0802，and Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
 
 ## Completed Task Record
 
@@ -455,6 +455,19 @@ Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete
 - KNOWN_UNKNOWNS: General account-route exception mapping/sanitization remains TASK-0605/TASK-0802；default application Codex lifecycle initialization remains NOT_RUN/deferred
 - NEXT_TASK: TASK-0604 — Rate Limits Endpoint
 
+### TASK-0604 — Rate Limits Endpoint
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- EXECUTION_AGENT: Sol fallback under the same bounded-task contract after the GPT-5.6 Luna execution environment failed to start repository actions
+- CHANGED_FILES: `server/app/api/rate_limits.py`, `server/app/main.py`, `server/tests/integration/test_rate_limits_api.py`, `docs/implementation-status.md`
+- TESTS: T-34 PASS；T-56 PASS；T-57 PASS；T-75 PASS；T-76 PASS at successful-response serialization boundary（Automated Verified with injected RateLimitService）；server-token short-circuit PASS；deterministic regression PASS (`184 passed`)
+- VALIDATION: `PYTHONPATH=server /tmp/task0507-venv.9dQyC0/bin/python -m pytest -q server/tests/integration/test_rate_limits_api.py` PASS (`4 passed`)；deterministic unit/login API/UI/health/server-token/status/account/rate-limit regression PASS (`184 passed`)；compile、`git diff --check`、scope and live-credential pattern checks PASS
+- RUNTIME_EVIDENCE: Local ASGI requests returned the stable rate-limit/reset-credit schema with exact decimal strings、UTC timestamps、unknown IDs/types and null optionals preserved；this task used an injected fake RateLimitService and made no Codex/OpenAI runtime call
+- SECURITY_EVIDENCE: Response excludes `raw_metadata` and protocol-only fields；a private synthetic raw marker did not cross the REST boundary；no authorization、cookie、access-token or refresh-token material appeared；missing server token prevents the service call
+- KNOWN_UNKNOWNS: General exception mapping and failure-response sanitization remain TASK-0605/TASK-0802；cache behavior remains TASK-0606
+- NEXT_TASK: TASK-0605 — REST Error Mapping
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -469,6 +482,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0604
-NEXT_ACTION: Implement and validate TASK-0604 only.
+READY_TASK: TASK-0605
+NEXT_ACTION: Implement and validate TASK-0605 only.
 ```
