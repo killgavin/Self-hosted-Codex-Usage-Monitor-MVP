@@ -12,9 +12,9 @@
 ```text
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
-CURRENT_STAGE: Stage 5 — Rate Limit Domain
-CURRENT_TASK: TASK-0507 — Real Rate Limit Validation
-LAST_COMPLETED_TASK: TASK-0506 — RateLimitService
+CURRENT_STAGE: Stage 6 — REST API
+CURRENT_TASK: TASK-0601 — Server API Token
+LAST_COMPLETED_TASK: TASK-0507 — Real Rate Limit Validation
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -34,8 +34,8 @@ DONE 必須有 Implementation + Test + Validation evidence。
 | Stage 2 Protocol Initialization | DONE |
 | Stage 3 Account Read | DONE |
 | Stage 4 ChatGPT Login | IN_PROGRESS |
-| Stage 5 Rate Limit Domain | IN_PROGRESS |
-| Stage 6 REST API | NOT_STARTED |
+| Stage 5 Rate Limit Domain | DONE |
+| Stage 6 REST API | IN_PROGRESS |
 | Stage 7 Web Dashboard | NOT_STARTED |
 | Stage 8 Security Hardening | NOT_STARTED |
 | Stage 9 Docker Deployment | NOT_STARTED |
@@ -43,11 +43,11 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0506 DONE。TASK-0507 READY。TASK-0601～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507 DONE。TASK-0601 READY。TASK-0602～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
 
 ## Real Runtime Validation Ledger
 
-Codex executable：PASS（Real Codex Verified, latest rerun `codex-cli 0.155.1`）。app-server startup：PASS（Real Codex Verified）。app-server stop/no orphan：PASS（Real Codex Verified）。protocol initialize：PASS（Real Codex Verified）。account/read：PASS（Real Codex Verified；authenticated current environment and unauthenticated isolated clean environment）。device-code login start：PASS（Real Codex Verified in isolated clean environment）。login cancel：PASS（Real Codex Verified）。login completion、rateLimits/read、Docker startup、credential persistence：NOT_RUN。
+Codex executable：PASS（Real Codex Verified, latest rerun `codex-cli 0.155.1`）。app-server startup：PASS（Real Codex Verified）。app-server stop/no orphan：PASS（Real Codex Verified）。protocol initialize：PASS（Real Codex Verified）。account/read：PASS（Real Codex Verified；authenticated current environment and unauthenticated isolated clean environment）。device-code login start：PASS（Real Codex Verified in isolated clean environment）。login cancel：PASS（Real Codex Verified）。rateLimits/read：PASS（Real Codex Verified；T-52 and T-53 passed against the current authenticated account，including multiple keyed buckets）。login completion、Docker startup、credential persistence：NOT_RUN。
 
 ## Security Validation Ledger
 
@@ -59,11 +59,11 @@ NONE.
 
 ## Human Decisions
 
-NONE.
+Human completed the official Codex device-auth flow to restore the current CLI session. No further decision is required for TASK-0507. This action is not counted as production AuthService/app-server login completion T-50.
 
 ## Known Limitations
 
-Stages 0–3 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because real completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 implementation through adapter/service is Automated/Mock Verified；multiple-limit preservation and T-72/T-73/T-74 are synthetic-only，while real `account/rateLimits/read` T-52/T-53 remain NOT_RUN.
+Stages 0–3 and Stage 5 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded.
 
 ## Completed Task Record
 
@@ -403,6 +403,19 @@ Stages 0–3 are complete. Stage 4 implementation tasks are complete but the sta
 - KNOWN_UNKNOWNS: T-52/T-53 and actual current-account rate-limit/reset-credit shapes remain NOT_RUN until TASK-0507
 - NEXT_TASK: TASK-0507 — Real Rate Limit Validation
 
+### TASK-0507 — Real Rate Limit Validation
+
+- STATUS: DONE
+- COMPLETED: 2026-09-19
+- EXECUTION_AGENT: Sol fallback；GPT-5.6 Luna was assigned the bounded contract but did not return evidence and had no running validation process，so Sol executed the identical bounded scope
+- CHANGED_FILES: `server/tests/integration/test_rate_limits.py`, `docs/implementation-status.md`
+- TESTS: T-52 PASS（Real Codex Verified）；T-53 PASS（Real Codex Verified with multiple keyed buckets actually available and preserved）；deterministic regression PASS (`168 passed`)
+- VALIDATION: `REAL_CODEX_EXECUTABLE=/tmp/codex-login-runtime-0.155.1.zVVzlb/bin/codex PYTHONPATH=server /tmp/task0507-venv.9dQyC0/bin/python -m pytest -q server/tests/integration/test_rate_limits.py` PASS (`2 passed`)；deterministic unit/API/UI/health regression PASS (`168 passed`)；compile、`git diff --check`、post-test no-orphan and changed-file credential-pattern checks PASS
+- RUNTIME_EVIDENCE: Official `codex-cli 0.155.1` started and initialized production app-server twice；production `RateLimitService` completed real `account/rateLimits/read`；the current account exposed multiple keyed rate-limit buckets and the mapped count/order matched；both child processes shut down and were reaped
+- SECURITY_EVIDENCE: Tests asserted only normalized types、safe ranges and bucket preservation；no account identity、quota value、raw JSON-RPC/auth payload or credential was printed or committed；changed-file credential-pattern scan PASS
+- KNOWN_UNKNOWNS: Production AuthService/app-server login completion T-50 remains NOT_RUN；Docker startup and credential persistence remain NOT_RUN for their planned stages
+- NEXT_TASK: TASK-0601 — Server API Token
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -417,6 +430,6 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 
 ```text
 STATUS: ACTIVE
-READY_TASK: TASK-0507
-NEXT_ACTION: Implement and validate TASK-0507 only.
+READY_TASK: TASK-0601
+NEXT_ACTION: Implement and validate TASK-0601 only.
 ```
