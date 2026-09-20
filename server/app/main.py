@@ -1,6 +1,8 @@
 """Minimal FastAPI application entry point for the MVP server."""
 
+from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
@@ -11,6 +13,8 @@ from app.api.login import router as login_router
 from app.api.rate_limits import create_rate_limits_router
 from app.api.status import create_status_router
 from app.codex.adapter import CodexAppServerAdapter
+from app.codex.exceptions import AdapterStateError
+from app.codex.process import CodexProcess
 from app.config import Settings, get_settings
 from app.security.server_token import InvalidServerToken, invalid_server_token_handler
 from app.services.account import AccountService
@@ -23,23 +27,61 @@ def create_app(
     settings: Settings | None = None,
     account_service: AccountService | None = None,
     rate_limit_service: RateLimitService | None = None,
+    adapter: CodexAppServerAdapter | None = None,
 ) -> FastAPI:
-    """Create the server without starting Codex or making network requests."""
+    """Create the server without starting Codex or making network requests.
 
-    application = FastAPI(title="Self-hosted Codex Usage Monitor")
+    The production/default adapter is initialized by the ASGI lifespan.  A
+    caller may inject an adapter at the end of the signature for deterministic
+    tests and alternate process boundaries.
+    """
+
     active_settings = settings if settings is not None else get_settings()
-    adapter = CodexAppServerAdapter()
+    active_adapter = (
+        adapter
+        if adapter is not None
+        else CodexAppServerAdapter(CodexProcess(active_settings))
+    )
+
+    @asynccontextmanager
+    async def lifespan(application: FastAPI) -> AsyncIterator[None]:
+        """Keep HTTP available while a controlled Codex startup fails."""
+
+        application.state.runtime_status = "ok"
+        try:
+            await active_adapter.initialize()
+        except AdapterStateError:
+            # The REST process remains available in degraded mode.  Internal
+            # exception text is intentionally neither logged nor serialized.
+            application.state.runtime_status = "degraded"
+        else:
+            application.state.runtime_status = "ok"
+        application.state.runtime_started = True
+
+        try:
+            yield
+        finally:
+            # CodexProcess.stop and CodexTransport.close own bounded cleanup;
+            # await the adapter so terminate/kill/reaping cannot be cancelled.
+            await active_adapter.shutdown()
+
+    application = FastAPI(title="Self-hosted Codex Usage Monitor", lifespan=lifespan)
     application.state.settings = active_settings
+    application.state.adapter = active_adapter
+    # Request-only ASGI tests do not send lifespan events.  Keep their
+    # import-safe behavior while real ASGI servers update this during startup.
+    application.state.runtime_status = "ok"
+    application.state.runtime_started = False
     application.state.auth_service = (
-        auth_service if auth_service is not None else AuthService(adapter)
+        auth_service if auth_service is not None else AuthService(active_adapter)
     )
     application.state.account_service = (
-        account_service if account_service is not None else AccountService(adapter)
+        account_service if account_service is not None else AccountService(active_adapter)
     )
     application.state.rate_limit_service = (
         rate_limit_service
         if rate_limit_service is not None
-        else RateLimitService(adapter, ttl_seconds=active_settings.cache_ttl_seconds)
+        else RateLimitService(active_adapter, ttl_seconds=active_settings.cache_ttl_seconds)
     )
     application.add_exception_handler(InvalidServerToken, invalid_server_token_handler)
     application.include_router(login_router)

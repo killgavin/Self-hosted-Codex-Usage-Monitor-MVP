@@ -13,6 +13,10 @@ class ProcessStopFailed(Exception):
     """The Codex app-server child did not exit after bounded cleanup attempts."""
 
 
+class ProcessExited(Exception):
+    """The Codex app-server child exited before a protocol operation."""
+
+
 class ProcessCommunicationFailed(Exception):
     """A controlled failure occurred while communicating with the child."""
 

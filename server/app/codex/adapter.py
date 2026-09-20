@@ -13,6 +13,7 @@ from app.codex.process import CodexProcess
 from app.codex.exceptions import (
     AdapterStateError,
     LoginCompletionTimeout,
+    ProcessExited,
     ProcessCommunicationFailed,
 )
 from app.codex.protocol import (
@@ -234,6 +235,49 @@ class CodexAppServerAdapter:
 
         if self._state is not AdapterState.READY:
             raise AdapterStateError("Codex adapter is not ready")
+        # A child may exit after the initialize handshake.  Detect that
+        # condition at the process boundary before writing any protocol data,
+        # while retaining the canonical adapter state machine.
+        try:
+            self._ensure_process_alive()
+        except ProcessExited:
+            self._transition(AdapterState.FAILED)
+            raise
+
+    def is_available(self) -> bool:
+        """Return whether a ready adapter still has a live child process.
+
+        The application lifespan gates calls to this method for request-only
+        ASGI tests.  At the adapter boundary only READY with a live child is
+        available; all other canonical states are unavailable.
+        """
+
+        if self._state is not AdapterState.READY:
+            return False
+        # READY without a child handle is not an available runtime.  This
+        # also keeps injected process boundaries honest while request-only
+        # ASGI tests remain gated by application.state.runtime_started.
+        if getattr(self._process, "process", None) is None:
+            return False
+        try:
+            self._ensure_process_alive()
+        except ProcessExited:
+            self._transition(AdapterState.FAILED)
+            return False
+        return True
+
+    def _ensure_process_alive(self) -> None:
+        """Normalize the production and injected process liveness contracts."""
+
+        ensure_alive = getattr(self._process, "ensure_alive", None)
+        if callable(ensure_alive):
+            ensure_alive()
+            return
+        is_alive = getattr(self._process, "is_alive", None)
+        if callable(is_alive):
+            is_alive = is_alive()
+        if is_alive is False:
+            raise ProcessExited("Codex app-server process exited")
 
     def _transition(self, target: AdapterState) -> None:
         """Apply one explicitly allowed transition or raise a state error."""

@@ -7,7 +7,12 @@ behavior. Those lifecycle and communication concerns belong to later tasks.
 import asyncio
 
 from app.config import Settings, get_settings, resolve_codex_executable
-from app.codex.exceptions import ExecutableNotFound, ProcessStartFailed, ProcessStopFailed
+from app.codex.exceptions import (
+    ExecutableNotFound,
+    ProcessExited,
+    ProcessStartFailed,
+    ProcessStopFailed,
+)
 
 
 class CodexProcess:
@@ -35,6 +40,17 @@ class CodexProcess:
         """Report whether the started child has not exited."""
 
         return self._process is not None and self._process.returncode is None
+
+    def ensure_alive(self) -> None:
+        """Raise a controlled error if a started child has already exited.
+
+        The process boundary deliberately does not inspect or include child
+        stdout/stderr.  Callers can therefore distinguish an unavailable
+        upstream from a protocol payload without exposing process details.
+        """
+
+        if self._process is not None and not self.is_alive:
+            raise ProcessExited("Codex app-server process exited")
 
     async def start(self) -> asyncio.subprocess.Process:
         """Start ``<resolved executable> app-server`` without invoking a shell."""

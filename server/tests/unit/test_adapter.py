@@ -6,7 +6,13 @@ import json
 import pytest
 
 from app.codex.adapter import AdapterState, CodexAppServerAdapter
-from app.codex.exceptions import AdapterStateError, LoginCompletionTimeout, ProcessCommunicationFailed
+from app.codex.exceptions import (
+    AdapterStateError,
+    LoginCompletionTimeout,
+    ProcessCommunicationFailed,
+    ProcessExited,
+)
+from app.codex.process import CodexProcess
 from app.codex.protocol import GetAccountResponse
 
 
@@ -136,6 +142,28 @@ def test_requests_are_guarded_before_ready() -> None:
             adapter._transition(AdapterState.FAILED)
         with pytest.raises(AdapterStateError, match="not ready"):
             adapter._require_ready()
+
+
+def test_production_process_boundary_controls_exited_child_without_details() -> None:
+    class ExitedChild:
+        returncode = 17
+        stdout = "synthetic-private-stdout"
+        stderr = "synthetic-private-stderr"
+
+    process = CodexProcess()
+    process._process = ExitedChild()  # deterministic injection; no subprocess started
+    with pytest.raises(ProcessExited) as error:
+        process.ensure_alive()
+    assert str(error.value) == "Codex app-server process exited"
+    assert "synthetic-private" not in str(error.value)
+    assert "17" not in str(error.value)
+
+    adapter = CodexAppServerAdapter(process)
+    adapter._transition(AdapterState.STARTING)
+    adapter._transition(AdapterState.INITIALIZING)
+    adapter._transition(AdapterState.READY)
+    assert adapter.is_available() is False
+    assert adapter.state is AdapterState.FAILED
 
 
 def test_initialize_failure_enters_failed_and_cleans_up() -> None:

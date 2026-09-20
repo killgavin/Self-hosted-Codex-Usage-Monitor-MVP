@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from app.codex.exceptions import (
     AdapterStateError,
     ExecutableNotFound,
+    ProcessExited,
     ProcessCommunicationFailed,
     ProcessStartFailed,
     ProcessStopFailed,
@@ -19,7 +20,9 @@ from app.services.auth import (
 def error_response(error: Exception) -> JSONResponse:
     """Map internal failures without using their potentially private text."""
 
-    if isinstance(error, ExecutableNotFound):
+    if isinstance(error, ProcessExited):
+        code, message, status = "UPSTREAM_UNAVAILABLE", "Codex is unavailable", 503
+    elif isinstance(error, ExecutableNotFound):
         code, message, status = "CODEX_NOT_INSTALLED", "Codex is not installed", 503
     elif isinstance(error, ProcessStartFailed):
         code, message, status = "CODEX_START_FAILED", "Codex failed to start", 503

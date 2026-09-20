@@ -12,9 +12,9 @@
 ```text
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
-CURRENT_STAGE: Stage 8 — Security Hardening
-CURRENT_TASK: TASK-0804 — Degraded Runtime
-LAST_COMPLETED_TASK: TASK-0803 — Default 127.0.0.1
+CURRENT_STAGE: Stage 9 — Docker Deployment
+CURRENT_TASK: TASK-0901 — Dockerfile
+LAST_COMPLETED_TASK: TASK-0804 — Degraded Runtime
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -37,13 +37,13 @@ DONE 必須有 Implementation + Test + Validation evidence。
 | Stage 5 Rate Limit Domain | DONE |
 | Stage 6 REST API | DONE |
 | Stage 7 Web Dashboard | DONE（T-63 deferred Final Gate） |
-| Stage 8 Security Hardening | IN_PROGRESS |
-| Stage 9 Docker Deployment | NOT_STARTED |
+| Stage 8 Security Hardening | DONE |
+| Stage 9 Docker Deployment | IN_PROGRESS |
 | Stage 10 Final MVP Validation | NOT_STARTED |
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0803 DONE。TASK-0804 READY。TASK-0901～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804 DONE。TASK-0901 READY。TASK-0902～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
 
 ## Real Runtime Validation Ledger
 
@@ -51,7 +51,7 @@ Codex executable：PASS（Real Codex Verified, latest rerun `codex-cli 0.155.1`�
 
 ## Security Validation Ledger
 
-Server API token authentication：PASS（Automated Verified；T-25～T-28）。Logging redaction：PASS（Automated/Synthetic Verified；T-29～T-32，including final Formatter output and exception text）。Account API isolation：PASS（Automated/Synthetic Revalidated；T-33/T-55）。Rate Limit API isolation and successful-response raw protocol isolation：PASS（Automated/Synthetic Revalidated；T-34/T-56/T-57/T-75/T-76）。Error sanitization：PASS（Automated/Synthetic Revalidated；T-35）。
+Server API token authentication：PASS（Automated Verified；T-25～T-28）。Logging redaction：PASS（Automated/Synthetic Verified；T-29～T-32，including final Formatter output and exception text）。Account API isolation：PASS（Automated/Synthetic Revalidated；T-33/T-55）。Rate Limit API isolation and successful-response raw protocol isolation：PASS（Automated/Synthetic Revalidated；T-34/T-56/T-57/T-75/T-76）。Error sanitization：PASS（Automated/Synthetic Revalidated；T-35）。Degraded/missing/exit handling：PASS（Automated/Mock/Synthetic Verified；T-69～T-71；not Real Codex exit evidence）。
 
 ## Known Blockers
 
@@ -69,7 +69,7 @@ The user does not need to provide a local executable path. The current ChatGPT W
 
 ## Known Limitations
 
-Stages 0–3、5、6 and 7 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. Logging redaction T-29～T-32 and REST sanitization T-33～T-35/T-76 are Automated/Synthetic Verified；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
+Stages 0–3、5–8 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and real default-app lifespan initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-69～T-71 are Automated/Mock/Synthetic Verified；an actual OS-level unexpected Real Codex exit was not executed and is not claimed.
 
 ## Completed Task Record
 
@@ -604,6 +604,19 @@ Stages 0–3、5、6 and 7 are complete. Stage 4 implementation tasks are comple
 - KNOWN_UNKNOWNS: NONE within TASK-0803；degraded/runtime-exit behavior remains TASK-0804.
 - NEXT_TASK: TASK-0804 — Degraded Runtime
 
+### TASK-0804 — Degraded Runtime
+
+- STATUS: DONE
+- COMPLETED: 2026-09-20
+- EXECUTION_AGENT: GPT-5.6 Luna bounded implementation；Sol Review Gate PASS after lifecycle、sanitization and production-process evidence fixes
+- CHANGED_FILES: `server/app/main.py`, `server/app/api/status.py`, `server/app/api/errors.py`, `server/app/codex/adapter.py`, `server/app/codex/process.py`, `server/app/codex/exceptions.py`, `server/tests/unit/test_adapter.py`, `server/tests/integration/test_degraded_runtime.py`, `docs/implementation-status.md`
+- TESTS: T-69 PASS（Automated Verified with a harmless missing executable）；T-70 PASS（Automated/Mock Verified）；T-71 PASS（Automated/Synthetic Verified）；focused adapter/status/error/degraded suite PASS (`45 passed`)；deterministic unit/non-real integration suite PASS (`240 passed`)
+- VALIDATION: `PYTHONPATH=server /tmp/task0704-venv.ouzhoG/bin/python -m pytest -q server/tests/unit/test_adapter.py server/tests/integration/test_status_api.py server/tests/integration/test_rest_errors.py server/tests/integration/test_degraded_runtime.py` PASS；deterministic suite with six real-runtime modules explicitly excluded PASS；Python compile、`git diff --check` and allowed-scope inspection PASS
+- RUNTIME_EVIDENCE: FastAPI lifespan was actually entered with a harmless missing executable and remained available in degraded mode；a deterministic fake child exercised READY→FAILED and awaited shutdown. Automated/Mock only；no real Codex process、account、credential、socket listener or Docker runtime was used.
+- SECURITY_EVIDENCE: Marker-bearing `ProcessExited` passed through the production adapter and REST mapper；the response remained exact `503 UPSTREAM_UNAVAILABLE` and omitted the marker、process output、return code、traceback and credential data. `/api/v1/status` retains its authenticated one-key schema.
+- KNOWN_UNKNOWNS: Actual OS-level unexpected exit of a Real Codex child remains NOT_RUN；T-70 does not claim Real Codex verification.
+- NEXT_TASK: TASK-0901 — Dockerfile
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -619,5 +632,5 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 ```text
 STATUS: CONTINUE
 DEFERRED_GATE: T-63 — BLOCKED/NOT_RUN until Stage10 real-browser evidence
-NEXT_ACTION: TASK-0804 — Degraded Runtime
+NEXT_ACTION: TASK-0901 — Dockerfile
 ```
