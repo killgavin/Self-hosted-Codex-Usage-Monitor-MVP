@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 10 — Final MVP Validation
-CURRENT_TASK: TASK-1001 — Automated Validation Sweep
-LAST_COMPLETED_TASK: TASK-0904 — Deployment Documentation
+CURRENT_TASK: TASK-1002 — Real Codex Validation
+LAST_COMPLETED_TASK: TASK-1001 — Automated Validation Sweep
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804、TASK-0901～TASK-0904 DONE。TASK-1001～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 and T-64～T-68 real validation remain BLOCKED/DEFERRED mandatory Stage 10 gates，not PASS.
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804、TASK-0901～TASK-0904、TASK-1001 DONE。TASK-1002～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 and T-64～T-68 real validation remain BLOCKED/DEFERRED mandatory Stage 10 gates，not PASS.
 
 ## Real Runtime Validation Ledger
 
@@ -673,6 +673,19 @@ Stages 0–3、5–9 are complete. Stage 4 implementation tasks are complete but
 - KNOWN_UNKNOWNS: Actual Docker runtime behavior, credential internal path, UID/permissions on the mounted volume, and restart/rebuild persistence remain unverified until Stage10 T-64～T-68.
 - NEXT_TASK: TASK-1001 — Automated Validation Sweep
 
+### TASK-1001 — Automated Validation Sweep
+
+- STATUS: DONE（deterministic automated/mock/static validation complete；Sol Review Gate PASS；real-runtime gates remain deferred）
+- COMPLETED: 2026-09-20
+- EXECUTION_AGENT: GPT-5.6 Luna validation sweep；Sol Review Gate PASS
+- CHANGED_FILES: `docs/implementation-status.md`
+- TESTS: Deterministic unit suite PASS (`190 passed`)；deterministic integration/static suite PASS (`78 passed`)；combined deterministic suite PASS (`268 passed`)；six real-runtime modules explicitly NOT_RUN；T-63 BLOCKED/NOT_RUN；T-64～T-68 BLOCKED/NOT_RUN
+- VALIDATION: `PYTHONPATH=server /tmp/task0704-venv.ouzhoG/bin/python -m pytest -ra server/tests --ignore=server/tests/integration/test_account_read.py --ignore=server/tests/integration/test_initialize.py --ignore=server/tests/integration/test_login.py --ignore=server/tests/integration/test_process_start.py --ignore=server/tests/integration/test_process_stop.py --ignore=server/tests/integration/test_rate_limits.py` PASS (`268 collected/268 passed`, no skips/xfails/xpasses/warnings; the six deliberate ignores are the only uncollected intended modules)；unit-only PASS (`190 passed`)；integration-only with exactly the same six ignores PASS (`78 passed`)；`/tmp/task0704-venv.ouzhoG/bin/python -m compileall -q server/app server/tests` PASS；`/tmp/task0704-venv.ouzhoG/bin/python -m pip check` PASS (`No broken requirements found`)；`node --check` PASS for all six checked-in `.mjs` files；repository/static documentation tests executed within the integration suite PASS；`git diff --check` PASS；post-update allowed-file scope PASS (only this status ledger changed)
+- RUNTIME_EVIDENCE: NONE；no Real Codex, real-account/login-completion, real-browser, Docker, UID/permission, or persistence evidence was generated or reclassified
+- SECURITY_EVIDENCE: Automated/mock/static results only；no credential files, environment secrets, raw protocol/account payloads, or real runtime endpoints were accessed
+- KNOWN_UNKNOWNS: Six excluded real-runtime modules (`server/tests/integration/test_account_read.py`, `test_initialize.py`, `test_login.py`, `test_process_start.py`, `test_process_stop.py`, `test_rate_limits.py`) remain NOT_RUN for TASK-1001 and are deferred to TASK-1002/TASK-1003；T-63 remains BLOCKED/NOT_RUN；T-64～T-68 remain BLOCKED/NOT_RUN
+- NEXT_TASK: TASK-1002 — Real Codex Validation
+
 ## Luna Update Rules
 
 Luna 只可更新 current status、relevant task/stage、runtime/security ledger、blockers、human decisions、completed task record。不得在此修改 Requirement、Architecture、Task definition、Test requirement 或 Acceptance Criteria。
@@ -687,5 +700,5 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 STATUS: CONTINUE
 DEFERRED_GATE: T-63 — BLOCKED/NOT_RUN until Stage10 real-browser evidence
 DEFERRED_DOCKER_GATE: T-64～T-68 — BLOCKED/NOT_RUN until Stage10 real Docker evidence
-NEXT_ACTION: TASK-1001 — Automated Validation Sweep
+NEXT_ACTION: TASK-1002 — Real Codex Validation
 ```
