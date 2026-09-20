@@ -39,3 +39,4 @@ services:
 
 volumes:
   codex_monitor_home:
+    name: "${CODEX_MONITOR_HOME_VOLUME:-codex_monitor_home}"
