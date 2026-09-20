@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 9 — Docker Deployment
-CURRENT_TASK: TASK-0902 — Docker Compose
-LAST_COMPLETED_TASK: TASK-0901 — Dockerfile
+CURRENT_TASK: TASK-0903 — Persistence
+LAST_COMPLETED_TASK: TASK-0902 — Docker Compose
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804、TASK-0901 DONE。TASK-0902 READY。TASK-0903～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 and T-64～T-68 real validation remain BLOCKED/DEFERRED mandatory Stage 10 gates，not PASS.
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804、TASK-0901～TASK-0902 DONE。TASK-0903～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 and T-64～T-68 real validation remain BLOCKED/DEFERRED mandatory Stage 10 gates，not PASS.
 
 ## Real Runtime Validation Ledger
 
@@ -73,7 +73,7 @@ The user does not need to provide a local executable path. The current ChatGPT W
 
 ## Known Limitations
 
-Stages 0–3、5–8 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and real default-app lifespan initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-69～T-71 are Automated/Mock/Synthetic Verified；an actual OS-level unexpected Real Codex exit was not executed and is not claimed. TASK-0901 Dockerfile/static tests PASS，but image build、container runtime and T-64～T-68 are BLOCKED/NOT_RUN until Stage10.
+Stages 0–3、5–8 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and real default-app lifespan initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-69～T-71 are Automated/Mock/Synthetic Verified；an actual OS-level unexpected Real Codex exit was not executed and is not claimed. TASK-0901 Dockerfile and TASK-0902 Compose implementation/static tests PASS，but image build、container runtime and T-64～T-68 are BLOCKED/NOT_RUN until Stage10.
 
 ## Completed Task Record
 
@@ -635,6 +635,18 @@ Stages 0–3、5–8 are complete. Stage 4 implementation tasks are complete but
 - KNOWN_UNKNOWNS: Dockerfile syntax, image build, final image contents, non-root runtime, Node/Codex wrapper resolution and container health remain unverified until T-64 runs with an available builder.
 - NEXT_TASK: TASK-0902 — Docker Compose
 
+### TASK-0902 — Docker Compose
+
+- STATUS: DONE（implementation/static validation；real Docker T-64～T-66 explicitly deferred to Stage10 by Human decision）
+- COMPLETED: 2026-09-20
+- EXECUTION_AGENT: GPT-5.6 Luna bounded implementation
+- CHANGED_FILES: `docker-compose.yml`, `server/tests/integration/test_docker_compose.py`, `docs/implementation-status.md`
+- TESTS: Compose static suite PASS（`6 passed`）；T-64 BLOCKED/NOT_RUN；T-65 BLOCKED/NOT_RUN；T-66 BLOCKED/NOT_RUN because no container builder is available
+- VALIDATION: `/tmp/task0704-venv.ouzhoG/bin/python -m pytest -q server/tests/integration/test_docker_compose.py server/tests/integration/test_dockerfile.py` PASS（`12 passed`）；deterministic suite with the six explicit real-runtime modules excluded PASS（`252 passed`）；`python -m compileall -q server/app server/tests` PASS；`git diff --check` PASS；allowed-file scope, YAML parse, and Docker/credential/private-endpoint static scans PASS
+- RUNTIME_EVIDENCE: Static/Automated only. Docker, Podman, Buildah, Nerdctl, BuildKit and Kaniko were unavailable；`/var/run/docker.sock` was absent. No image build, container start, healthcheck, clean-volume or Codex-in-container evidence was executed.
+- KNOWN_UNKNOWNS: Compose interpolation, image build, container startup, listener/healthcheck behavior and clean-volume unauthenticated behavior remain unverified until T-64～T-66 run with an available Docker-capable runner.
+- NEXT_TASK: TASK-0903 — Persistence
+
 ## Luna Update Rules
 
 Luna 只可更新 current status、relevant task/stage、runtime/security ledger、blockers、human decisions、completed task record。不得在此修改 Requirement、Architecture、Task definition、Test requirement 或 Acceptance Criteria。
@@ -649,5 +661,5 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 STATUS: CONTINUE
 DEFERRED_GATE: T-63 — BLOCKED/NOT_RUN until Stage10 real-browser evidence
 DEFERRED_DOCKER_GATE: T-64～T-68 — BLOCKED/NOT_RUN until Stage10 real Docker evidence
-NEXT_ACTION: TASK-0902 — Docker Compose
+NEXT_ACTION: TASK-0903 — Persistence
 ```

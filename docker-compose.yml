@@ -1,0 +1,41 @@
+services:
+  monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        CODEX_VERSION: "${CODEX_VERSION:-0.155.1}"
+    image: "${CODEX_MONITOR_IMAGE:-self-hosted-codex-usage-monitor:0.155.1}"
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      CODEX_MONITOR_HOST: "0.0.0.0"
+      CODEX_MONITOR_PORT: "${CODEX_MONITOR_PORT:-8080}"
+      CODEX_MONITOR_API_TOKEN: "${CODEX_MONITOR_API_TOKEN:-}"
+      CACHE_TTL_SECONDS: "${CACHE_TTL_SECONDS:-60}"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+    ports:
+      - "${CODEX_MONITOR_BIND_HOST:-127.0.0.1}:${CODEX_MONITOR_PORT:-8080}:${CODEX_MONITOR_PORT:-8080}"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import os, urllib.request;
+          port = os.environ["CODEX_MONITOR_PORT"];
+          urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=3).read()
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - codex_monitor_home:/home/codex-monitor
+
+volumes:
+  codex_monitor_home:
