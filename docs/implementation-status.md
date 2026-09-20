@@ -61,6 +61,8 @@ TASK-0704 T-63 lacks a runnable browser layout engine in the current ChatGPT Wor
 
 Human completed the official Codex device-auth flow to restore the current CLI session. No further decision is required for TASK-0507. This action is not counted as production AuthService/app-server login completion T-50.
 
+On 2026-09-20，the human directed Sol to handle planning、review gates、blockers and work that Luna could not complete，while simple bounded implementation tasks should still be delegated to Luna when practical. This execution-role decision does not waive T-63，change the canonical SDD，or authorize TASK-0705 to start while TASK-0704 is blocked.
+
 The user does not need to provide a local executable path. The current ChatGPT Work workspace cannot supply or acquire the required browser under the recorded constraints. Human intervention is required only to choose a browser-capable workspace/session or provide complete sanitized T-63 PASS evidence produced in such an environment; alternatively, the human may explicitly decide whether to change the canonical validation requirement. Sol must review T-63 before TASK-0705 may start, and must not lower the acceptance criteria automatically.
 
 ## Known Limitations
