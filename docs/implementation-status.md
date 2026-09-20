@@ -13,10 +13,10 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 9 — Docker Deployment
-CURRENT_TASK: TASK-0901 — Dockerfile
-LAST_COMPLETED_TASK: TASK-0804 — Degraded Runtime
-BLOCKED: YES
-HUMAN_REQUIRED: YES
+CURRENT_TASK: TASK-0902 — Docker Compose
+LAST_COMPLETED_TASK: TASK-0901 — Dockerfile
+BLOCKED: NO
+HUMAN_REQUIRED: NO
 ```
 
 ## Status Rules
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804 DONE。TASK-0901 HUMAN_REQUIRED（Docker builder unavailable；static validation complete，T-64 NOT_RUN）。TASK-0902～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804、TASK-0901 DONE。TASK-0902 READY。TASK-0903～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 and T-64～T-68 real validation remain BLOCKED/DEFERRED mandatory Stage 10 gates，not PASS.
 
 ## Real Runtime Validation Ledger
 
@@ -55,9 +55,7 @@ Server API token authentication：PASS（Automated Verified；T-25～T-28）。L
 
 ## Known Blockers
 
-TASK-0901 environment blocker: T-64 Docker build was NOT_RUN because `docker`, `podman`, `buildah`, `nerdctl`, `buildctl`, and `kaniko` are unavailable and `/var/run/docker.sock` is absent in the current workspace. The process has zero effective Linux capabilities (`CapEff=0`), `NoNewPrivs=1`, active seccomp, and `unshare -Ur` is denied while writing the UID map，so neither a daemon nor a rootless-builder workaround is available. Static Dockerfile checks and deterministic regression tests pass，but they cannot replace an image build. A Docker-capable runner or sanitized external T-64 evidence is required before this task can finish.
-
-TASK-0901 canonical sequencing blocker: `docs/test-plan.md` defines T-64 as `docker compose build`，while `docs/implementation-plan.md` assigns T-64 to TASK-0901 but does not create `docker-compose.yml` until TASK-0902. The one-bounded-task gate forbids implementing TASK-0902 early and forbids advancing while TASK-0901 is incomplete. Human must explicitly choose whether TASK-0901 may use a successful standalone `docker build` as its completion evidence and defer the unchanged canonical T-64 `docker compose build` to TASK-0902，or authorize a different task-boundary reconciliation. No test requirement has been waived.
+No current implementation task is blocked. Deferred Final Gate blocker: T-64～T-68 were NOT_RUN because `docker`, `podman`, `buildah`, `nerdctl`, `buildctl`, and `kaniko` are unavailable and `/var/run/docker.sock` is absent in the current workspace. The process has zero effective Linux capabilities (`CapEff=0`), `NoNewPrivs=1`, active seccomp, and `unshare -Ur` is denied while writing the UID map，so neither a daemon nor a rootless-builder workaround is available. Human approved continuing Stage9 implementation/static work，but T-64～T-68 remain BLOCKED/NOT_RUN and prevent Final `OVERALL: PASS` until a Docker-capable runner supplies real evidence.
 
 Deferred Final Gate blocker: T-63 lacks a runnable browser layout engine in the current ChatGPT Work workspace. The Work runtime provides the Playwright package, but `chromium.executablePath()` resolves to `/root/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome`, and that executable is absent. Fresh PATH/common-directory/recursive executable checks also found no Chrome/Chromium/Firefox. Two default 30-second official CDN attempts timed out；a 120-second attempt returned a zero-byte/non-ZIP artifact and failed extraction, so the workspace could not acquire Chromium through the available download path. On 2026-09-20，a fresh retry served the repository `web/` directory through a temporary local HTTP server and attempted the Cloud Browser navigation to `http://127.0.0.1:8765/`; the browser returned `net::ERR_BLOCKED_BY_CLIENT` and changed the tab to `chrome-error://chromewebdata/`. A follow-up DOM inspection was rejected by the browser security policy，which explicitly forbids workarounds. CSS/static tests and the full deterministic suite pass，but they cannot replace the required 360px layout measurement. Human approved deferring this real-browser execution to Stage10；T-63 remains BLOCKED/NOT_RUN and prevents Final `OVERALL: PASS` until real evidence exists.
 
@@ -69,11 +67,13 @@ On 2026-09-20，the human directed Sol to handle planning、review gates、block
 
 On 2026-09-20，the human explicitly approved deferring real-browser T-63 to Stage10 and continuing with TASK-0705. This is a sequencing change only：T-63 remains mandatory，is not PASS，and must block Final `OVERALL: PASS` until real evidence exists.
 
+On 2026-09-20，the human explicitly approved deferring real Docker T-64～T-68 validation to Stage10 and continuing Stage9 implementation/static tasks in order. This is a sequencing change only：all Docker tests remain mandatory BLOCKED/NOT_RUN，static validation is not Docker PASS，and any missing T-64～T-68 evidence must block Final `OVERALL: PASS`.
+
 The user does not need to provide a local executable path. The current ChatGPT Work workspace cannot supply or acquire the required browser under the recorded constraints. A browser-capable workspace/session or complete sanitized real-browser T-63 PASS evidence will still be required at Stage10.
 
 ## Known Limitations
 
-Stages 0–3、5–8 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and real default-app lifespan initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-69～T-71 are Automated/Mock/Synthetic Verified；an actual OS-level unexpected Real Codex exit was not executed and is not claimed.
+Stages 0–3、5–8 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and real default-app lifespan initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-69～T-71 are Automated/Mock/Synthetic Verified；an actual OS-level unexpected Real Codex exit was not executed and is not claimed. TASK-0901 Dockerfile/static tests PASS，but image build、container runtime and T-64～T-68 are BLOCKED/NOT_RUN until Stage10.
 
 ## Completed Task Record
 
@@ -623,19 +623,17 @@ Stages 0–3、5–8 are complete. Stage 4 implementation tasks are complete but
 
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
-## Active Blocked Task Record
-
 ### TASK-0901 — Dockerfile
 
-- STATUS: HUMAN_REQUIRED（environment blocker）
-- COMPLETED: NOT_COMPLETE（implementation/static evidence recorded 2026-09-20；T-64 not run）
+- STATUS: DONE（implementation/static validation；real Docker T-64 explicitly deferred to Stage10 by Human decision）
+- COMPLETED: 2026-09-20
 - EXECUTION_AGENT: GPT-5.6 Luna bounded implementation
 - CHANGED_FILES: `Dockerfile`, `.dockerignore`, `server/tests/integration/test_dockerfile.py`, `docs/implementation-status.md`
 - TESTS: Dockerfile static suite PASS（`6 passed`）；T-64 BLOCKED/NOT_RUN because no container builder is available
 - VALIDATION: `/tmp/task0704-venv.ouzhoG/bin/python -m pytest -q server/tests/integration/test_dockerfile.py` PASS；deterministic suite with the six explicit real-runtime modules excluded PASS（`246 passed`）；`python -m compileall -q server/app server/tests` PASS；`git diff --check` PASS；allowed-file scope and Docker/credential static scans PASS
 - RUNTIME_EVIDENCE: Docker, Podman, Buildah, Nerdctl, BuildKit and Kaniko were unavailable；`/var/run/docker.sock` was absent. No image build, container start, Codex-in-container run or Docker evidence was executed.
 - KNOWN_UNKNOWNS: Dockerfile syntax, image build, final image contents, non-root runtime, Node/Codex wrapper resolution and container health remain unverified until T-64 runs with an available builder.
-- NEXT_TASK: T-64 Docker build validation when a container builder is available
+- NEXT_TASK: TASK-0902 — Docker Compose
 
 ## Luna Update Rules
 
@@ -648,8 +646,8 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 ## Current Next Action
 
 ```text
-STATUS: HUMAN_REQUIRED
-REASON: T-64 requires Docker evidence but this workspace has no usable builder；additionally，T-64 is defined as `docker compose build` before TASK-0902 is allowed to create the compose file.
+STATUS: CONTINUE
 DEFERRED_GATE: T-63 — BLOCKED/NOT_RUN until Stage10 real-browser evidence
-NEXT_ACTION: Human selects the T-64/TASK-0901 sequencing reconciliation and provides a Docker-capable runner/session or sanitized build evidence；do not start TASK-0902 before that decision.
+DEFERRED_DOCKER_GATE: T-64～T-68 — BLOCKED/NOT_RUN until Stage10 real Docker evidence
+NEXT_ACTION: TASK-0902 — Docker Compose
 ```

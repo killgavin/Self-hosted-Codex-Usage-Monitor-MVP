@@ -1,6 +1,6 @@
 # Self-hosted Codex Usage Monitor — Implementation Plan
 
-- Version: 0.2
+- Version: 0.3
 - Status: READY
 - Primary Coding Model: GPT-5.6 Luna
 - Escalation Model: GPT-5.6 Sol
@@ -53,11 +53,11 @@ TASK-0801 redaction T-29–32；0802 sanitization T-33–35/T-76；0803 default 
 
 ## Stage 9 — Docker
 
-TASK-0901 Dockerfile T-64；0902 compose T-65/T-66；0903 persistence T-67/T-68；0904 deployment docs。
+TASK-0901 Dockerfile implementation/static prerequisites；0902 compose implementation/static prerequisites；0903 persistence implementation/static prerequisites；0904 deployment docs。By explicit Human decision on 2026-09-20，real Docker T-64–68 execution is deferred to Stage10 because the current workspace has no usable container builder. TASK-0901～TASK-0904 may advance only after their implementation/static evidence passes；T-64–68 remain BLOCKED/NOT_RUN，must not be counted PASS，and remain mandatory Final Gate tests.
 
 ## Stage 10 — Final MVP Validation
 
-No new features。TASK-1001 automated sweep；1002 real Codex；1003 real login；1004 Docker E2E；1005 security；1006 docs reconciliation；1007 deferred real-browser T-63 plus final report。T-63 BLOCKED/NOT_RUN prevents `OVERALL: PASS`。只有 OVERALL: PASS → MVP COMPLETE。
+No new features。TASK-1001 automated sweep；1002 real Codex；1003 real login；1004 deferred real Docker T-64–68 E2E；1005 security；1006 docs reconciliation；1007 deferred real-browser T-63 plus final report。T-63 or any T-64–68 BLOCKED/NOT_RUN prevents `OVERALL: PASS`。只有 OVERALL: PASS → MVP COMPLETE。
 
 ## Luna Task Contract
 
