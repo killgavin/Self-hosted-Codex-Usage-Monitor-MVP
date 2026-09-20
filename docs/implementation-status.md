@@ -55,13 +55,13 @@ Server API token authentication：PASS（Automated Verified；T-25～T-28）。A
 
 ## Known Blockers
 
-TASK-0704 T-63 lacks a runnable browser layout engine in the current workspace. Playwright is installed，but its expected Chromium executable is absent. Two default 30-second official CDN attempts timed out；a 120-second attempt returned a zero-byte/non-ZIP artifact and failed extraction. The cloud Chrome surface rejected localhost with `ERR_BLOCKED_BY_CLIENT` and rejected `data:` navigation under an explicit no-workaround policy. CSS/static tests and the full deterministic suite pass，but they cannot replace the required 360px layout measurement.
+TASK-0704 T-63 lacks a runnable browser layout engine in the current ChatGPT Work workspace. The Work runtime provides the Playwright package, but `chromium.executablePath()` resolves to `/root/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome`, and that executable is absent. Fresh PATH/common-directory/recursive executable checks also found no Chrome/Chromium/Firefox. Two default 30-second official CDN attempts timed out；a 120-second attempt returned a zero-byte/non-ZIP artifact and failed extraction, so the workspace could not acquire Chromium through the available download path. The cloud Chrome surface rejected localhost with `ERR_BLOCKED_BY_CLIENT` and rejected `data:` navigation under an explicit no-workaround policy. CSS/static tests and the full deterministic suite pass，but they cannot replace the required 360px layout measurement.
 
 ## Human Decisions
 
 Human completed the official Codex device-auth flow to restore the current CLI session. No further decision is required for TASK-0507. This action is not counted as production AuthService/app-server login completion T-50.
 
-Human must make a compatible Chromium/Chrome executable available to this workspace or run the opt-in T-63 fixture in an environment with Playwright Chromium and return its complete sanitized PASS output. Sol must then review T-63 before TASK-0705 may start.
+The user does not need to provide a local executable path. The current ChatGPT Work workspace cannot supply or acquire the required browser under the recorded constraints. Human intervention is required only to choose a browser-capable workspace/session or provide complete sanitized T-63 PASS evidence produced in such an environment; alternatively, the human may explicitly decide whether to change the canonical validation requirement. Sol must review T-63 before TASK-0705 may start, and must not lower the acceptance criteria automatically.
 
 ## Known Limitations
 
@@ -550,5 +550,5 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 ```text
 STATUS: HUMAN_REQUIRED
 BLOCKED_TASK: TASK-0704
-NEXT_ACTION: Provide a compatible Chromium/Chrome executable or run `DASHBOARD_URL=http://127.0.0.1:8765 node server/tests/fixtures/mobile_layout_browser.mjs` with Playwright Chromium available；then rerun/review T-63 only.
+NEXT_ACTION: HUMAN_REQUIRED — resume TASK-0704 in a browser-capable workspace/session or provide complete sanitized real-browser T-63 evidence；do not request a local executable path from the user or start TASK-0705 before Sol review.
 ```
