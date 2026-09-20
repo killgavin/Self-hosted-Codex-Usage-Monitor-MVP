@@ -1,0 +1,47 @@
+# Source-control and local metadata
+.git
+.git/**
+.gitignore
+.codex
+.codex/**
+**/.codex
+**/.codex/**
+
+# Local configuration and credentials
+.env
+.env.*
+**/.env
+**/.env.*
+auth.json
+**/auth.json
+
+# Python caches, environments, and test/development artifacts
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+**/.venv/
+venv/
+**/venv/
+env/
+**/env/
+server/tests/
+tests/
+docs/
+build/
+dist/
+*.egg-info/
+**/*.egg-info/
+
+# Local dependency and bundler output
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

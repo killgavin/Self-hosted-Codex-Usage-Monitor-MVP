@@ -15,8 +15,8 @@ CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 9 — Docker Deployment
 CURRENT_TASK: TASK-0901 — Dockerfile
 LAST_COMPLETED_TASK: TASK-0804 — Degraded Runtime
-BLOCKED: NO
-HUMAN_REQUIRED: NO
+BLOCKED: YES
+HUMAN_REQUIRED: YES
 ```
 
 ## Status Rules
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804 DONE。TASK-0901 READY。TASK-0902～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804 DONE。TASK-0901 HUMAN_REQUIRED（Docker builder unavailable；static validation complete，T-64 NOT_RUN）。TASK-0902～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
 
 ## Real Runtime Validation Ledger
 
@@ -55,7 +55,7 @@ Server API token authentication：PASS（Automated Verified；T-25～T-28）。L
 
 ## Known Blockers
 
-No current implementation task is blocked. Deferred Final Gate blocker: T-63 lacks a runnable browser layout engine in the current ChatGPT Work workspace. The Work runtime provides the Playwright package, but `chromium.executablePath()` resolves to `/root/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome`, and that executable is absent. Fresh PATH/common-directory/recursive executable checks also found no Chrome/Chromium/Firefox. Two default 30-second official CDN attempts timed out；a 120-second attempt returned a zero-byte/non-ZIP artifact and failed extraction, so the workspace could not acquire Chromium through the available download path. On 2026-09-20，a fresh retry served the repository `web/` directory through a temporary local HTTP server and attempted the Cloud Browser navigation to `http://127.0.0.1:8765/`; the browser returned `net::ERR_BLOCKED_BY_CLIENT` and changed the tab to `chrome-error://chromewebdata/`. A follow-up DOM inspection was rejected by the browser security policy，which explicitly forbids workarounds. CSS/static tests and the full deterministic suite pass，but they cannot replace the required 360px layout measurement. Human approved deferring this real-browser execution to Stage10；T-63 remains BLOCKED/NOT_RUN and prevents Final `OVERALL: PASS` until real evidence exists.
+TASK-0901 blocker: T-64 Docker build was NOT_RUN because `docker`, `podman`, `buildah`, `nerdctl`, `buildctl`, and `kaniko` are unavailable and `/var/run/docker.sock` is absent in the current workspace. The process has zero effective Linux capabilities (`CapEff=0`), `NoNewPrivs=1`, active seccomp, and `unshare -Ur` is denied while writing the UID map，so neither a daemon nor a rootless-builder workaround is available. Static Dockerfile checks and deterministic regression tests pass，but they cannot replace an image build. A Docker-capable runner or sanitized external T-64 evidence is required before this task can finish. Deferred Final Gate blocker: T-63 lacks a runnable browser layout engine in the current ChatGPT Work workspace. The Work runtime provides the Playwright package, but `chromium.executablePath()` resolves to `/root/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome`, and that executable is absent. Fresh PATH/common-directory/recursive executable checks also found no Chrome/Chromium/Firefox. Two default 30-second official CDN attempts timed out；a 120-second attempt returned a zero-byte/non-ZIP artifact and failed extraction, so the workspace could not acquire Chromium through the available download path. On 2026-09-20，a fresh retry served the repository `web/` directory through a temporary local HTTP server and attempted the Cloud Browser navigation to `http://127.0.0.1:8765/`; the browser returned `net::ERR_BLOCKED_BY_CLIENT` and changed the tab to `chrome-error://chromewebdata/`. A follow-up DOM inspection was rejected by the browser security policy，which explicitly forbids workarounds. CSS/static tests and the full deterministic suite pass，but they cannot replace the required 360px layout measurement. Human approved deferring this real-browser execution to Stage10；T-63 remains BLOCKED/NOT_RUN and prevents Final `OVERALL: PASS` until real evidence exists.
 
 ## Human Decisions
 
@@ -619,6 +619,20 @@ Stages 0–3、5–8 are complete. Stage 4 implementation tasks are complete but
 
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
+## Active Blocked Task Record
+
+### TASK-0901 — Dockerfile
+
+- STATUS: HUMAN_REQUIRED（environment blocker）
+- COMPLETED: NOT_COMPLETE（implementation/static evidence recorded 2026-09-20；T-64 not run）
+- EXECUTION_AGENT: GPT-5.6 Luna bounded implementation
+- CHANGED_FILES: `Dockerfile`, `.dockerignore`, `server/tests/integration/test_dockerfile.py`, `docs/implementation-status.md`
+- TESTS: Dockerfile static suite PASS（`6 passed`）；T-64 BLOCKED/NOT_RUN because no container builder is available
+- VALIDATION: `/tmp/task0704-venv.ouzhoG/bin/python -m pytest -q server/tests/integration/test_dockerfile.py` PASS；deterministic suite with the six explicit real-runtime modules excluded PASS（`246 passed`）；`python -m compileall -q server/app server/tests` PASS；`git diff --check` PASS；allowed-file scope and Docker/credential static scans PASS
+- RUNTIME_EVIDENCE: Docker, Podman, Buildah, Nerdctl, BuildKit and Kaniko were unavailable；`/var/run/docker.sock` was absent. No image build, container start, Codex-in-container run or Docker evidence was executed.
+- KNOWN_UNKNOWNS: Dockerfile syntax, image build, final image contents, non-root runtime, Node/Codex wrapper resolution and container health remain unverified until T-64 runs with an available builder.
+- NEXT_TASK: T-64 Docker build validation when a container builder is available
+
 ## Luna Update Rules
 
 Luna 只可更新 current status、relevant task/stage、runtime/security ledger、blockers、human decisions、completed task record。不得在此修改 Requirement、Architecture、Task definition、Test requirement 或 Acceptance Criteria。
@@ -630,7 +644,8 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 ## Current Next Action
 
 ```text
-STATUS: CONTINUE
+STATUS: HUMAN_REQUIRED
+REASON: T-64 requires an actual Docker image build，but this workspace has no container builder/socket/capabilities and rootless user namespaces are denied.
 DEFERRED_GATE: T-63 — BLOCKED/NOT_RUN until Stage10 real-browser evidence
-NEXT_ACTION: TASK-0901 — Dockerfile
+NEXT_ACTION: Provide a Docker-capable runner/session or sanitized external T-64 build evidence；do not start TASK-0902 before T-64 passes.
 ```
