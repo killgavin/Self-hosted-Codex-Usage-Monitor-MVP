@@ -15,8 +15,8 @@ CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 10 — Final MVP Validation
 CURRENT_TASK: TASK-1002 — Real Codex Validation
 LAST_COMPLETED_TASK: TASK-1001 — Automated Validation Sweep
-BLOCKED: NO
-HUMAN_REQUIRED: NO
+BLOCKED: YES
+HUMAN_REQUIRED: YES
 ```
 
 ## Status Rules
@@ -43,11 +43,11 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804、TASK-0901～TASK-0904、TASK-1001 DONE。TASK-1002～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 and T-64～T-68 real validation remain BLOCKED/DEFERRED mandatory Stage 10 gates，not PASS.
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804、TASK-0901～TASK-0904、TASK-1001 DONE。TASK-1002 HUMAN_REQUIRED pending official workspace reauthentication and T-52/T-53 rerun。TASK-1003～TASK-1007 NOT_STARTED。T-63 and T-64～T-68 real validation remain BLOCKED/DEFERRED mandatory Stage 10 gates，not PASS.
 
 ## Real Runtime Validation Ledger
 
-Codex executable：PASS（Real Codex Verified, latest rerun `codex-cli 0.155.1`）。app-server startup：PASS（Real Codex Verified）。app-server stop/no orphan：PASS（Real Codex Verified）。protocol initialize：PASS（Real Codex Verified）。account/read：PASS（Real Codex Verified；authenticated current environment and unauthenticated isolated clean environment）。device-code login start：PASS（Real Codex Verified in isolated clean environment）。login cancel：PASS（Real Codex Verified）。rateLimits/read：PASS（Real Codex Verified；T-52 and T-53 passed against the current authenticated account，including multiple keyed buckets）。login completion、Docker startup、credential persistence：NOT_RUN。
+Codex executable：PASS（Real Codex Verified, isolated official npm `codex-cli 0.155.1`）。app-server startup：PASS（Real Codex Verified）。app-server stop/no orphan：PASS（Real Codex Verified after npm-wrapper process-group correction）。protocol initialize：PASS（Real Codex Verified）。account/read：PASS（Real Codex Verified；authenticated current environment and unauthenticated isolated clean environment）。device-code login start：PASS（Real Codex Verified in isolated clean environment）。login cancel：PASS（Real Codex Verified）。rateLimits/read：BLOCKED for the current Stage10 rerun（the official app-server returned sanitized JSON-RPC `-32603` from an upstream `401`；historical T-52/T-53 PASS evidence remains recorded but does not replace this final rerun）。login completion、Docker startup、credential persistence：NOT_RUN。
 
 ## Security Validation Ledger
 
@@ -55,7 +55,9 @@ Server API token authentication：PASS（Automated Verified；T-25～T-28）。L
 
 ## Known Blockers
 
-No current implementation task is blocked. Deferred Final Gate blocker: T-64～T-68 were NOT_RUN because `docker`, `podman`, `buildah`, `nerdctl`, `buildctl`, and `kaniko` are unavailable and `/var/run/docker.sock` is absent in the current workspace. The process has zero effective Linux capabilities (`CapEff=0`), `NoNewPrivs=1`, active seccomp, and `unshare -Ur` is denied while writing the UID map，so neither a daemon nor a rootless-builder workaround is available. Human approved continuing Stage9 implementation/static work，but T-64～T-68 remain BLOCKED/NOT_RUN and prevent Final `OVERALL: PASS` until a Docker-capable runner supplies real evidence.
+Current TASK-1002 blocker: the current workspace reports an official ChatGPT login and real `account/read` succeeds, including an explicit proactive refresh, but `account/rateLimits/read` consistently returns sanitized JSON-RPC `-32603` backed by upstream HTTP `401`. The same result occurred with all schema-valid params shapes and both the bundled `0.154.0-alpha.3` and repository-pinned official `0.155.1`, so Sol rejected a protocol-shape workaround. An official device-code reauthentication is active and requires Human completion before T-52/T-53 can be rerun. No raw error、account、quota or credential payload was recorded，and the monitor did not directly call any private endpoint.
+
+Deferred Final Gate blocker: T-64～T-68 were NOT_RUN because `docker`, `podman`, `buildah`, `nerdctl`, `buildctl`, and `kaniko` are unavailable and `/var/run/docker.sock` is absent in the current workspace. The process has zero effective Linux capabilities (`CapEff=0`), `NoNewPrivs=1`, active seccomp, and `unshare -Ur` is denied while writing the UID map，so neither a daemon nor a rootless-builder workaround is available. Human approved continuing Stage9 implementation/static work，but T-64～T-68 remain BLOCKED/NOT_RUN and prevent Final `OVERALL: PASS` until a Docker-capable runner supplies real evidence.
 
 Deferred Final Gate blocker: T-63 lacks a runnable browser layout engine in the current ChatGPT Work workspace. The Work runtime provides the Playwright package, but `chromium.executablePath()` resolves to `/root/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome`, and that executable is absent. Fresh PATH/common-directory/recursive executable checks also found no Chrome/Chromium/Firefox. Two default 30-second official CDN attempts timed out；a 120-second attempt returned a zero-byte/non-ZIP artifact and failed extraction, so the workspace could not acquire Chromium through the available download path. On 2026-09-20，a fresh retry served the repository `web/` directory through a temporary local HTTP server and attempted the Cloud Browser navigation to `http://127.0.0.1:8765/`; the browser returned `net::ERR_BLOCKED_BY_CLIENT` and changed the tab to `chrome-error://chromewebdata/`. A follow-up DOM inspection was rejected by the browser security policy，which explicitly forbids workarounds. CSS/static tests and the full deterministic suite pass，but they cannot replace the required 360px layout measurement. Human approved deferring this real-browser execution to Stage10；T-63 remains BLOCKED/NOT_RUN and prevents Final `OVERALL: PASS` until real evidence exists.
 
@@ -69,11 +71,13 @@ On 2026-09-20，the human explicitly approved deferring real-browser T-63 to Sta
 
 On 2026-09-20，the human explicitly approved deferring real Docker T-64～T-68 validation to Stage10 and continuing Stage9 implementation/static tasks in order. This is a sequencing change only：all Docker tests remain mandatory BLOCKED/NOT_RUN，static validation is not Docker PASS，and any missing T-64～T-68 evidence must block Final `OVERALL: PASS`.
 
+On 2026-09-20，TASK-1002 Stage10 evidence showed that the current official ChatGPT session can complete `account/read` but receives upstream `401` for `account/rateLimits/read` even after proactive refresh. A fresh official device-code reauthentication was started in the current workspace；Human completion is required before the same bounded task can continue. This does not count as T-50 login-completion evidence.
+
 The user does not need to provide a local executable path. The current ChatGPT Work workspace cannot supply or acquire the required browser under the recorded constraints. A browser-capable workspace/session or complete sanitized real-browser T-63 PASS evidence will still be required at Stage10.
 
 ## Known Limitations
 
-Stages 0–3、5–9 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and real default-app lifespan initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-69～T-71 are Automated/Mock/Synthetic Verified；an actual OS-level unexpected Real Codex exit was not executed and is not claimed. TASK-0901～TASK-0904 Docker implementation/static validation PASS，but image build、container runtime and T-64～T-68 are BLOCKED/NOT_RUN pending their mandatory Stage10 gate.
+Stages 0–3、5–9 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and real default-app lifespan initialization remain NOT_RUN/deferred. Historical Stage5 T-52/T-53 Real Codex evidence exists，but the current Stage10 rerun is BLOCKED by upstream `401` until official reauthentication completes；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-69～T-71 are Automated/Mock/Synthetic Verified；an actual OS-level unexpected Real Codex exit was not executed and is not claimed. TASK-0901～TASK-0904 Docker implementation/static validation PASS，but image build、container runtime and T-64～T-68 are BLOCKED/NOT_RUN pending their mandatory Stage10 gate.
 
 ## Completed Task Record
 
@@ -686,6 +690,19 @@ Stages 0–3、5–9 are complete. Stage 4 implementation tasks are complete but
 - KNOWN_UNKNOWNS: Six excluded real-runtime modules (`server/tests/integration/test_account_read.py`, `test_initialize.py`, `test_login.py`, `test_process_start.py`, `test_process_stop.py`, `test_rate_limits.py`) remain NOT_RUN for TASK-1001 and are deferred to TASK-1002/TASK-1003；T-63 remains BLOCKED/NOT_RUN；T-64～T-68 remain BLOCKED/NOT_RUN
 - NEXT_TASK: TASK-1002 — Real Codex Validation
 
+### TASK-1002 — Real Codex Validation
+
+- STATUS: HUMAN_REQUIRED（T-36/T-38/T-39/T-45/T-47/T-48 PASS；current Stage10 T-52/T-53 BLOCKED pending official reauthentication）
+- UPDATED: 2026-09-20
+- EXECUTION_AGENT: GPT-5.6 Luna bounded validation/correction；Sol protocol and credential-state triage
+- CHANGED_FILES: `server/app/codex/process.py`, `server/tests/unit/test_process_group_stop.py`, `docs/implementation-status.md`
+- TESTS: T-36 PASS；T-38 PASS；T-39 PASS；T-45 PASS；T-47 PASS；T-48 PASS（Real Codex Verified with official pinned `0.155.1`）；T-52 BLOCKED；T-53 BLOCKED；T-49～T-51 NOT_RUN；T-63 BLOCKED/NOT_RUN；T-64～T-68 BLOCKED/NOT_RUN
+- VALIDATION: bundled `0.154.0-alpha.3` initial real suite `7 passed, 2 failed` at T-52/T-53；isolated official npm `0.155.1` exposed and then corrected a wrapper-descendant stop/reap defect；post-correction focused process suite PASS (`16 passed`)，deterministic suite with the six real-runtime modules excluded PASS (`269 passed`)，and official npm-wrapper process/start/stop/initialize/account suite PASS (`7 passed`)；schema-generated params variants and proactive account refresh all retained the same sanitized T-52/T-53 upstream `401` outcome；compile、`git diff --check`、scope and no-orphan checks PASS
+- RUNTIME_EVIDENCE: Real official Codex executable、npm wrapper、app-server lifecycle、initialize、authenticated account/read and isolated clean-home account/read executed successfully. Current rate-limit reads executed but returned sanitized upstream authorization failures，so T-52/T-53 are not PASS.
+- SECURITY_EVIDENCE: No credential file/content、account identity、plan detail、quota value、limit ID/name、raw protocol payload or raw upstream error was logged or committed；diagnostics retained only version、test status、JSON-RPC code and HTTP status classification.
+- BLOCKER: Human must complete the active official device-code reauthentication in this workspace，then Sol must rerun T-52/T-53 before TASK-1002 can be DONE.
+- NEXT_TASK: NONE until the same TASK-1002 blocker is resolved
+
 ## Luna Update Rules
 
 Luna 只可更新 current status、relevant task/stage、runtime/security ledger、blockers、human decisions、completed task record。不得在此修改 Requirement、Architecture、Task definition、Test requirement 或 Acceptance Criteria。
@@ -697,8 +714,9 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 ## Current Next Action
 
 ```text
-STATUS: CONTINUE
+STATUS: HUMAN_REQUIRED
+REASON: Complete the active official Codex device-code reauthentication so current-workspace T-52/T-53 can be rerun after the observed upstream 401.
 DEFERRED_GATE: T-63 — BLOCKED/NOT_RUN until Stage10 real-browser evidence
 DEFERRED_DOCKER_GATE: T-64～T-68 — BLOCKED/NOT_RUN until Stage10 real Docker evidence
-NEXT_ACTION: TASK-1002 — Real Codex Validation
+NEXT_ACTION: Complete official reauthentication, then resume TASK-1002 — Real Codex Validation
 ```
