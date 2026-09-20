@@ -1,6 +1,6 @@
 # Self-hosted Codex Usage Monitor — Implementation Plan
 
-- Version: 0.1
+- Version: 0.2
 - Status: READY
 - Primary Coding Model: GPT-5.6 Luna
 - Escalation Model: GPT-5.6 Sol
@@ -45,7 +45,7 @@ TASK-0601 server API token T-25–28；0602 status T-54；0603 account T-33/T-55
 
 ## Stage 7 — Web
 
-TASK-0701 shell；0702 Generic RateLimitCard T-60/T-61；0703 time T-62；0704 360px T-63；0705 E2E T-58–63。
+TASK-0701 shell；0702 Generic RateLimitCard T-60/T-61；0703 time T-62；0704 360px implementation/static prerequisites；0705 E2E T-58–62。By explicit Human decision on 2026-09-20，real-browser T-63 is deferred to Stage10 because the current ChatGPT Work workspace cannot provide a browser that can access repository localhost. T-63 remains required and must stay BLOCKED/NOT_RUN until actual execution evidence exists；it cannot be inferred from static tests or counted PASS for Stage10.
 
 ## Stage 8 — Security
 
@@ -57,7 +57,7 @@ TASK-0901 Dockerfile T-64；0902 compose T-65/T-66；0903 persistence T-67/T-68�
 
 ## Stage 10 — Final MVP Validation
 
-No new features。TASK-1001 automated sweep；1002 real Codex；1003 real login；1004 Docker E2E；1005 security；1006 docs reconciliation；1007 final report。只有 OVERALL: PASS → MVP COMPLETE。
+No new features。TASK-1001 automated sweep；1002 real Codex；1003 real login；1004 Docker E2E；1005 security；1006 docs reconciliation；1007 deferred real-browser T-63 plus final report。T-63 BLOCKED/NOT_RUN prevents `OVERALL: PASS`。只有 OVERALL: PASS → MVP COMPLETE。
 
 ## Luna Task Contract
 

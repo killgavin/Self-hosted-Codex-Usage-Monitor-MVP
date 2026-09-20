@@ -1,6 +1,6 @@
 # Self-hosted Codex Usage Monitor — Test Plan
 
-- Version: 0.1
+- Version: 0.2
 - Status: READY
 - Sources: `specification.md`, `design.md`
 
@@ -46,7 +46,7 @@ Phase 2 T-77–T-86。Phase 3 T-87–T-98。MVP 均 NOT_APPLICABLE。
 
 ## Stage Matrix
 
-Stage0 health smoke/T-54 subset; Stage1 T-37–44; Stage2 T-45–46; Stage3 T-18–20/T-47–48; Stage4 T-49–51/T-59; Stage5 T-01–17/T-52–53/T-72–74; Stage6 T-21–28/T-33–35/T-54–57/T-75–76; Stage7 T-58–63; Stage8 T-29–35/T-69–71/T-76; Stage9 T-64–69; Stage10 all applicable T-01–76.
+Stage0 health smoke/T-54 subset; Stage1 T-37–44; Stage2 T-45–46; Stage3 T-18–20/T-47–48; Stage4 T-49–51/T-59; Stage5 T-01–17/T-52–53/T-72–74; Stage6 T-21–28/T-33–35/T-54–57/T-75–76; Stage7 T-58–62 plus T-63 implementation/static prerequisites; Stage8 T-29–35/T-69–71/T-76; Stage9 T-64–69; Stage10 all applicable T-01–76，including mandatory real-browser T-63. By explicit Human decision on 2026-09-20，T-63 real-browser execution is deferred from Stage7 to Stage10 because the current ChatGPT Work workspace cannot provide a browser that can access repository localhost. This sequencing change does not mark T-63 PASS or lower the Final MVP Gate.
 
 ## Reporting
 

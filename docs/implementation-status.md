@@ -10,13 +10,13 @@
 ## Current Project Status
 
 ```text
-PROJECT_STATUS: BLOCKED
+PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 7 — Web Dashboard
-CURRENT_TASK: TASK-0704 — 360px Layout
-LAST_COMPLETED_TASK: TASK-0703 — Browser-Local Time
-BLOCKED: YES
-HUMAN_REQUIRED: YES
+CURRENT_TASK: TASK-0705 — Web Dashboard E2E
+LAST_COMPLETED_TASK: TASK-0704 — 360px Layout Implementation
+BLOCKED: NO
+HUMAN_REQUIRED: NO
 ```
 
 ## Status Rules
@@ -36,14 +36,14 @@ DONE 必須有 Implementation + Test + Validation evidence。
 | Stage 4 ChatGPT Login | IN_PROGRESS |
 | Stage 5 Rate Limit Domain | DONE |
 | Stage 6 REST API | DONE |
-| Stage 7 Web Dashboard | BLOCKED |
+| Stage 7 Web Dashboard | IN_PROGRESS |
 | Stage 8 Security Hardening | NOT_STARTED |
 | Stage 9 Docker Deployment | NOT_STARTED |
 | Stage 10 Final MVP Validation | NOT_STARTED |
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0703 DONE。TASK-0704 BLOCKED / HUMAN_REQUIRED。TASK-0705～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0704 DONE。TASK-0705 READY。TASK-0801～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
 
 ## Real Runtime Validation Ledger
 
@@ -55,7 +55,7 @@ Server API token authentication：PASS（Automated Verified；T-25～T-28）。A
 
 ## Known Blockers
 
-TASK-0704 T-63 lacks a runnable browser layout engine in the current ChatGPT Work workspace. The Work runtime provides the Playwright package, but `chromium.executablePath()` resolves to `/root/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome`, and that executable is absent. Fresh PATH/common-directory/recursive executable checks also found no Chrome/Chromium/Firefox. Two default 30-second official CDN attempts timed out；a 120-second attempt returned a zero-byte/non-ZIP artifact and failed extraction, so the workspace could not acquire Chromium through the available download path. On 2026-09-20，a fresh retry served the repository `web/` directory through a temporary local HTTP server and attempted the Cloud Browser navigation to `http://127.0.0.1:8765/`; the browser returned `net::ERR_BLOCKED_BY_CLIENT` and changed the tab to `chrome-error://chromewebdata/`. A follow-up DOM inspection was rejected by the browser security policy，which explicitly forbids workarounds. CSS/static tests and the full deterministic suite pass，but they cannot replace the required 360px layout measurement.
+No current implementation task is blocked. Deferred Final Gate blocker: T-63 lacks a runnable browser layout engine in the current ChatGPT Work workspace. The Work runtime provides the Playwright package, but `chromium.executablePath()` resolves to `/root/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome`, and that executable is absent. Fresh PATH/common-directory/recursive executable checks also found no Chrome/Chromium/Firefox. Two default 30-second official CDN attempts timed out；a 120-second attempt returned a zero-byte/non-ZIP artifact and failed extraction, so the workspace could not acquire Chromium through the available download path. On 2026-09-20，a fresh retry served the repository `web/` directory through a temporary local HTTP server and attempted the Cloud Browser navigation to `http://127.0.0.1:8765/`; the browser returned `net::ERR_BLOCKED_BY_CLIENT` and changed the tab to `chrome-error://chromewebdata/`. A follow-up DOM inspection was rejected by the browser security policy，which explicitly forbids workarounds. CSS/static tests and the full deterministic suite pass，but they cannot replace the required 360px layout measurement. Human approved deferring this real-browser execution to Stage10；T-63 remains BLOCKED/NOT_RUN and prevents Final `OVERALL: PASS` until real evidence exists.
 
 ## Human Decisions
 
@@ -63,11 +63,13 @@ Human completed the official Codex device-auth flow to restore the current CLI s
 
 On 2026-09-20，the human directed Sol to handle planning、review gates、blockers and work that Luna could not complete，while simple bounded implementation tasks should still be delegated to Luna when practical. This execution-role decision does not waive T-63，change the canonical SDD，or authorize TASK-0705 to start while TASK-0704 is blocked.
 
-The user does not need to provide a local executable path. The current ChatGPT Work workspace cannot supply or acquire the required browser under the recorded constraints. Human intervention is required only to choose a browser-capable workspace/session or provide complete sanitized T-63 PASS evidence produced in such an environment; alternatively, the human may explicitly decide whether to change the canonical validation requirement. Sol must review T-63 before TASK-0705 may start, and must not lower the acceptance criteria automatically.
+On 2026-09-20，the human explicitly approved deferring real-browser T-63 to Stage10 and continuing with TASK-0705. This is a sequencing change only：T-63 remains mandatory，is not PASS，and must block Final `OVERALL: PASS` until real evidence exists.
+
+The user does not need to provide a local executable path. The current ChatGPT Work workspace cannot supply or acquire the required browser under the recorded constraints. A browser-capable workspace/session or complete sanitized real-browser T-63 PASS evidence will still be required at Stage10.
 
 ## Known Limitations
 
-Stages 0–3、5 and 6 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0704 CSS/static validation and full regression PASS (`208 passed`)，but T-63 is BLOCKED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-58 and the full Stage 7 E2E gate remain NOT_RUN. Logging redaction T-29～T-32 and TASK-0802 security revalidation remain NOT_RUN；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
+Stages 0–3、5 and 6 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0704 CSS/static validation PASS (`3 passed`) and deterministic regression PASS (`208 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-58 remains NOT_RUN until TASK-0705. Logging redaction T-29～T-32 and TASK-0802 security revalidation remain NOT_RUN；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
 
 ## Completed Task Record
 
@@ -537,6 +539,19 @@ Stages 0–3、5 and 6 are complete. Stage 4 implementation tasks are complete b
 - KNOWN_UNKNOWNS: Real-browser locale rendering、360px T-63 and full dashboard data-fetch/E2E T-58 remain NOT_RUN until TASK-0704/TASK-0705
 - NEXT_TASK: TASK-0704 — 360px Layout
 
+### TASK-0704 — 360px Layout Implementation
+
+- STATUS: DONE（implementation/static validation；real-browser T-63 explicitly deferred to Stage10 by Human decision）
+- COMPLETED: 2026-09-20
+- EXECUTION_AGENT: Sol direct execution and reconciliation
+- CHANGED_FILES: `web/assets/styles.css`, `server/tests/integration/test_mobile_layout.py`, `server/tests/fixtures/mobile_layout_browser.mjs`, `docs/test-plan.md`, `docs/implementation-plan.md`, `docs/implementation-status.md`
+- TESTS: TASK-0704 static prerequisites PASS (`3 passed`)；deterministic unit/non-real integration regression PASS (`208 passed`)；T-63 BLOCKED/DEFERRED，not PASS
+- VALIDATION: `PYTHONPATH=server /tmp/task0704-venv.ouzhoG/bin/python -m pytest -q server/tests/integration/test_mobile_layout.py` PASS (`3 passed`)；deterministic suite with six real-runtime integration modules explicitly excluded PASS (`208 passed`)；`git diff --check` PASS
+- RUNTIME_EVIDENCE: Cloud Browser navigation to the temporary repository server at `http://127.0.0.1:8765/` failed with `net::ERR_BLOCKED_BY_CLIENT`；local Playwright Chromium executable is absent；T-63 remains BLOCKED/NOT_RUN
+- SECURITY_EVIDENCE: No credential source、request、response or log was used；temporary static server was stopped after the browser reachability check
+- KNOWN_UNKNOWNS: Actual 360px rendered overflow behavior remains unverified until mandatory Stage10 T-63；this prevents Final `OVERALL: PASS` but no longer blocks implementation sequencing
+- NEXT_TASK: TASK-0705 — Web Dashboard E2E
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -550,7 +565,7 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 ## Current Next Action
 
 ```text
-STATUS: HUMAN_REQUIRED
-BLOCKED_TASK: TASK-0704
-NEXT_ACTION: HUMAN_REQUIRED — resume TASK-0704 in a browser-capable workspace/session or provide complete sanitized real-browser T-63 evidence；do not request a local executable path from the user or start TASK-0705 before Sol review.
+STATUS: CONTINUE
+DEFERRED_GATE: T-63 — BLOCKED/NOT_RUN until Stage10 real-browser evidence
+NEXT_ACTION: TASK-0705 — Web Dashboard E2E
 ```
