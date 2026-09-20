@@ -97,6 +97,109 @@ export function renderRateLimitCards(document, container, limits) {
   for (const limit of limits) container.appendChild(createRateLimitCard(document, limit));
 }
 
+function appendText(document, parent, label, value) {
+  const row = document.createElement("p");
+  const prefix = document.createElement("strong");
+  prefix.textContent = `${label}: `;
+  row.appendChild(prefix);
+  const text = document.createElement("span");
+  text.textContent = value;
+  row.appendChild(text);
+  parent.appendChild(row);
+}
+
+function safeBooleanLabel(value, fallback = "Unknown") {
+  return typeof value === "boolean" ? (value ? "Yes" : "No") : fallback;
+}
+
+function renderAccountSummary(document, section, account) {
+  section.replaceChildren();
+  const heading = document.createElement("h2");
+  heading.id = "account-title";
+  heading.textContent = "Account";
+  section.appendChild(heading);
+  appendText(document, section, "Authenticated", safeBooleanLabel(account?.authenticated));
+  appendText(document, section, "Auth mode", safeLabel(account?.authMode, "Unknown"));
+  appendText(document, section, "Plan", safeLabel(account?.planType, "Unknown"));
+}
+
+function renderResetCredits(document, section, resetCredits) {
+  section.replaceChildren();
+  const heading = document.createElement("h2");
+  heading.id = "reset-credit-title";
+  heading.textContent = "Reset credits";
+  section.appendChild(heading);
+  const rawCount = resetCredits?.availableCount;
+  const numericCount = rawCount === null || rawCount === undefined || rawCount === ""
+    ? null : Number(rawCount);
+  const count = Number.isFinite(numericCount) ? Math.max(0, numericCount) : null;
+  appendText(document, section, "Available", count === null ? "Unknown" : String(count));
+}
+
+/** Connect to the server REST API using a token kept only for this request. */
+export function createDashboardUI({ document, fetchImpl, now = () => new Date() }) {
+  const elements = {
+    token: document.getElementById("server-token"),
+    connect: document.getElementById("connect-button"),
+    status: document.getElementById("connection-status"),
+    account: document.getElementById("account-summary"),
+    resetCredits: document.getElementById("reset-credit-summary"),
+    limits: document.getElementById("rate-limit-list"),
+    updated: document.getElementById("last-updated"),
+  };
+
+  function setConnectionState(message) {
+    elements.status.textContent = message;
+  }
+
+  async function request(path, token) {
+    const response = await fetchImpl(path, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    let body;
+    try { body = await response.json(); } catch { throw new Error("Request failed"); }
+    if (!response.ok || !body || typeof body !== "object" || Array.isArray(body)) {
+      throw new Error("Request failed");
+    }
+    return body;
+  }
+
+  async function connect() {
+    // Read at click time; the local is released when this operation settles.
+    const token = typeof elements.token.value === "string" ? elements.token.value : "";
+    if (!token.trim()) {
+      setConnectionState("Connection failed");
+      elements.token.value = "";
+      return;
+    }
+    elements.connect.disabled = true;
+    setConnectionState("Connecting…");
+    try {
+      const [status, account, rateLimits] = await Promise.all([
+        request("/api/v1/status", token),
+        request("/api/v1/account", token),
+        request("/api/v1/rate-limits", token),
+      ]);
+      if (status.status !== "ok" || !Array.isArray(rateLimits.limits)) throw new Error("Request failed");
+      renderAccountSummary(document, elements.account, account);
+      renderResetCredits(document, elements.resetCredits, rateLimits.resetCredits);
+      renderRateLimitCards(document, elements.limits, rateLimits.limits);
+      elements.updated.textContent = formatLocalTime(now().toISOString());
+      setConnectionState("Connected");
+    } catch {
+      setConnectionState("Connection failed");
+    } finally {
+      elements.connect.disabled = false;
+      // Do not leave the bearer token in the input after use.
+      elements.token.value = "";
+    }
+  }
+
+  elements.connect.addEventListener("click", connect);
+  return { connect };
+}
+
 function safeVerificationUrl(value) {
   // Only activate ordinary web links; never turn protocol-controlled schemes into hrefs.
   try {
@@ -186,6 +289,10 @@ export function createLoginUI({ document, fetchImpl, reload, schedule = setTimeo
 }
 
 if (typeof document !== "undefined") {
+  createDashboardUI({
+    document,
+    fetchImpl: (...args) => fetch(...args),
+  });
   createLoginUI({
     document,
     fetchImpl: (...args) => fetch(...args),

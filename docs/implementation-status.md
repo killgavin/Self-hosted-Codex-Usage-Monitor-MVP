@@ -12,9 +12,9 @@
 ```text
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
-CURRENT_STAGE: Stage 7 — Web Dashboard
-CURRENT_TASK: TASK-0705 — Web Dashboard E2E
-LAST_COMPLETED_TASK: TASK-0704 — 360px Layout Implementation
+CURRENT_STAGE: Stage 8 — Security Hardening
+CURRENT_TASK: TASK-0801 — Logging Redaction
+LAST_COMPLETED_TASK: TASK-0705 — Web Dashboard E2E
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -36,14 +36,14 @@ DONE 必須有 Implementation + Test + Validation evidence。
 | Stage 4 ChatGPT Login | IN_PROGRESS |
 | Stage 5 Rate Limit Domain | DONE |
 | Stage 6 REST API | DONE |
-| Stage 7 Web Dashboard | IN_PROGRESS |
-| Stage 8 Security Hardening | NOT_STARTED |
+| Stage 7 Web Dashboard | DONE（T-63 deferred Final Gate） |
+| Stage 8 Security Hardening | IN_PROGRESS |
 | Stage 9 Docker Deployment | NOT_STARTED |
 | Stage 10 Final MVP Validation | NOT_STARTED |
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0704 DONE。TASK-0705 READY。TASK-0801～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705 DONE。TASK-0801 READY。TASK-0802～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
 
 ## Real Runtime Validation Ledger
 
@@ -69,7 +69,7 @@ The user does not need to provide a local executable path. The current ChatGPT W
 
 ## Known Limitations
 
-Stages 0–3、5 and 6 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-59 is Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0704 CSS/static validation PASS (`3 passed`) and deterministic regression PASS (`208 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-58 remains NOT_RUN until TASK-0705. Logging redaction T-29～T-32 and TASK-0802 security revalidation remain NOT_RUN；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
+Stages 0–3、5、6 and 7 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. Logging redaction T-29～T-32 and TASK-0802 security revalidation remain NOT_RUN；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
 
 ## Completed Task Record
 
@@ -552,6 +552,19 @@ Stages 0–3、5 and 6 are complete. Stage 4 implementation tasks are complete b
 - KNOWN_UNKNOWNS: Actual 360px rendered overflow behavior remains unverified until mandatory Stage10 T-63；this prevents Final `OVERALL: PASS` but no longer blocks implementation sequencing
 - NEXT_TASK: TASK-0705 — Web Dashboard E2E
 
+### TASK-0705 — Web Dashboard E2E
+
+- STATUS: DONE
+- COMPLETED: 2026-09-20
+- EXECUTION_AGENT: GPT-5.6 Luna bounded implementation；Sol Review Gate PASS after two evidence fixes
+- CHANGED_FILES: `web/assets/app.mjs`, `server/tests/fixtures/dashboard_e2e_behavior.mjs`, `server/tests/integration/test_dashboard_e2e.py`, `docs/implementation-status.md`
+- TESTS: T-58 PASS（Automated/Mock Verified only）；T-59 PASS；T-60 PASS；T-61 PASS；T-62 PASS；T-63 BLOCKED/DEFERRED，NOT_RUN
+- VALIDATION: `node server/tests/fixtures/dashboard_e2e_behavior.mjs` PASS；focused dashboard/login/card/local-time/mobile-static UI suite PASS (`13 passed`)；deterministic unit/non-real integration suite PASS (`212 passed`)；Python compile、`git diff --check`、allowed-scope and credential/direct-call scans PASS
+- RUNTIME_EVIDENCE: Node/mock only — actual fixture execution exercised three same-origin authenticated GETs、success and non-OK failure states、whitespace-token rejection、safe account/reset/rate rendering、generic cards、browser-local last-updated formatting、accessibility heading IDs and token clearing. No real-browser evidence.
+- SECURITY_EVIDENCE: Token is read at Connect action time，sent only as same-origin Bearer headers，then cleared；no storage APIs、cookies、URL token、raw payload rendering、direct OpenAI/Codex calls or token logging. Rendered element trees were inspected for private/raw markers.
+- KNOWN_UNKNOWNS: T-63 real-browser mobile validation remains BLOCKED/DEFERRED until mandatory Stage10 evidence.
+- NEXT_TASK: TASK-0801 — Logging Redaction
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -567,5 +580,5 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 ```text
 STATUS: CONTINUE
 DEFERRED_GATE: T-63 — BLOCKED/NOT_RUN until Stage10 real-browser evidence
-NEXT_ACTION: TASK-0705 — Web Dashboard E2E
+NEXT_ACTION: TASK-0801 — Logging Redaction
 ```
