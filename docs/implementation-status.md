@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 8 — Security Hardening
-CURRENT_TASK: TASK-0802 — Sanitization Revalidation
-LAST_COMPLETED_TASK: TASK-0801 — Logging Redaction
+CURRENT_TASK: TASK-0803 — Default 127.0.0.1
+LAST_COMPLETED_TASK: TASK-0802 — Sanitization Revalidation
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801 DONE。TASK-0802 READY。TASK-0803～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0802 DONE。TASK-0803 READY。TASK-0804～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
 
 ## Real Runtime Validation Ledger
 
@@ -51,7 +51,7 @@ Codex executable：PASS（Real Codex Verified, latest rerun `codex-cli 0.155.1`�
 
 ## Security Validation Ledger
 
-Server API token authentication：PASS（Automated Verified；T-25～T-28）。Logging redaction：PASS（Automated/Synthetic Verified；T-29～T-32，including final Formatter output and exception text）。Account API isolation：PASS（Automated Verified；T-33/T-55）。Rate Limit API isolation and successful-response raw protocol isolation：PASS（Automated Verified；T-34/T-56/T-57/T-75/T-76）。Error sanitization：PASS（Automated Verified；T-35）。
+Server API token authentication：PASS（Automated Verified；T-25～T-28）。Logging redaction：PASS（Automated/Synthetic Verified；T-29～T-32，including final Formatter output and exception text）。Account API isolation：PASS（Automated/Synthetic Revalidated；T-33/T-55）。Rate Limit API isolation and successful-response raw protocol isolation：PASS（Automated/Synthetic Revalidated；T-34/T-56/T-57/T-75/T-76）。Error sanitization：PASS（Automated/Synthetic Revalidated；T-35）。
 
 ## Known Blockers
 
@@ -69,7 +69,7 @@ The user does not need to provide a local executable path. The current ChatGPT W
 
 ## Known Limitations
 
-Stages 0–3、5、6 and 7 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. Logging redaction T-29～T-32 is Automated/Synthetic Verified；TASK-0802 security revalidation remains NOT_RUN；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
+Stages 0–3、5、6 and 7 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and default app runtime initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. Logging redaction T-29～T-32 and REST sanitization T-33～T-35/T-76 are Automated/Synthetic Verified；Codex degraded/exit/upstream behavior T-69～T-71 remains NOT_RUN until TASK-0804.
 
 ## Completed Task Record
 
@@ -578,6 +578,19 @@ Stages 0–3、5、6 and 7 are complete. Stage 4 implementation tasks are comple
 - KNOWN_UNKNOWNS: The filter is a reusable logging boundary；the current application has no credential-bearing application log sites. Any future handler/logger that may emit sensitive data must attach the filter and be revalidated.
 - NEXT_TASK: TASK-0802 — Sanitization Revalidation
 
+### TASK-0802 — Sanitization Revalidation
+
+- STATUS: DONE
+- COMPLETED: 2026-09-20
+- EXECUTION_AGENT: GPT-5.6 Luna validation-only bounded task；Sol independent rerun PASS
+- CHANGED_FILES: `docs/implementation-status.md` only；no implementation change was required
+- TESTS: T-33 PASS；T-34 PASS；T-35 PASS；T-76 PASS（Automated/Synthetic Revalidated）
+- VALIDATION: focused account/rate-limit/error/login/server-token/redaction suite PASS (`38 passed`)；deterministic unit/non-real integration suite PASS (`221 passed`)；Python compile and `git diff --check` PASS
+- RUNTIME_EVIDENCE: Actual in-process ASGI requests with synthetic monitor tokens and private markers verified exact success schemas、fixed error envelopes and raw-metadata isolation. No Real Codex or real-account request occurred.
+- SECURITY_EVIDENCE: Synthetic exception messages、server tokens、Authorization/Cookie/token field names、traceback markers and raw compatibility metadata were absent from public response bodies；missing/invalid token short-circuit behavior remained covered.
+- KNOWN_UNKNOWNS: NONE within TASK-0802；degraded/runtime-exit behavior remains TASK-0804.
+- NEXT_TASK: TASK-0803 — Default 127.0.0.1
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -593,5 +606,5 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 ```text
 STATUS: CONTINUE
 DEFERRED_GATE: T-63 — BLOCKED/NOT_RUN until Stage10 real-browser evidence
-NEXT_ACTION: TASK-0802 — Sanitization Revalidation
+NEXT_ACTION: TASK-0803 — Default 127.0.0.1
 ```
