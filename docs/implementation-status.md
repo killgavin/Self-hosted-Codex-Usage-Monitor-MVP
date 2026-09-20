@@ -12,9 +12,9 @@
 ```text
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
-CURRENT_STAGE: Stage 9 — Docker Deployment
-CURRENT_TASK: TASK-0904 — Deployment Documentation
-LAST_COMPLETED_TASK: TASK-0903 — Persistence
+CURRENT_STAGE: Stage 10 — Final MVP Validation
+CURRENT_TASK: TASK-1001 — Automated Validation Sweep
+LAST_COMPLETED_TASK: TASK-0904 — Deployment Documentation
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -38,12 +38,12 @@ DONE 必須有 Implementation + Test + Validation evidence。
 | Stage 6 REST API | DONE |
 | Stage 7 Web Dashboard | DONE（T-63 deferred Final Gate） |
 | Stage 8 Security Hardening | DONE |
-| Stage 9 Docker Deployment | IN_PROGRESS |
-| Stage 10 Final MVP Validation | NOT_STARTED |
+| Stage 9 Docker Deployment | DONE（implementation/static；T-64～T-68 deferred Final Gate） |
+| Stage 10 Final MVP Validation | IN_PROGRESS |
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804、TASK-0901～TASK-0903 DONE。TASK-0904～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 and T-64～T-68 real validation remain BLOCKED/DEFERRED mandatory Stage 10 gates，not PASS.
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0804、TASK-0901～TASK-0904 DONE。TASK-1001～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 and T-64～T-68 real validation remain BLOCKED/DEFERRED mandatory Stage 10 gates，not PASS.
 
 ## Real Runtime Validation Ledger
 
@@ -73,7 +73,7 @@ The user does not need to provide a local executable path. The current ChatGPT W
 
 ## Known Limitations
 
-Stages 0–3、5–8 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and real default-app lifespan initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-69～T-71 are Automated/Mock/Synthetic Verified；an actual OS-level unexpected Real Codex exit was not executed and is not claimed. TASK-0901～TASK-0903 Docker implementation/static tests PASS，but image build、container runtime and T-64～T-68 are BLOCKED/NOT_RUN until Stage10.
+Stages 0–3、5–9 are complete. Stage 4 implementation tasks are complete but the stage remains IN_PROGRESS because production AuthService/app-server login completion T-50 is NOT_RUN. T-58/T-59 are Automated/Mock Verified only；real browser、real logout and real default-app lifespan initialization remain NOT_RUN/deferred. Stage 5 T-52/T-53 are Real Codex Verified；actual account identity、quota values and raw protocol payloads were deliberately not recorded. Stage 6 REST/auth/schema/error/cache tests are Automated Verified with injected services and are not end-to-end Real Codex REST evidence. Stage 7 T-60～T-62 are Automated Verified；TASK-0705 focused UI validation PASS (`13 passed`) and deterministic regression PASS (`212 passed`)，while T-63 remains BLOCKED/DEFERRED because the workspace has neither a runnable local browser executable nor Cloud Browser access to repository localhost. T-69～T-71 are Automated/Mock/Synthetic Verified；an actual OS-level unexpected Real Codex exit was not executed and is not claimed. TASK-0901～TASK-0904 Docker implementation/static validation PASS，but image build、container runtime and T-64～T-68 are BLOCKED/NOT_RUN pending their mandatory Stage10 gate.
 
 ## Completed Task Record
 
@@ -660,6 +660,19 @@ Stages 0–3、5–8 are complete. Stage 4 implementation tasks are complete but
 - KNOWN_UNKNOWNS: Actual Codex credential/config path, non-root UID/permission behavior on a mounted volume, restart retention, rebuild retention, Compose interpolation and volume ownership remain unverified until T-67～T-68 run with an available Docker-capable runner.
 - NEXT_TASK: TASK-0904 — Deployment Documentation
 
+### TASK-0904 — Deployment Documentation
+
+- STATUS: DONE（documentation/static validation；real Docker T-64～T-68 explicitly deferred to Stage10 by Human decision）
+- COMPLETED: 2026-09-20
+- EXECUTION_AGENT: GPT-5.6 Luna bounded implementation；Sol Review Gate PASS
+- CHANGED_FILES: `.gitignore`, `README.md`, `docs/deployment.md`, `server/tests/integration/test_deployment_docs.py`, `docs/implementation-status.md`
+- TESTS: Deployment documentation plus Dockerfile/Compose/Persistence static suites PASS (`28 passed`)；deterministic suite with exactly six real-runtime integration modules excluded PASS (`268 passed`)；T-64 BLOCKED/NOT_RUN；T-65 BLOCKED/NOT_RUN；T-66 BLOCKED/NOT_RUN；T-67 BLOCKED/NOT_RUN；T-68 BLOCKED/NOT_RUN
+- VALIDATION: `/tmp/task0704-venv.ouzhoG/bin/python -m pytest -q server/tests/integration/test_deployment_docs.py server/tests/integration/test_dockerfile.py server/tests/integration/test_docker_compose.py server/tests/integration/test_docker_persistence.py` PASS (`28 passed`)；`/tmp/task0704-venv.ouzhoG/bin/python -m pytest -q server/tests --ignore=server/tests/integration/test_account_read.py --ignore=server/tests/integration/test_initialize.py --ignore=server/tests/integration/test_login.py --ignore=server/tests/integration/test_process_start.py --ignore=server/tests/integration/test_process_stop.py --ignore=server/tests/integration/test_rate_limits.py` PASS (`268 passed`)；`python -m compileall -q server/app server/tests` PASS；`git diff --check` PASS；allowed-file, Markdown-link, private-endpoint, credential, and deferred-runtime-claim checks PASS. No Docker command was executed.
+- RUNTIME_EVIDENCE: NONE；no image build, container startup, healthcheck, UID/permission, credential persistence, restart, or rebuild runtime evidence was generated.
+- SECURITY_EVIDENCE: Documentation contains no private endpoint, guessed credential path, direct credential provisioning, direct browser-to-OpenAI flow, or real credential material；blank monitor token fail-closed behavior and loopback default are documented.
+- KNOWN_UNKNOWNS: Actual Docker runtime behavior, credential internal path, UID/permissions on the mounted volume, and restart/rebuild persistence remain unverified until Stage10 T-64～T-68.
+- NEXT_TASK: TASK-1001 — Automated Validation Sweep
+
 ## Luna Update Rules
 
 Luna 只可更新 current status、relevant task/stage、runtime/security ledger、blockers、human decisions、completed task record。不得在此修改 Requirement、Architecture、Task definition、Test requirement 或 Acceptance Criteria。
@@ -674,5 +687,5 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 STATUS: CONTINUE
 DEFERRED_GATE: T-63 — BLOCKED/NOT_RUN until Stage10 real-browser evidence
 DEFERRED_DOCKER_GATE: T-64～T-68 — BLOCKED/NOT_RUN until Stage10 real Docker evidence
-NEXT_ACTION: TASK-0904 — Deployment Documentation
+NEXT_ACTION: TASK-1001 — Automated Validation Sweep
 ```

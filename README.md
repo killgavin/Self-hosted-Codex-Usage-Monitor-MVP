@@ -1,14 +1,51 @@
 # Self-hosted Codex Usage Monitor
 
-This repository currently contains the MVP Python server project skeleton. It
-does not provide usable runtime functionality yet.
+This repository contains the self-hosted MVP server and web dashboard for
+reading Codex account status and rate limits through the official Codex
+app-server interface. The monitor is intended to run on a machine you control;
+OpenAI credentials remain on that server and are never sent to the browser or
+returned by the monitor API.
 
-The canonical requirements and design documents are in:
+## Architecture and security boundary
 
-- [`docs/specification.md`](docs/specification.md)
-- [`docs/design.md`](docs/design.md)
-- [`docs/test-plan.md`](docs/test-plan.md)
-- [`docs/implementation-plan.md`](docs/implementation-plan.md)
+The FastAPI monitor starts the official Codex app-server as a local process and
+exposes a same-origin REST API plus dashboard. The browser talks only to the
+monitor. The monitor's separate `CODEX_MONITOR_API_TOKEN` protects data routes;
+it is not an OpenAI credential. The Compose setup publishes to loopback by
+default, drops Linux capabilities, and runs the image as its dedicated runtime
+user. Remote access should use an HTTPS reverse proxy, Tailscale, or another
+equivalent protected path—not direct public exposure.
 
-Implementation will be added incrementally according to the implementation
-plan.
+## Quick start
+
+Docker Engine with Compose v2 is required. The complete, copyable setup,
+configuration, login, persistence, and troubleshooting instructions are in
+[`docs/deployment.md`](docs/deployment.md). The short path is:
+
+```sh
+umask 077
+printf 'CODEX_MONITOR_API_TOKEN=%s\n' "$(openssl rand -hex 32)" > .env
+chmod 600 .env
+docker compose up -d --build
+```
+
+The monitor token must be non-blank for the protected data endpoints; follow
+the [token setup instructions](docs/deployment.md#configure-the-monitor-token)
+before running Compose.
+
+Then open `http://127.0.0.1:8080/` and use the dashboard's official
+Codex/ChatGPT device-code login flow.
+
+This repository currently has static and automated evidence for the documented
+contracts. Image build, container runtime, UID/permission behavior, and volume
+persistence still require the Docker-capable Stage 10 validation; this README
+does not claim those runtime checks passed.
+
+## Canonical documentation
+
+- [`docs/specification.md`](docs/specification.md) — requirements and security invariants
+- [`docs/design.md`](docs/design.md) — architecture and implementation design
+- [`docs/test-plan.md`](docs/test-plan.md) — test matrix and evidence rules
+- [`docs/implementation-plan.md`](docs/implementation-plan.md) — staged task plan
+- [`docs/implementation-status.md`](docs/implementation-status.md) — current implementation evidence
+- [`docs/deployment.md`](docs/deployment.md) — operational deployment guide

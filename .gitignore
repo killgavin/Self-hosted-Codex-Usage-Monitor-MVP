@@ -19,3 +19,7 @@ env/
 build/
 dist/
 *.egg-info/
+
+# Local Compose environment files may contain the monitor token
+.env
+.env.*
