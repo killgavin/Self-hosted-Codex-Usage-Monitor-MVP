@@ -13,8 +13,8 @@
 PROJECT_STATUS: IN_PROGRESS
 CURRENT_PHASE: MVP
 CURRENT_STAGE: Stage 8 — Security Hardening
-CURRENT_TASK: TASK-0803 — Default 127.0.0.1
-LAST_COMPLETED_TASK: TASK-0802 — Sanitization Revalidation
+CURRENT_TASK: TASK-0804 — Degraded Runtime
+LAST_COMPLETED_TASK: TASK-0803 — Default 127.0.0.1
 BLOCKED: NO
 HUMAN_REQUIRED: NO
 ```
@@ -43,7 +43,7 @@ DONE 必須有 Implementation + Test + Validation evidence。
 
 ## Task Ledger
 
-TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0802 DONE。TASK-0803 READY。TASK-0804～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
+TASK-0001～TASK-0003、TASK-0101～TASK-0106、TASK-0201～TASK-0203、TASK-0301～TASK-0304、TASK-0401～TASK-0406、TASK-0501～TASK-0507、TASK-0601～TASK-0606、TASK-0701～TASK-0705、TASK-0801～TASK-0803 DONE。TASK-0804 READY。TASK-0901～TASK-1007 依 implementation-plan.md 為 NOT_STARTED。T-63 real-browser validation remains BLOCKED/DEFERRED and is a mandatory Stage 10 gate，not a PASS.
 
 ## Real Runtime Validation Ledger
 
@@ -591,6 +591,19 @@ Stages 0–3、5、6 and 7 are complete. Stage 4 implementation tasks are comple
 - KNOWN_UNKNOWNS: NONE within TASK-0802；degraded/runtime-exit behavior remains TASK-0804.
 - NEXT_TASK: TASK-0803 — Default 127.0.0.1
 
+### TASK-0803 — Default 127.0.0.1
+
+- STATUS: DONE
+- COMPLETED: 2026-09-20
+- EXECUTION_AGENT: GPT-5.6 Luna bounded implementation
+- CHANGED_FILES: `server/app/config.py`, `server/app/__main__.py`, `server/tests/unit/test_config.py`, `server/tests/unit/test_server_entrypoint.py`, `docs/implementation-status.md`
+- TESTS: Configuration and entrypoint unit suite PASS (`18 passed`, Automated/Mock Verified)；deterministic unit/non-real integration suite PASS (`234 passed`)
+- VALIDATION: `PYTHONPATH=server /tmp/task0704-venv.ouzhoG/bin/python -m pytest -q server/tests/unit/test_config.py server/tests/unit/test_server_entrypoint.py` PASS；deterministic suite with six real-runtime integration modules explicitly excluded PASS；Python compile、`git diff --check`、allowed-scope inspection PASS
+- RUNTIME_EVIDENCE: Automated/Mock only — uvicorn.run received exact safe defaults and explicit overrides；import did not start a listener. No real server socket or LAN exposure was opened.
+- SECURITY_EVIDENCE: Missing/blank host resolves to loopback；`0.0.0.0` is accepted only as an explicit environment override；invalid port/log-level errors are fixed and sanitized；no credentials or raw configuration values are logged.
+- KNOWN_UNKNOWNS: NONE within TASK-0803；degraded/runtime-exit behavior remains TASK-0804.
+- NEXT_TASK: TASK-0804 — Degraded Runtime
+
 完成 Task 後追加 TASK、STATUS、COMPLETED、CHANGED_FILES、TESTS、VALIDATION、RUNTIME_EVIDENCE、KNOWN_UNKNOWNS、NEXT_TASK。
 
 ## Luna Update Rules
@@ -606,5 +619,5 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 ```text
 STATUS: CONTINUE
 DEFERRED_GATE: T-63 — BLOCKED/NOT_RUN until Stage10 real-browser evidence
-NEXT_ACTION: TASK-0803 — Default 127.0.0.1
+NEXT_ACTION: TASK-0804 — Degraded Runtime
 ```
