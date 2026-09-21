@@ -756,6 +756,16 @@ Stages 0–10 are complete, including real Docker runtime validation in Stage 9 
 ## Final Report
 
 ```text
+AUTOMATED: PASS — deterministic unit/integration/static validation passed; Stage 10 security suite passed (38 passed)
+REAL_CODEX: PASS — official codex-cli 0.155.1 app-server startup, protocol, account/rate-limit and login evidence passed
+REAL_ACCOUNT: PASS — real account/rate-limit flow and multiple buckets verified; identity and raw account/quota values were not recorded
+SECURITY: PASS — token isolation, redaction, sanitization and raw protocol isolation verified
+DOCKER: PASS — T-64 through T-68 real Debian 13 Docker runtime validation passed
+WEB: PASS — T-63 real Chrome 360px validation passed with no required horizontal overflow
+FAILED_TESTS: NONE
+NOT_RUN_TESTS: No mandatory Final Gate tests; non-required real logout, default-app lifespan initialization and OS-level unexpected Real Codex exit remain unexecuted
+BLOCKED_TESTS: NONE
+KNOWN_LIMITATIONS: REST routes are not claimed as end-to-end Real Codex evidence; actual identity/quota payloads were intentionally not retained
 OVERALL: PASS
 MVP COMPLETE
 BLOCKED: NO
@@ -773,7 +783,7 @@ Luna 只可更新 current status、relevant task/stage、runtime/security ledger
 ## Current Next Action
 
 ```text
-STATUS: COMPLETE
+STATUS: GOAL_COMPLETE
 REASON: TASK-1007 — Final Gate Closure completed; all mandatory Final Gates are PASS.
 FINAL_GATE: T-63 — PASS (Real Browser Verified)
 NEXT_ACTION: NONE
