@@ -24,6 +24,45 @@ docker compose up -d --build
 本儲存庫針對所有記載合約皆具備靜態檢查、自動化測試以及真實執行環境驗證紀錄。T-64 至 T-68 已於 Stage 10 在 Debian 13 Docker 環境中完成驗證，涵蓋映像檔建置、Compose 正常啟動、全新儲存卷之未登入行為、容器重啟持久性，以及重建/重新建立容器之資料持久性。真實 Chrome 360px 響應式驗證 T-63 亦為 PASS，已通過 Final MVP Gate。
 整體狀態：`OVERALL: PASS` — `MVP COMPLETE`。
 
+## 服務維護與常用指令
+
+### 1. 如何關閉服務
+依需求可選擇以下兩種關閉方式：
+
+- **暫停服務（保留容器與網路）**：
+  ```sh
+  docker compose stop
+  ```
+  暫時停止容器運作，之後可隨時使用 `docker compose start` 重新喚醒。
+
+- **完全停止並移除容器（推薦，保留登入與配置資料）**：
+  ```sh
+  docker compose down
+  ```
+  會停止並移除容器與專屬網路，但**會完整保留**掛載的具名儲存卷 `codex_monitor_home`（包含您的 Codex 登入憑證與設定檔）。下次執行 `docker compose up -d` 即可無縫復原。
+
+> [!CAUTION]
+> **切勿隨意執行 `docker compose down -v`**。加上 `-v` 旗標會強制刪除具名儲存卷，導致所有保存的 Codex 登入狀態與組態遺失，必須重新進行裝置授權登入。
+
+### 2. 重啟與更新服務
+
+- **日常重新啟動**：
+  ```sh
+  docker compose restart
+  ```
+
+- **更新專案或 Codex 版本後重新建置**：
+  拉取最新程式碼或修改環境變數設定後，執行以下指令重新建置並在背景啟動：
+  ```sh
+  docker compose up -d --build
+  ```
+
+- **檢查運行狀態與日誌**：
+  ```sh
+  docker compose ps
+  docker compose logs -f --tail=100 monitor
+  ```
+
 ## 核心技術文件 (Canonical documentation)
 
 - [`docs/specification.md`](docs/specification.md) — 需求規格與安全不變量 (Requirements and security invariants)
