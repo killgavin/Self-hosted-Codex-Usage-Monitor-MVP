@@ -24,6 +24,26 @@ docker compose up -d --build
 本儲存庫針對所有記載合約皆具備靜態檢查、自動化測試以及真實執行環境驗證紀錄。T-64 至 T-68 已於 Stage 10 在 Debian 13 Docker 環境中完成驗證，涵蓋映像檔建置、Compose 正常啟動、全新儲存卷之未登入行為、容器重啟持久性，以及重建/重新建立容器之資料持久性。真實 Chrome 360px 響應式驗證 T-63 亦為 PASS，已通過 Final MVP Gate。
 整體狀態：`OVERALL: PASS` — `MVP COMPLETE`。
 
+## 網路綁定設定（開放區域網路存取）
+
+預設情況下，Compose 僅將連接埠綁定於本機回路（`127.0.0.1:8080`），防止外部未授權存取。若您需要從區網其他裝置或遠端連線，可將主機監聽介面調整為 `0.0.0.0`：
+
+### 推薦方式：透過 `.env` 設定（最佳實踐）
+在專案根目錄的 `.env` 檔案中加入 `CODEX_MONITOR_BIND_HOST=0.0.0.0`：
+
+```sh
+echo "CODEX_MONITOR_BIND_HOST=0.0.0.0" >> .env
+docker compose up -d
+```
+
+或在單次啟動時直接帶入環境變數：
+```sh
+CODEX_MONITOR_BIND_HOST=0.0.0.0 docker compose up -d
+```
+
+> [!WARNING]
+> 將主機綁定設為 `0.0.0.0` 會使本機所有網路介面（含區網 LAN IP）均可存取該監控服務。請確保該機器處於受保護的受信任內部網路，或已配置主機防火牆限制連線來源；切勿直接暴露於公網（Public Internet）。
+
 ## 服務維護與常用指令
 
 ### 1. 如何關閉服務
