@@ -1,9 +1,8 @@
 # Deployment guide
 
 This guide deploys the self-hosted MVP with the checked-in `Dockerfile` and
-`docker-compose.yml`. It covers the supported Compose contract; it does not
-replace the Docker-capable runtime validation listed in [Validation
-Status](#validation-status).
+`docker-compose.yml`. It covers the supported Compose contract and the
+sanitized real runtime evidence recorded in [Validation Status](#validation-status).
 
 ## Prerequisites
 
@@ -139,11 +138,11 @@ directory `/home/codex-monitor`. The volume's stable identity is
 `codex_monitor_home` unless `CODEX_MONITOR_HOME_VOLUME` supplies an explicit
 override. This is designed to preserve the Codex app-server's configuration and
 credential state across a normal stop, restart, container recreation, or image
-rebuild; the behavior still requires the deferred runtime validation below.
+rebuild. Real Docker validation confirmed persistence across restart and across
+no-cache rebuild with forced container recreation.
 
 The application owns the contents of that whole-home volume. Do not infer an
-internal credential path or change ownership based on an unverified example;
-actual UID/permission behavior remains a runtime validation item.
+internal credential path or change ownership based on an example; the runtime validation used only sanitized authenticated/unauthenticated state and did not inspect credential details.
 
 Normal lifecycle and update commands:
 
@@ -187,13 +186,25 @@ the container and network but keeps the named volume. **Do not run
 
 Static and automated documentation prerequisites pass when the deployment-doc
 contract suite and existing Dockerfile/Compose/persistence static suites pass.
-The documentation checks the actual checked-in Dockerfile and Compose values;
-that evidence is not a container runtime result.
+In addition, a Debian 13 Docker runner supplied the following sanitized Stage
+10 runtime evidence:
 
-T-64, T-65, T-66, T-67, and T-68 remain **BLOCKED/NOT_RUN** pending Stage 10
-on a Docker-capable runner. No Docker image-build, container-runtime,
-UID/permission, credential-persistence, or restart/rebuild persistence claim
-is made here.
+- T-64 PASS — Docker Compose image build.
+- T-65 PASS — Compose startup and healthy container.
+- T-66 PASS — clean named-volume first start reported `authenticated=false`.
+- T-67 PASS — container restart retained `authenticated=true`.
+- T-68 PASS — no-cache rebuild and forced container recreation retained
+  `authenticated=true`.
+
+Real browser validation also passed:
+
+- T-63 PASS — real installed Google Chrome at a 360px viewport; the checked-in
+  mobile layout fixture reported PASS with no required horizontal overflow.
+
+The named volume remained `codex_monitor_home` and the container remained
+healthy. No account identity, token, quota, credential path, or raw protocol
+payload is recorded here. The Final MVP Gate is complete: `OVERALL: PASS` and
+`MVP COMPLETE`.
 
 See the [implementation status ledger](implementation-status.md) and the
-[test plan](test-plan.md) for the evidence rules and deferred gates.
+[test plan](test-plan.md) for the evidence rules and final validation record.

@@ -1,4 +1,4 @@
-"""Static documentation-contract checks for TASK-0904 deployment guidance."""
+"""Static documentation-contract checks for reconciled deployment guidance."""
 
 from pathlib import Path
 import re
@@ -37,7 +37,10 @@ def test_readme_describes_the_mvp_and_links_the_operational_guide() -> None:
     ):
         assert canonical_doc in readme
     assert "Stage 10" in readme
-    assert "does not claim those runtime checks passed" in readme
+    assert "T-64 through T-68 were verified" in readme
+    assert "Debian 13 Docker runner" in readme
+    assert "real Chrome 360px validation T-63 is PASS" in readme
+    assert "`OVERALL: PASS` — `MVP COMPLETE`" in readme
 
 
 def test_relative_markdown_links_resolve() -> None:
@@ -141,11 +144,11 @@ def test_guide_matches_the_whole_home_persistence_contract() -> None:
     assert "docker compose down -v" in guide
     assert "delete" in guide.lower() and "credential state" in guide.lower()
     assert "internal credential path" in guide
-    assert "runtime validation item" in guide
+    assert "runtime validation used only sanitized authenticated/unauthenticated state" in guide
     assert "USER codex-monitor" in dockerfile
     assert "HOME=/home/codex-monitor" in dockerfile
     assert "designed to preserve" in guide
-    assert "requires the deferred runtime validation" in guide
+    assert "Real Docker validation confirmed persistence" in guide
 
 
 def test_private_compose_environment_files_are_ignored() -> None:
@@ -171,16 +174,23 @@ def test_guide_has_safe_lifecycle_troubleshooting_and_no_destructive_fix() -> No
     assert "Do not manually seed or copy" in guide
 
 
-def test_validation_status_does_not_claim_deferred_docker_runtime_passed() -> None:
+def test_validation_status_records_real_docker_runtime_evidence() -> None:
     guide = _read(DEPLOYMENT)
 
     assert "## Validation status" in guide
     for test_id in ("T-64", "T-65", "T-66", "T-67", "T-68"):
         assert test_id in guide
-        assert re.search(rf"{test_id}[^\n]*BLOCKED/NOT_RUN", guide)
-    assert "Docker-capable runner" in guide
-    assert "No Docker image-build, container-runtime" in guide
-    assert not re.search(r"T-6[4-8][^\n]*(?:PASS|passed)", guide, re.IGNORECASE)
+        assert re.search(rf"{test_id} PASS", guide)
+    assert "Debian 13 Docker runner" in guide
+    assert "authenticated=false" in guide
+    assert "authenticated=true" in guide
+    assert "no-cache rebuild and forced container recreation" in guide
+    assert "named volume remained `codex_monitor_home`" in guide
+    assert "T-63 PASS — real installed Google Chrome at a 360px viewport" in guide
+    assert "checked-in\n  mobile layout fixture reported PASS" in guide
+    assert "The Final MVP Gate is complete" in guide
+    assert "`OVERALL: PASS`" in guide
+    assert "`MVP COMPLETE`" in guide
 
 
 def test_documentation_does_not_add_private_endpoint_or_credential_provisioning() -> None:

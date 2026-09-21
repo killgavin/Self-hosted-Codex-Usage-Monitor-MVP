@@ -36,10 +36,12 @@ before running Compose.
 Then open `http://127.0.0.1:8080/` and use the dashboard's official
 Codex/ChatGPT device-code login flow.
 
-This repository currently has static and automated evidence for the documented
-contracts. Image build, container runtime, UID/permission behavior, and volume
-persistence still require the Docker-capable Stage 10 validation; this README
-does not claim those runtime checks passed.
+This repository has static, automated, and real runtime evidence for the
+documented contracts. T-64 through T-68 were verified on a Debian 13 Docker runner
+during Stage 10, covering image build, healthy Compose startup, clean-volume
+unauthenticated behavior, restart persistence, and rebuild/recreate persistence.
+The real Chrome 360px validation T-63 is PASS, completing the Final MVP Gate.
+Overall status: `OVERALL: PASS` — `MVP COMPLETE`.
 
 ## Canonical documentation
 
