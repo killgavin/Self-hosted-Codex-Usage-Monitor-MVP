@@ -15,7 +15,7 @@ def test_default_executable(monkeypatch) -> None:
 
 
 def test_default_server_bind_configuration(monkeypatch) -> None:
-    for name in ("CODEX_MONITOR_HOST", "CODEX_MONITOR_PORT", "LOG_LEVEL"):
+    for name in ("CODEX_MONITOR_HOST", "CODEX_MONITOR_PORT", "CODEX_MONITOR_COOKIE_SECURE", "LOG_LEVEL"):
         monkeypatch.delenv(name, raising=False)
 
     settings = get_settings()
@@ -23,6 +23,20 @@ def test_default_server_bind_configuration(monkeypatch) -> None:
     assert settings.host == "127.0.0.1"
     assert settings.port == 8080
     assert settings.log_level == "info"
+    assert settings.cookie_secure is True
+
+
+def test_cookie_secure_can_be_disabled_explicitly_for_lan_testing(monkeypatch) -> None:
+    monkeypatch.setenv("CODEX_MONITOR_COOKIE_SECURE", "false")
+
+    assert get_settings().cookie_secure is False
+
+
+def test_invalid_cookie_secure_setting_is_rejected(monkeypatch) -> None:
+    monkeypatch.setenv("CODEX_MONITOR_COOKIE_SECURE", "sometimes")
+
+    with pytest.raises(ValueError, match="^CODEX_MONITOR_COOKIE_SECURE must be true or false$"):
+        get_settings()
 
 
 def test_explicit_server_bind_overrides(monkeypatch) -> None:

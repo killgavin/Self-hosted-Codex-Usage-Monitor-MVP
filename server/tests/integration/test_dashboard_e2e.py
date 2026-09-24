@@ -22,7 +22,7 @@ def test_dashboard_connect_is_same_origin_and_does_not_persist_token() -> None:
     assert '"/api/v1/status"' in source
     assert '"/api/v1/account"' in source
     assert '"/api/v1/rate-limits"' in source
-    assert "Authorization" in source and "Bearer ${token}" in source
+    assert '"/api/v1/session"' in source and "Authorization" not in source and "Bearer ${token}" not in source
     assert "localStorage" not in source and "sessionStorage" not in source
     assert "document.cookie" not in source
     assert "/backend-api/" not in source and "console.log" not in source
@@ -30,7 +30,7 @@ def test_dashboard_connect_is_same_origin_and_does_not_persist_token() -> None:
 
 def test_dashboard_shell_has_safe_connection_targets() -> None:
     html = (ROOT.parent / "web" / "index.html").read_text()
-    for required in ("server-token", "connect-button", "connection-status", "account-summary", "reset-credit-summary", "rate-limit-list", "last-updated"):
+    for required in ("server-token", "monitor-logout-button", "connect-button", "connection-status", "account-summary", "reset-credit-summary", "rate-limit-list", "last-updated"):
         assert required in html
     assert 'id="server-token"' in html and 'type="password"' in html
     assert 'id="server-token"' in html and 'value=' not in html

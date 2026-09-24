@@ -21,10 +21,10 @@ def test_readme_describes_the_mvp_and_links_the_operational_guide() -> None:
 
     assert "MVP server and web dashboard" in readme
     assert "project skeleton" not in readme.lower()
-    assert "CODEX_MONITOR_API_TOKEN" in readme
+    assert "CODEX_MONITOR_PASSWORD" in readme
     assert "openssl rand -hex 32" in readme
     assert "docker compose up -d --build" in readme
-    assert "docs/deployment.md#configure-the-monitor-token" in readme
+    assert "docs/deployment.md#configure-monitor-password-and-session-secret" in readme
     assert "docs/deployment.md" in readme
     assert "OpenAI credentials remain on that server" in readme
     assert "loopback" in readme
@@ -51,7 +51,7 @@ def test_relative_markdown_links_resolve() -> None:
             assert (document.parent / target.split("#", 1)[0]).exists(), (document, target)
 
 
-def test_guide_has_copyable_setup_token_and_health_commands() -> None:
+def test_guide_has_copyable_password_setup_and_health_commands() -> None:
     guide = _read(DEPLOYMENT)
 
     for command in (
@@ -64,7 +64,7 @@ def test_guide_has_copyable_setup_token_and_health_commands() -> None:
     assert "openssl rand -hex 32" in guide
     assert "chmod 600 .env" in guide
     assert ".env" in guide and "private and uncommitted" in guide
-    assert "fail closed" in guide
+    assert "fail closed" in guide or "fail-closed" in guide
     for endpoint in ("/api/v1/status", "/api/v1/account", "/api/v1/rate-limits"):
         assert endpoint in guide
     assert "expected response is `{\"status\":\"ok\"}`" in guide
@@ -106,14 +106,17 @@ def test_guide_matches_compose_defaults_and_classifies_supported_variables() -> 
         "CODEX_MONITOR_IMAGE": "self-hosted-codex-usage-monitor:0.155.1",
         "CODEX_MONITOR_BIND_HOST": "127.0.0.1",
         "CODEX_MONITOR_PORT": "8080",
-        "CODEX_MONITOR_API_TOKEN": "blank",
+        "CODEX_MONITOR_PASSWORD": "required",
+        "CODEX_MONITOR_SESSION_SECRET": "required",
+        "CODEX_MONITOR_COOKIE_SECURE": "true",
+        "CLOUDFLARE_TUNNEL_TOKEN": "unset",
         "CACHE_TTL_SECONDS": "60",
         "LOG_LEVEL": "info",
         "CODEX_MONITOR_HOME_VOLUME": "codex_monitor_home",
     }
     for variable, default in expected_defaults.items():
         assert f"`{variable}`" in guide
-        if default == "blank":
+        if default in {"blank", "required", "unset"}:
             assert f"| {default} |" in guide
         else:
             assert f"`{default}`" in guide
@@ -122,7 +125,9 @@ def test_guide_matches_compose_defaults_and_classifies_supported_variables() -> 
     assert 'CODEX_VERSION: "${CODEX_VERSION:-0.155.1}"' in compose
     assert 'image: "${CODEX_MONITOR_IMAGE:-self-hosted-codex-usage-monitor:0.155.1}"' in compose
     assert '"${CODEX_MONITOR_BIND_HOST:-127.0.0.1}:${CODEX_MONITOR_PORT:-8080}' in compose
-    assert 'CODEX_MONITOR_API_TOKEN: "${CODEX_MONITOR_API_TOKEN:-}"' in compose
+    assert 'CODEX_MONITOR_PASSWORD: "${CODEX_MONITOR_PASSWORD:?Set CODEX_MONITOR_PASSWORD in your private .env}"' in compose
+    assert 'CODEX_MONITOR_SESSION_SECRET: "${CODEX_MONITOR_SESSION_SECRET:?Set CODEX_MONITOR_SESSION_SECRET in your private .env}"' in compose
+    assert 'CODEX_MONITOR_COOKIE_SECURE: "${CODEX_MONITOR_COOKIE_SECURE:-true}"' in compose
     assert 'CACHE_TTL_SECONDS: "${CACHE_TTL_SECONDS:-60}"' in compose
     assert 'LOG_LEVEL: "${LOG_LEVEL:-info}"' in compose
     assert 'name: "${CODEX_MONITOR_HOME_VOLUME:-codex_monitor_home}"' in compose

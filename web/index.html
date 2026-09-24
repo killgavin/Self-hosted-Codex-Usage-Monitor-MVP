@@ -13,17 +13,7 @@
         <h1 id="page-title">Codex Usage Monitor</h1>
       </header>
 
-      <section class="panel" aria-labelledby="connection-title">
-        <h2 id="connection-title">Connection</h2>
-        <label for="server-token">Server API token</label>
-        <div class="token-row">
-          <input id="server-token" name="server-token" type="password" autocomplete="off" spellcheck="false">
-          <button id="connect-button" type="button">Connect</button>
-        </div>
-        <p id="connection-status" role="status">Not connected</p>
-      </section>
-
-      <section class="panel" aria-labelledby="login-title">
+      <section id="chatgpt-panel" class="panel" aria-labelledby="login-title">
         <h2 id="login-title">ChatGPT login</h2>
         <p id="login-state" role="status">Checking login status…</p>
         <p id="login-error" class="error" role="alert" hidden></p>
@@ -39,6 +29,8 @@
         </div>
       </section>
 
+      <div id="usage-dashboard" hidden>
+      <p id="connection-status" role="status">Log in with ChatGPT to view usage.</p>
       <div class="dashboard-grid">
         <section id="account-summary" class="panel" aria-labelledby="account-title">
           <h2 id="account-title">Account</h2>
@@ -59,6 +51,8 @@
       <footer class="last-updated">
         Last updated: <time id="last-updated">Never</time>
       </footer>
+      <button id="monitor-logout-button" type="button">Log out</button>
+      </div>
     </main>
     <script type="module" src="/assets/app.mjs"></script>
   </body>

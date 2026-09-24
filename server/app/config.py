@@ -1,6 +1,6 @@
 """Environment-backed server configuration without runtime side effects."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import math
 import os
 import shutil
@@ -24,7 +24,6 @@ class Settings:
     """Runtime settings needed by the server and Codex process boundary."""
 
     codex_executable: str = DEFAULT_CODEX_EXECUTABLE
-    server_api_token: str | None = field(default=None, repr=False)
     cache_ttl_seconds: float = DEFAULT_CACHE_TTL_SECONDS
     host: str = DEFAULT_MONITOR_HOST
     port: int = DEFAULT_MONITOR_PORT
@@ -42,7 +41,6 @@ class Settings:
             # the safe command default instead of becoming ambiguous.
             executable = configured_executable.strip() or DEFAULT_CODEX_EXECUTABLE
 
-        configured_token = os.getenv("CODEX_MONITOR_API_TOKEN")
         configured_ttl = os.getenv("CACHE_TTL_SECONDS")
         if configured_ttl is None:
             cache_ttl_seconds = DEFAULT_CACHE_TTL_SECONDS
@@ -78,7 +76,6 @@ class Settings:
 
         return cls(
             codex_executable=executable,
-            server_api_token=configured_token or None,
             cache_ttl_seconds=cache_ttl_seconds,
             host=host,
             port=port,

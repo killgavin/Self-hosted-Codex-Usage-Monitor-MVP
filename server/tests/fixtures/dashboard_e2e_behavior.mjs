@@ -53,7 +53,7 @@ if (elements.get("account-summary").children[1].children[1].textContent !== "Yes
 if (elements.get("reset-credit-summary").children[1].children[1].textContent !== "2") throw new Error("reset count");
 if (elements.get("rate-limit-list").children.length !== 1) throw new Error("rate cards");
 if (elements.get("last-updated").textContent === "Never") throw new Error("last updated");
-if (calls.length !== 3 || calls.some(({ options }) => options.method !== "GET" || options.headers.Authorization !== `Bearer ${token}`)) throw new Error("authenticated calls");
+if (calls.length !== 4 || calls[0].path !== "/api/v1/session" || calls[0].options.method !== "POST" || calls.slice(1).some(({ options }) => options.method !== "GET" || options.credentials !== "same-origin")) throw new Error("session authenticated calls");
 const rendered = JSON.stringify([...elements.values()]);
 if (["privateField", "must-not-render", "raw-private-error"].some((marker) => rendered.includes(marker))) throw new Error("raw field leak");
 failing = true;

@@ -15,6 +15,7 @@ from app.codex.exceptions import (
 )
 from app.config import Settings
 from app.main import create_app
+from app.security.session import issue
 
 
 SERVER_TOKEN = "error-test-monitor-token"
@@ -58,12 +59,12 @@ def request(
         "path": path,
         "raw_path": path.encode(),
         "query_string": b"",
-        "headers": [(b"authorization", f"Bearer {SERVER_TOKEN}".encode())],
+        "headers": [(b"cookie", ("codex_monitor_session=" + issue("test-secret", "test-password")).encode())],
         "client": ("testclient", 12345),
         "server": ("testserver", 80),
     }
     app = create_app(
-        settings=Settings(server_api_token=SERVER_TOKEN),
+        settings=Settings(monitor_password="test-password", session_secret="test-secret"),
         account_service=FailingAccountService(failure),
         rate_limit_service=FailingRateLimitService(failure),
     )

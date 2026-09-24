@@ -2,12 +2,11 @@
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from app.api.errors import error_response
 from app.models.account import AccountStatus
-from app.security.server_token import ServerTokenAuth
 from app.services.account import AccountService
 
 
@@ -21,13 +20,12 @@ def serialize_account(status: AccountStatus) -> dict[str, Any]:
     }
 
 
-def create_account_router(server_api_token: str | None) -> APIRouter:
-    """Build the account router with its monitor-token boundary."""
+def create_account_router() -> APIRouter:
+    """Build the account router; the application session middleware protects it."""
 
     router = APIRouter(
         prefix="/api/v1",
         tags=["account"],
-        dependencies=[Depends(ServerTokenAuth(server_api_token))],
     )
 
     @router.get("/account", response_model=None)

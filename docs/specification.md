@@ -113,7 +113,7 @@ Login HTTP contract 建議最小化為 login/status/cancel/logout。若實作需
 
 ## 13. REST Authentication
 
-External client 使用 `Authorization: Bearer <server-api-token>`，與 OpenAI token 完全分離。
+Dashboard data APIs require the official Codex/ChatGPT login to be completed. There is no separate Monitor password or Monitor session.
 
 ## 14. Web Dashboard
 
@@ -125,11 +125,11 @@ MVP 可使用 in-memory TTL cache，預設 60 秒；不得改變 Domain data。
 
 ## 16. Error Contract
 
-穩定格式 `{"error":{"code":"...","message":"..."}}`。至少考慮 CODEX_NOT_INSTALLED、CODEX_START_FAILED、CODEX_NOT_AUTHENTICATED、CODEX_LOGIN_PENDING、CODEX_PROTOCOL_ERROR、UPSTREAM_UNAVAILABLE、INVALID_SERVER_TOKEN、INTERNAL_ERROR。不得回傳 credential、raw auth header、stack trace。
+穩定格式 `{"error":{"code":"...","message":"..."}}`。至少考慮 CODEX_NOT_INSTALLED、CODEX_START_FAILED、CODEX_NOT_AUTHENTICATED、CODEX_LOGIN_PENDING、CODEX_PROTOCOL_ERROR、UPSTREAM_UNAVAILABLE、AUTH_REQUIRED、INVALID_PASSWORD、INTERNAL_ERROR。不得回傳 credential、cookie、session secret、raw auth header、stack trace。
 
 ## 17. Security
 
-Credential stays server-side。Redact Authorization/Bearer/API token/Cookie/OpenAI credential。Default listen `127.0.0.1`；LAN 才明確使用 `0.0.0.0`。Internet exposure 文件只建議 HTTPS/Tailscale/reverse proxy。Browser 不應把長效 bearer token 放 LocalStorage。
+Codex credential stays server-side。Redact Authorization/Bearer/API token/Cookie/OpenAI credential. Default listen `127.0.0.1`；LAN 才明確使用 `0.0.0.0`。Internet exposure 文件只建議 HTTPS/Tailscale/reverse proxy。
 
 ## 18. Docker
 

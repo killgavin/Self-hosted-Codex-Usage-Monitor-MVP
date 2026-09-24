@@ -7,6 +7,7 @@ from typing import Any
 
 from app.config import Settings
 from app.main import create_app
+from app.security.session import issue
 from app.models.rate_limit import RateLimit, RateLimitWindow, ResetCredit, ResetCredits
 
 
@@ -29,7 +30,7 @@ def request(
     authorization: str | None,
 ) -> tuple[int, dict[str, Any]]:
     messages: list[dict[str, Any]] = []
-    headers = [] if authorization is None else [(b"authorization", authorization.encode())]
+    headers = [] if authorization is None else [(b"cookie", ("codex_monitor_session=" + issue("test-secret", "test-password")).encode())]
 
     async def receive() -> dict[str, Any]:
         return {"type": "http.request", "body": b"", "more_body": False}
@@ -51,7 +52,7 @@ def request(
         "server": ("testserver", 80),
     }
     app = create_app(
-        settings=Settings(server_api_token=SERVER_TOKEN),
+        settings=Settings(monitor_password="test-password", session_secret="test-secret"),
         rate_limit_service=service,
     )
     asyncio.run(app(scope, receive, send))
@@ -164,5 +165,5 @@ def test_missing_server_token_does_not_call_rate_limit_service() -> None:
     status, body = request(service, None)
 
     assert status == 401
-    assert body["error"]["code"] == "INVALID_SERVER_TOKEN"
+    assert body["error"]["code"] == "AUTH_REQUIRED"
     assert service.calls == 0

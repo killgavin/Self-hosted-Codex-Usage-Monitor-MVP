@@ -3,6 +3,8 @@
 import asyncio
 import os
 
+import pytest
+
 from app.config import Settings
 from app.codex.adapter import AdapterState, CodexAppServerAdapter
 from app.codex.process import CodexProcess
@@ -12,7 +14,7 @@ from app.services.auth import AuthService, LoginState
 def test_real_device_code_login_start(tmp_path, monkeypatch) -> None:
     executable = os.environ.get("REAL_CODEX_EXECUTABLE")
     if not executable:
-        raise AssertionError("REAL_CODEX_EXECUTABLE is required")
+        pytest.skip("REAL_CODEX_EXECUTABLE is not configured")
     monkeypatch.setenv("CODEX_HOME", str(tmp_path))
 
     async def scenario() -> None:
@@ -43,7 +45,7 @@ def test_real_device_code_login_start(tmp_path, monkeypatch) -> None:
 def test_real_device_code_login_cancel(tmp_path, monkeypatch) -> None:
     executable = os.environ.get("REAL_CODEX_EXECUTABLE")
     if not executable:
-        raise AssertionError("REAL_CODEX_EXECUTABLE is required")
+        pytest.skip("REAL_CODEX_EXECUTABLE is not configured")
     monkeypatch.setenv("CODEX_HOME", str(tmp_path))
 
     async def scenario() -> None:

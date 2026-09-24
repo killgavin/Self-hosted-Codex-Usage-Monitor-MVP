@@ -27,11 +27,12 @@ def test_compose_defines_one_monitor_service_with_pinned_local_image() -> None:
     assert re.search(r"(?m)^services:\n  monitor:\n", compose)
     service_body = re.search(r"(?ms)^  monitor:\n(?P<body>.*?)(?=^volumes:)", compose)
     assert service_body is not None
-    assert not re.search(r"(?m)^  [a-zA-Z0-9_-]+:\n", service_body.group("body"))
     assert "context: ." in service_body.group("body")
     assert "dockerfile: Dockerfile" in service_body.group("body")
     assert 'CODEX_VERSION: "${CODEX_VERSION:-0.155.1}"' in compose
     assert 'image: "${CODEX_MONITOR_IMAGE:-self-hosted-codex-usage-monitor:0.155.1}"' in compose
+    assert re.search(r"(?ms)^  cloudflared:\n.*?^    profiles:\n      - cloudflare", compose)
+    assert '"${CLOUDFLARE_TUNNEL_TOKEN:-}"' in compose
 
 
 def test_compose_publishes_loopback_by_default_and_synchronizes_port() -> None:
@@ -54,12 +55,14 @@ def test_compose_passes_only_monitor_configuration_and_fails_closed() -> None:
     assert set(re.findall(r"(?m)^      ([A-Z][A-Z0-9_]+):", environment)) == {
         "CODEX_MONITOR_HOST",
         "CODEX_MONITOR_PORT",
-        "CODEX_MONITOR_API_TOKEN",
+        "CODEX_MONITOR_PASSWORD",
+        "CODEX_MONITOR_SESSION_SECRET",
+        "CODEX_MONITOR_COOKIE_SECURE",
         "CACHE_TTL_SECONDS",
         "LOG_LEVEL",
     }
-    assert 'CODEX_MONITOR_API_TOKEN: "${CODEX_MONITOR_API_TOKEN:-}"' in environment
-    assert re.search(r"CODEX_MONITOR_API_TOKEN:\s*\"\$\{[^}]+:-\}\"", environment)
+    assert 'CODEX_MONITOR_PASSWORD: "${CODEX_MONITOR_PASSWORD:?Set CODEX_MONITOR_PASSWORD in your private .env}"' in environment
+    assert 'CODEX_MONITOR_SESSION_SECRET: "${CODEX_MONITOR_SESSION_SECRET:?Set CODEX_MONITOR_SESSION_SECRET in your private .env}"' in environment
     assert "OPENAI_API_KEY" not in environment
     assert "OPENAI_TOKEN" not in environment
     assert "CODEX_AUTH" not in environment
@@ -82,7 +85,7 @@ def test_compose_healthcheck_is_local_credential_free_and_bounded() -> None:
     assert re.search(r"(?m)^      retries: [1-9][0-9]*$", body)
     assert re.search(r"(?m)^      start_period: (?:[1-9]|[1-5][0-9])s$", body)
     assert "Authorization" not in body
-    assert "CODEX_MONITOR_API_TOKEN" not in body
+    assert "CODEX_MONITOR_PASSWORD" not in body
 
 
 def test_compose_enforces_non_privileged_runtime() -> None:

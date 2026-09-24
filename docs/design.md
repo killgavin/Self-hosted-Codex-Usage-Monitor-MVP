@@ -80,7 +80,7 @@ MVP in-memory TTL 60 秒；不得引入 Redis/DB。
 
 ## REST
 
-Route 只做 HTTP parsing、server API token authentication、service call、serialization、error mapping。不得直接使用 Transport。Client token 由 CODEX_MONITOR_API_TOKEN 提供。
+Route 只做 HTTP parsing、session authentication、service call、serialization、error mapping。不得直接使用 Transport。Monitor owner password 與 session signing secret 由私有環境設定提供。
 
 ## Errors / Logging
 
@@ -100,7 +100,7 @@ Container 必須能執行 Usage Monitor 與 Codex App Server。Credential/config
 
 ## Configuration
 
-CODEX_MONITOR_HOST、CODEX_MONITOR_PORT、CODEX_MONITOR_API_TOKEN、CODEX_EXECUTABLE、CACHE_TTL_SECONDS、LOG_LEVEL。預設 127.0.0.1、8080、60、INFO；Docker/LAN 才明確 0.0.0.0。
+CODEX_MONITOR_HOST、CODEX_MONITOR_PORT、CODEX_EXECUTABLE、CACHE_TTL_SECONDS、LOG_LEVEL。預設 127.0.0.1、8080、60、INFO；Docker/LAN 才明確 0.0.0.0。
 
 ## Health / Degraded
 

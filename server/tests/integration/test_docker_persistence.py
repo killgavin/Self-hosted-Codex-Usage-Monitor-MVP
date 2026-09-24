@@ -29,7 +29,7 @@ def _volume_block(compose: str) -> str:
 
 
 def _service_volume_block(compose: str) -> str:
-    match = re.search(r"(?ms)^    volumes:\n(?P<body>.*?)(?=^volumes:)", compose)
+    match = re.search(r"(?ms)^    volumes:\n(?P<body>.*?)(?=^  [a-zA-Z0-9_-]+:\n|^volumes:)", compose)
     assert match is not None
     return match.group("body")
 

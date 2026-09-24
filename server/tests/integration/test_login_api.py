@@ -7,6 +7,8 @@ from typing import Any
 import pytest
 
 from app.main import create_app
+from app.config import Settings
+from app.security.session import issue
 from app.codex.exceptions import AdapterStateError, ProcessCommunicationFailed
 from app.services.auth import (
     LoginAlreadyPending,
@@ -61,7 +63,7 @@ def request(app, method: str, path: str) -> tuple[int, dict[str, Any]]:
     scope = {
         "type": "http", "asgi": {"version": "3.0", "spec_version": "2.0"},
         "http_version": "1.1", "method": method, "scheme": "http", "path": path,
-        "raw_path": path.encode(), "query_string": b"", "headers": [],
+        "raw_path": path.encode(), "query_string": b"", "headers": [(b"cookie", ("codex_monitor_session=" + issue("test-secret", "test-password")).encode()), (b"origin", b"http://testserver")],
         "client": ("testclient", 12345), "server": ("testserver", 80),
     }
     asyncio.run(app(scope, receive, send))
@@ -72,7 +74,7 @@ def request(app, method: str, path: str) -> tuple[int, dict[str, Any]]:
 
 def test_login_routes_have_safe_success_shapes_and_exact_service_calls() -> None:
     service = FakeAuthService()
-    app = create_app(service)
+    app = create_app(service, settings=Settings(monitor_password="test-password", session_secret="test-secret"))
     for method, path, call in (
         ("POST", "/api/v1/login", "start_login"),
         ("GET", "/api/v1/login/status", "get_status"),
@@ -100,7 +102,7 @@ def test_login_routes_have_safe_success_shapes_and_exact_service_calls() -> None
 def test_login_errors_are_fixed_and_sanitized(failure, status, code, message) -> None:
     service = FakeAuthService()
     service.failure = failure
-    app = create_app(service)
+    app = create_app(service, settings=Settings(monitor_password="test-password", session_secret="test-secret"))
     response_status, body = request(app, "POST", "/api/v1/login")
     assert response_status == status
     assert body == {"error": {"code": code, "message": message}}
@@ -114,9 +116,9 @@ def test_health_unknown_path_and_method_remain_normal() -> None:
     status, _ = request(app, "GET", "/not-found")
     assert status == 404
     status, _ = request(app, "GET", "/api/v1/login")
-    assert status == 405
+    assert status == 401
     status, _ = request(app, "POST", "/api/v1/login/logout")
-    assert status == 404
+    assert status == 401
 
 
 def test_global_app_creation_does_not_start_a_process() -> None:

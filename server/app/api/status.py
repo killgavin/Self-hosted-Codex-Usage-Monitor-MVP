@@ -1,17 +1,14 @@
 """Authenticated process-status REST endpoint."""
 
-from fastapi import APIRouter, Depends, Request
-
-from app.security.server_token import ServerTokenAuth
+from fastapi import APIRouter, Request
 
 
-def create_status_router(server_api_token: str | None) -> APIRouter:
-    """Build the status router with its server-owned credential boundary."""
+def create_status_router() -> APIRouter:
+    """Build the status router; the application session middleware protects it."""
 
     router = APIRouter(
         prefix="/api/v1",
         tags=["status"],
-        dependencies=[Depends(ServerTokenAuth(server_api_token))],
     )
 
     @router.get("/status")

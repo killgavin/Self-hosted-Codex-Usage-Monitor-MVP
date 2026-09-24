@@ -7,6 +7,7 @@ from app.codex.adapter import CodexAppServerAdapter
 from app.codex.exceptions import AdapterStateError, ProcessExited
 from app.config import Settings
 from app.main import create_app
+from app.security.session import issue
 
 
 SERVER_TOKEN = "degraded-runtime-test-token"
@@ -90,7 +91,7 @@ async def _request(app, path: str) -> tuple[int, dict]:
         "path": path,
         "raw_path": path.encode(),
         "query_string": b"",
-        "headers": [(b"authorization", f"Bearer {SERVER_TOKEN}".encode())],
+        "headers": [(b"cookie", ("codex_monitor_session=" + issue("test-secret", "test-password")).encode())],
         "client": ("testclient", 12345),
         "server": ("testserver", 80),
     }
@@ -105,7 +106,8 @@ def test_t69_missing_codex_keeps_lifespan_available_and_reports_degraded() -> No
         app = create_app(
             settings=Settings(
                 codex_executable="definitely-missing-task-0804",
-                server_api_token=SERVER_TOKEN,
+                monitor_password="test-password",
+                session_secret="test-secret",
             )
         )
         async with app.router.lifespan_context(app):
@@ -136,7 +138,8 @@ def test_t70_unexpected_exit_is_controlled_and_shutdown_reaps() -> None:
             ).encode()
         )
         app = create_app(
-            settings=Settings(server_api_token=SERVER_TOKEN),
+            settings=Settings(monitor_password="test-password",
+                session_secret="test-secret"),
             adapter=adapter,
         )
         async with app.router.lifespan_context(app):
@@ -177,7 +180,8 @@ def test_t71_unavailable_error_is_exact_and_sanitized() -> None:
             ).encode()
         )
         app = create_app(
-            settings=Settings(server_api_token=SERVER_TOKEN),
+            settings=Settings(monitor_password="test-password",
+                session_secret="test-secret"),
             adapter=adapter,
         )
         async with app.router.lifespan_context(app):

@@ -6,6 +6,7 @@ from typing import Any
 
 from app.config import Settings
 from app.main import create_app
+from app.security.session import issue
 
 
 SERVER_TOKEN = "status-test-monitor-token"
@@ -13,7 +14,7 @@ SERVER_TOKEN = "status-test-monitor-token"
 
 def request(authorization: str | None) -> tuple[int, dict[str, Any]]:
     messages: list[dict[str, Any]] = []
-    headers = [] if authorization is None else [(b"authorization", authorization.encode())]
+    headers = [] if authorization is None else [(b"cookie", ("codex_monitor_session=" + issue("test-secret", "test-password")).encode())]
 
     async def receive() -> dict[str, Any]:
         return {"type": "http.request", "body": b"", "more_body": False}
@@ -34,7 +35,7 @@ def request(authorization: str | None) -> tuple[int, dict[str, Any]]:
         "client": ("testclient", 12345),
         "server": ("testserver", 80),
     }
-    app = create_app(settings=Settings(server_api_token=SERVER_TOKEN))
+    app = create_app(settings=Settings(monitor_password="test-password", session_secret="test-secret"))
     asyncio.run(app(scope, receive, send))
     start = next(message for message in messages if message["type"] == "http.response.start")
     body = next(message for message in messages if message["type"] == "http.response.body")
@@ -54,8 +55,8 @@ def test_status_endpoint_requires_server_token_without_echo() -> None:
     assert status == 401
     assert body == {
         "error": {
-            "code": "INVALID_SERVER_TOKEN",
-            "message": "Invalid server token",
+            "code": "AUTH_REQUIRED",
+            "message": "Monitor login required",
         }
     }
     assert SERVER_TOKEN not in json.dumps(body)

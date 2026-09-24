@@ -22,31 +22,6 @@ cd Self-hosted-Codex-Usage-Monitor-MVP
 Replace `<repository-url>` with the repository URL. Do not put a real token or
 other credential in this document or in a shell history that will be shared.
 
-## Configure the monitor token
-
-`CODEX_MONITOR_API_TOKEN` is a monitor-only Bearer token. Generate a strong
-random value locally and put it in a private, uncommitted `.env` file:
-
-```sh
-umask 077
-token="$(openssl rand -hex 32)"
-printf 'CODEX_MONITOR_API_TOKEN=%s\n' "$token" > .env
-unset token
-chmod 600 .env
-```
-
-Keep `.env` private and uncommitted. The repository ignores `.env` and `.env.*`
-files, but still confirm `git status` before staging changes. Never paste the
-generated value into documentation, issue reports,
-screenshots, or logs. Compose reads this file automatically from the project
-directory; an explicitly exported environment variable takes precedence.
-
-If `CODEX_MONITOR_API_TOKEN` is blank or missing, the protected monitor
-endpoints fail closed: `/api/v1/status`, `/api/v1/account`, and
-`/api/v1/rate-limits` reject requests instead of becoming unauthenticated.
-`/health` remains the credential-free process health check. The dashboard's
-data connection therefore needs the generated monitor token.
-
 ## Build and start
 
 From the repository root, build the pinned Codex CLI image and start the
@@ -91,6 +66,29 @@ the service can receive traffic from the published port. That internal bind is
 not a recommendation to expose the host publicly and is not the host interface
 selected by `CODEX_MONITOR_BIND_HOST`.
 
+### Cloudflare Tunnel
+
+For remote browser access without opening an inbound router port, use a named
+Cloudflare Tunnel. Add the intended hostname as a Cloudflare Access
+self-hosted application first and create an Allow policy for your own email;
+Cloudflare warns that a public hostname route without Access is available to
+anyone on the internet. Then create a Tunnel and configure its published
+hostname route to `http://monitor:8080`.
+
+In the tunnel setup, choose Docker and copy its tunnel token into the private
+`.env` file as `CLOUDFLARE_TUNNEL_TOKEN=...`. Start the optional connector:
+
+```sh
+docker compose up -d
+docker compose --profile cloudflare up -d cloudflared
+```
+
+The connector shares the Compose network with `monitor`, so its origin target
+is the service name `http://monitor:8080`. Keep the host-published Monitor port
+bound to `127.0.0.1`; do not use Cloudflare Tunnel Funnel or create an
+unauthenticated public hostname. Browse to the HTTPS hostname configured in
+Cloudflare after Access has allowed your account.
+
 ## Official login flow
 
 Open the dashboard and select **Log in**. Complete the official Codex/ChatGPT
@@ -115,7 +113,7 @@ from the checked-in Compose/Dockerfile contract.
 | `CODEX_MONITOR_IMAGE` | `self-hosted-codex-usage-monitor:0.155.1` | Image identity | Local image name/tag used by Compose. |
 | `CODEX_MONITOR_BIND_HOST` | `127.0.0.1` | Host publish | Host interface/address on the left side of the port mapping. |
 | `CODEX_MONITOR_PORT` | `8080` | Runtime + host publish | Container listening port and the published host port. |
-| `CODEX_MONITOR_API_TOKEN` | blank | Runtime | Monitor-only Bearer token for protected data routes; set it in private `.env`. |
+| `CLOUDFLARE_TUNNEL_TOKEN` | unset | Optional Cloudflare profile | Private connector token; only needed when running the `cloudflared` profile. |
 | `CACHE_TTL_SECONDS` | `60` | Runtime | In-memory rate-limit cache TTL. |
 | `LOG_LEVEL` | `info` | Runtime | Application log level (`critical`, `error`, `warning`, `info`, `debug`, or `trace`). |
 | `CODEX_MONITOR_HOME_VOLUME` | `codex_monitor_home` | Volume identity | Optional stable named-volume override. |
@@ -164,10 +162,8 @@ the container and network but keeps the named volume. **Do not run
 
 - Check state and health with `docker compose ps` and
   `curl --fail http://127.0.0.1:8080/health` (adjust the port if configured).
-- If a protected dashboard request returns `401`, check that the private
-  `.env` is in the compose project directory, the token is non-blank, and the
-  dashboard connection uses that same token. Do not disclose the token while
-  diagnosing the issue.
+- If a protected dashboard request returns `401`, check that the private `.env` is in the compose project directory and both required
+  settings are present. Do not disclose either value while diagnosing the issue.
 - If the browser cannot connect, verify the configured
   `CODEX_MONITOR_BIND_HOST`, `CODEX_MONITOR_PORT`, host firewall, and any port
   conflict with `docker compose ps`. Keep the listener on loopback unless a

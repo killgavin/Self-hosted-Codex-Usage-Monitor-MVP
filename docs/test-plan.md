@@ -20,7 +20,7 @@ T-18 authenticated account; T-19 unauth account; T-20 null plan no inference.
 
 T-21 cache hit no adapter; T-22 miss adapter once/cache populated; T-23 expired refresh; T-24 no domain mutation.
 
-T-25 valid server token; T-26 missing rejected; T-27 invalid rejected; T-28 OpenAI-style token not implicitly accepted.
+Codex login gate: login lifecycle endpoints remain available while logged out; status/account/rate-limit APIs reject access until Codex login completes; logout clears the in-memory login state and returns the UI to ChatGPT Login.
 
 T-29 Authorization/Bearer redaction; T-30 access token; T-31 refresh token; T-32 cookie; T-33 account REST no credential; T-34 rate REST no credential; T-35 sanitized errors.
 

@@ -3,12 +3,11 @@
 from decimal import Decimal
 from typing import Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from app.api.errors import error_response
 from app.models.rate_limit import RateLimit, RateLimitWindow, ResetCredit, ResetCredits
-from app.security.server_token import ServerTokenAuth
 from app.services.rate_limits import RateLimitService
 
 
@@ -65,13 +64,12 @@ def serialize_reset_credits(reset: ResetCredits | None) -> dict[str, Any] | None
     }
 
 
-def create_rate_limits_router(server_api_token: str | None) -> APIRouter:
-    """Build the rate-limit router with its monitor-token boundary."""
+def create_rate_limits_router() -> APIRouter:
+    """Build the rate-limit router; the application session middleware protects it."""
 
     router = APIRouter(
         prefix="/api/v1",
         tags=["rate-limits"],
-        dependencies=[Depends(ServerTokenAuth(server_api_token))],
     )
 
     @router.get("/rate-limits", response_model=None)

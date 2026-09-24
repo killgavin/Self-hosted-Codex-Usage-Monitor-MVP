@@ -136,27 +136,23 @@ function renderResetCredits(document, section, resetCredits) {
   appendText(document, section, "Available", count === null ? "Unknown" : String(count));
 }
 
-/** Connect to the server REST API using a token kept only for this request. */
-export function createDashboardUI({ document, fetchImpl, now = () => new Date() }) {
+/** Load the protected dashboard after the server confirms Codex login. */
+export function createDashboardUI({ document, fetchImpl, now = () => new Date(), onLogout = () => {} }) {
   const elements = {
-    token: document.getElementById("server-token"),
-    connect: document.getElementById("connect-button"),
     status: document.getElementById("connection-status"),
     account: document.getElementById("account-summary"),
     resetCredits: document.getElementById("reset-credit-summary"),
     limits: document.getElementById("rate-limit-list"),
     updated: document.getElementById("last-updated"),
+    monitorLogout: document.getElementById("monitor-logout-button"),
   };
 
   function setConnectionState(message) {
     elements.status.textContent = message;
   }
 
-  async function request(path, token) {
-    const response = await fetchImpl(path, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async function request(path) {
+    const response = await fetchImpl(path, { method: "GET", credentials: "same-origin" });
     let body;
     try { body = await response.json(); } catch { throw new Error("Request failed"); }
     if (!response.ok || !body || typeof body !== "object" || Array.isArray(body)) {
@@ -166,20 +162,10 @@ export function createDashboardUI({ document, fetchImpl, now = () => new Date() 
   }
 
   async function connect() {
-    // Read at click time; the local is released when this operation settles.
-    const token = typeof elements.token.value === "string" ? elements.token.value : "";
-    if (!token.trim()) {
-      setConnectionState("Connection failed");
-      elements.token.value = "";
-      return;
-    }
-    elements.connect.disabled = true;
     setConnectionState("Connecting…");
     try {
       const [status, account, rateLimits] = await Promise.all([
-        request("/api/v1/status", token),
-        request("/api/v1/account", token),
-        request("/api/v1/rate-limits", token),
+        request("/api/v1/status"), request("/api/v1/account"), request("/api/v1/rate-limits"),
       ]);
       if (status.status !== "ok" || !Array.isArray(rateLimits.limits)) throw new Error("Request failed");
       renderAccountSummary(document, elements.account, account);
@@ -189,14 +175,21 @@ export function createDashboardUI({ document, fetchImpl, now = () => new Date() 
       setConnectionState("Connected");
     } catch {
       setConnectionState("Connection failed");
-    } finally {
-      elements.connect.disabled = false;
-      // Do not leave the bearer token in the input after use.
-      elements.token.value = "";
     }
   }
 
-  elements.connect.addEventListener("click", connect);
+  if (elements.monitorLogout) elements.monitorLogout.addEventListener("click", async () => {
+    await fetchImpl("/api/v1/logout", { method: "POST", credentials: "same-origin" });
+    setConnectionState("Logged out");
+    const dashboard = document.getElementById("usage-dashboard");
+    const chatgptPanel = document.getElementById("chatgpt-panel");
+    if (dashboard) dashboard.hidden = true;
+    if (chatgptPanel) chatgptPanel.hidden = false;
+    onLogout();
+    const status = document.getElementById("login-state");
+    if (status) status.textContent = "Log in with ChatGPT to continue.";
+  });
+
   return { connect };
 }
 
@@ -211,7 +204,7 @@ function safeVerificationUrl(value) {
 }
 
 /** Build the login view around injected DOM, network, and reload effects for safe testing. */
-export function createLoginUI({ document, fetchImpl, reload, schedule = setTimeout }) {
+export function createLoginUI({ document, fetchImpl, reload, onAuthenticated = () => {}, schedule = setTimeout }) {
   const elements = {
     state: document.getElementById("login-state"),
     error: document.getElementById("login-error"),
@@ -243,9 +236,9 @@ export function createLoginUI({ document, fetchImpl, reload, schedule = setTimeo
     elements.link.hidden = !url;
     if (url) elements.link.href = url;
     else elements.link.removeAttribute("href");
-    if (previousState === "PENDING" && state === "COMPLETED" && !reloadDone) {
+    if (state === "COMPLETED" && previousState !== "COMPLETED" && !reloadDone) {
       reloadDone = true;
-      reload();
+      onAuthenticated();
     }
     previousState = state;
     if (pending && !pollScheduled) {
@@ -261,7 +254,7 @@ export function createLoginUI({ document, fetchImpl, reload, schedule = setTimeo
 
   async function request(path, method = "GET") {
     // Keep browser traffic on the server-owned login API and expose only its safe message.
-    const response = await fetchImpl(path, { method });
+    const response = await fetchImpl(path, { method, credentials: "same-origin" });
     const body = await response.json();
     if (!response.ok) throw new Error(body?.error?.message || "Request failed");
     return body;
@@ -283,19 +276,32 @@ export function createLoginUI({ document, fetchImpl, reload, schedule = setTimeo
   async function refresh() { await run("/api/v1/login/status"); }
   elements.login.addEventListener("click", () => run("/api/v1/login", "POST"));
   elements.cancel.addEventListener("click", () => run("/api/v1/login/cancel", "POST"));
-  elements.logout.addEventListener("click", () => run("/api/v1/logout", "POST"));
+  elements.logout.addEventListener("click", async () => {
+    await run("/api/v1/logout", "POST");
+    const dashboard = document.getElementById("usage-dashboard");
+    const chatgpt = document.getElementById("chatgpt-panel");
+    if (dashboard) dashboard.hidden = true;
+    if (chatgpt) chatgpt.hidden = false;
+  });
 
   return { render, refresh, run };
 }
 
 if (typeof document !== "undefined") {
-  createDashboardUI({
+  let loginUI;
+  const dashboardUI = createDashboardUI({
     document,
     fetchImpl: (...args) => fetch(...args),
+    onLogout: () => loginUI?.render({ state: "IDLE" }),
   });
-  createLoginUI({
+  loginUI = createLoginUI({
     document,
     fetchImpl: (...args) => fetch(...args),
-    reload: () => window.location.reload(),
-  }).refresh();
+    onAuthenticated: () => {
+      document.getElementById("chatgpt-panel").hidden = true;
+      document.getElementById("usage-dashboard").hidden = false;
+      dashboardUI.connect();
+    },
+  });
+  loginUI.refresh();
 }

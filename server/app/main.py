@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import AsyncIterator
 
 from fastapi import FastAPI
+from fastapi import Request
 from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.account import create_account_router
@@ -16,7 +18,7 @@ from app.codex.adapter import CodexAppServerAdapter
 from app.codex.exceptions import AdapterStateError
 from app.codex.process import CodexProcess
 from app.config import Settings, get_settings
-from app.security.server_token import InvalidServerToken, invalid_server_token_handler
+from app.security.session import session_guard
 from app.services.account import AccountService
 from app.services.auth import AuthService
 from app.services.rate_limits import RateLimitService
@@ -66,6 +68,7 @@ def create_app(
             await active_adapter.shutdown()
 
     application = FastAPI(title="Self-hosted Codex Usage Monitor", lifespan=lifespan)
+    application.middleware("http")(session_guard)
     application.state.settings = active_settings
     application.state.adapter = active_adapter
     # Request-only ASGI tests do not send lifespan events.  Keep their
@@ -83,11 +86,11 @@ def create_app(
         if rate_limit_service is not None
         else RateLimitService(active_adapter, ttl_seconds=active_settings.cache_ttl_seconds)
     )
-    application.add_exception_handler(InvalidServerToken, invalid_server_token_handler)
     application.include_router(login_router)
-    application.include_router(create_status_router(active_settings.server_api_token))
-    application.include_router(create_account_router(active_settings.server_api_token))
-    application.include_router(create_rate_limits_router(active_settings.server_api_token))
+    application.include_router(create_status_router())
+    application.include_router(create_account_router())
+    application.include_router(create_rate_limits_router())
+
     web_root = Path(__file__).resolve().parents[2] / "web"
     application.mount("/assets", StaticFiles(directory=web_root / "assets"), name="assets")
 
