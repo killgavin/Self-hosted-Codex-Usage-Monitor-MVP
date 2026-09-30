@@ -24,10 +24,9 @@ func run(ctx context.Context)error{
  return nil
 }
 func main(){
- cfg,err:=LoadConfig()
  if len(os.Args)==3&&os.Args[1]=="--test-url"{
-  if err!=nil{log.Printf("測試 Client 設定失敗: %v",err);os.Exit(1)}
-  p,e:=DownloadAndValidate(context.Background(),os.Args[2],cfg.AESKey);if e!=nil{log.Printf("測試 Client 驗證失敗: %v",e);os.Exit(1)}
+  key,err:=LoadAESKey();if err!=nil{log.Printf("測試 Client 設定失敗: %v",err);os.Exit(1)}
+  p,e:=DownloadAndValidate(context.Background(),os.Args[2],key);if e!=nil{log.Printf("測試 Client 驗證失敗: %v",e);os.Exit(1)}
   log.Printf("測試 Client 驗證成功：version=%d generatedAt=%s limits=%d",p.Version,p.GeneratedAt,len(p.Limits));return
  }
  if err:=run(context.Background());err!=nil{log.Printf("本輪執行失敗: %v",err);os.Exit(1)};log.Print("本輪執行成功")
