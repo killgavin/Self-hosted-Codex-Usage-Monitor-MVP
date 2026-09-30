@@ -1,1 +1,7 @@
-google-token.json\n*.exe\n.env\ndist/\n
+google-token*.json
+*.exe
+.env
+.env.*
+!.env.example
+dist/
+docs/evidence/local/

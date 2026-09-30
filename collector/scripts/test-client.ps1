@@ -1,1 +1,17 @@
-param(\n    [Parameter(Mandatory = $true)]\n    [string]$Url\n)\n\n$ErrorActionPreference = "Stop"\n\n# 目的：執行正式規格定義的 HTTPS 測試 Client。\n# 前提：CODEX_MONITOR_AES_KEY 已設定；URL 必須是 HTTPS。\nPush-Location (Split-Path $PSScriptRoot -Parent)\ntry {\n    go run . --test-url $Url\n}\nfinally {\n    Pop-Location\n}\n
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$Url
+)
+
+$ErrorActionPreference = "Stop"
+
+# 目的：執行正式規格定義的 HTTPS 測試 Client。
+# 前提：CODEX_MONITOR_AES_KEY 已設定；URL 必須是 HTTPS。
+Push-Location (Split-Path $PSScriptRoot -Parent)
+try {
+    go run . --test-url $Url
+    if ($LASTEXITCODE -ne 0) { throw "HTTPS test client failed" }
+}
+finally {
+    Pop-Location
+}
