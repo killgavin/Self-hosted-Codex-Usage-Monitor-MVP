@@ -1,0 +1,26 @@
+package main
+
+import (
+ "context"
+ "encoding/json"
+ "fmt"
+ "log"
+ "os"
+ "time"
+)
+
+func run(ctx context.Context)error{
+ log.Print("Collector 啟動")
+ cfg,err:=LoadConfig();if err!=nil{return err}
+ account,rates,err:=ReadCodexState(ctx,cfg.CodexExecutable);if err!=nil{return err}
+ log.Print("Codex App Server / Account / Rate Limit 取得成功")
+ payload,err:=normalize(account,rates,time.Now());if err!=nil{return fmt.Errorf("Normalization: %w",err)}
+ log.Print("Normalization 成功")
+ plain,err:=json.Marshal(payload);if err!=nil{return fmt.Errorf("JSON Serialize: %w",err)}
+ binary,err:=EncryptPackage(plain,cfg.AESKey);if err!=nil{return fmt.Errorf("Encryption: %w",err)}
+ log.Print("Encryption 成功")
+ if err=UpdateDriveFile(ctx,cfg,binary);err!=nil{return err}
+ log.Printf("Google Drive Upload 成功；固定 File ID 已更新: %s",cfg.DriveFileID)
+ return nil
+}
+func main(){if err:=run(context.Background());err!=nil{log.Printf("本輪執行失敗: %v",err);os.Exit(1)};log.Print("本輪執行成功")}
