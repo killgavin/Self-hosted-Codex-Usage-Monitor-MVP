@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -46,7 +47,12 @@ func TestLiveCodexGate(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
-	account, rates, err := ReadCodexState(ctx, envOr("CODEX_MONITOR_CODEX_PATH", "codex"))
+	executable := envOr("CODEX_MONITOR_CODEX_PATH", "codex")
+	version, err := exec.CommandContext(ctx, executable, "--version").Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	account, rates, err := ReadCodexState(ctx, executable)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,6 +80,7 @@ func TestLiveCodexGate(t *testing.T) {
 		t.Fatal(err)
 	}
 	report := map[string]any{
+		"codexVersion":      strings.TrimSpace(string(version)),
 		"capturedAt":        time.Now().UTC().Format(time.RFC3339),
 		"protocol":          []string{"initialize: PASS", "initialized: PASS (sent; notification has no response)", "account/read: PASS", "account/rateLimits/read: PASS", "normalization: PASS", "AES/client validation: PASS"},
 		"accountResponse":   redactLive(account, ""),
