@@ -15,26 +15,41 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	account, rates, err := ReadCodexState(ctx, cfg.CodexExecutable)
+	return collectAndPublish(ctx, cfg, defaultPipeline())
+}
+
+type pipeline struct {
+	read      func(context.Context, string) (map[string]any, map[string]any, error)
+	normalize func(map[string]any, map[string]any, time.Time) (Payload, error)
+	marshal   func(Payload) ([]byte, error)
+	encrypt   func([]byte, []byte) ([]byte, error)
+	publish   func(context.Context, Config, []byte) error
+}
+
+func defaultPipeline() pipeline {
+	return pipeline{ReadCodexState, normalize, func(p Payload) ([]byte, error) { return json.Marshal(p) }, EncryptPackage, UpdateDriveFile}
+}
+func collectAndPublish(ctx context.Context, cfg Config, steps pipeline) error {
+	account, rates, err := steps.read(ctx, cfg.CodexExecutable)
 	if err != nil {
 		return err
 	}
 	log.Print("Codex App Server / Account / Rate Limit 取得成功")
-	payload, err := normalize(account, rates, time.Now())
+	payload, err := steps.normalize(account, rates, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("Normalization: %w", err)
 	}
 	log.Print("Normalization 成功")
-	plain, err := json.Marshal(payload)
+	plain, err := steps.marshal(payload)
 	if err != nil {
 		return fmt.Errorf("JSON Serialize: %w", err)
 	}
-	binary, err := EncryptPackage(plain, cfg.AESKey)
+	binary, err := steps.encrypt(plain, cfg.AESKey)
 	if err != nil {
 		return fmt.Errorf("Encryption: %w", err)
 	}
 	log.Print("Encryption 成功")
-	if err = UpdateDriveFile(ctx, cfg, binary); err != nil {
+	if err = steps.publish(ctx, cfg, binary); err != nil {
 		return err
 	}
 	log.Printf("Google Drive Upload 成功；固定 File ID 已更新: %s", cfg.DriveFileID)

@@ -16,9 +16,9 @@ try {
     $env:GOARCH = "amd64"
     $env:CGO_ENABLED = "0"
     New-Item -ItemType Directory -Force -Path "dist" | Out-Null
-    go build -trimpath -o "dist\\codex-usage-monitor.exe" .
+    go build -trimpath -o "dist/codex-usage-monitor.exe" .
     if ($LASTEXITCODE -ne 0) { throw "Windows x64 build failed" }
-    Write-Host "Build completed: collector\\dist\\codex-usage-monitor.exe"
+    Write-Host "Build completed: collector/dist/codex-usage-monitor.exe"
 }
 finally {
     $env:GOOS = $oldGOOS
