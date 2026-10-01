@@ -24,7 +24,7 @@ func TestNormalizeVerifiedContract(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if p.Version != 1 || p.GeneratedAt != "2026-09-30T23:00:00+08:00" || len(p.Limits) != 1 {
+	if p.Version != 1 || p.GeneratedAt != "2026-09-30T15:00:00Z" || len(p.Limits) != 1 {
 		t.Fatalf("payload 不符: %+v", p)
 	}
 	if p.Limits[0].Primary.RemainingPercent != "97" {

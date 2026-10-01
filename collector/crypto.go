@@ -19,6 +19,9 @@ const minBinarySize = 4 + 1 + nonceSize + 1 + tagSize
 // EncryptPackage 將完整 UTF-8 JSON 一次以 AES-128-GCM 加密。
 // Seal 產生 ciphertext||tag，再依規格封裝 MDF1|version|nonce|ciphertext|tag。
 func EncryptPackage(plaintext, key []byte) ([]byte, error) {
+	if len(plaintext) == 0 {
+		return nil, errors.New("plaintext 不得為空")
+	}
 	if len(key) != 16 {
 		return nil, errors.New("AES-128 key 必須正好 16 bytes")
 	}
