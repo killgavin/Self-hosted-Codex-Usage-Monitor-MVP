@@ -1,0 +1,8 @@
+google-token*.json
+.google-token-*.json.tmp
+*.exe
+.env
+.env.*
+!.env.example
+dist/
+docs/evidence/local/

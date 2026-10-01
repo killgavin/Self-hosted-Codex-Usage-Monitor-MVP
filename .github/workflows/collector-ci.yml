@@ -1,0 +1,51 @@
+name: Collector CI
+
+on:
+  push:
+    paths: ["collector/**", ".github/workflows/collector-ci.yml"]
+  pull_request:
+    paths: ["collector/**", ".github/workflows/collector-ci.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Go test and Windows build
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: collector
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.1"
+          cache-dependency-path: collector/go.sum
+      - name: Download modules
+        run: go mod download
+      - name: Format check
+        shell: pwsh
+        run: |
+          $bad = gofmt -l .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($bad) {
+            Write-Error "gofmt required: $bad"
+            exit 1
+          }
+      - name: Vet
+        run: go vet ./...
+      - name: Unit tests
+        run: go test -v ./...
+      - name: Build Windows x64
+        shell: pwsh
+        run: |
+          $env:GOOS = "windows"
+          $env:GOARCH = "amd64"
+          $env:CGO_ENABLED = "0"
+          go build -trimpath -o codex-usage-monitor.exe .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codex-usage-monitor-win-x64
+          path: collector/codex-usage-monitor.exe
+          if-no-files-found: error
