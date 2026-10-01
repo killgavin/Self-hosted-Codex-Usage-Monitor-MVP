@@ -1,0 +1,17 @@
+{
+  "capturedAt": "2026-10-01T03:06:24.5008249+00:00",
+  "platform": "Microsoft Windows 10.0.26200",
+  "architecture": "X64",
+  "goVersion": "go version go1.27.1 windows/amd64",
+  "codexVersion": "codex-cli 0.159.3",
+  "gofmt": "PASS",
+  "vet": "PASS",
+  "unitAndLocalIntegration": "PASS",
+  "windowsX64Build": "PASS",
+  "binarySHA256": "06B1DDED465907A6E65D0B1F7B768C13D656F829F1BD12C76AFEA15FA693C062",
+  "goToolchainSHA256": "a3911b5e0e1b1053f25ed0675f4c1c6aad1e2bfcf253df2b9be4caabd2edd95d",
+  "codexLiveEvidence": "2026-10-01-codex-live.json",
+  "googleOAuth": "BLOCKED: client credentials absent",
+  "googleDrive": "BLOCKED: OAuth and fixed File ID required",
+  "publicHTTPS": "BLOCKED: published Google Drive Binary required"
+}

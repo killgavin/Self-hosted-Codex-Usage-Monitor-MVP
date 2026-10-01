@@ -1,0 +1,214 @@
+{
+  "accountResponse": {
+    "account": {
+      "email": "[REDACTED]",
+      "planType": "plus",
+      "type": "chatgpt"
+    },
+    "requiresOpenaiAuth": true,
+    "workspaceRouting": {
+      "accountRoutingOverride": "[REDACTED]",
+      "backendOrigin": "[REDACTED]",
+      "chatgptAccountId": "[REDACTED]"
+    }
+  },
+  "capturedAt": "2026-10-01T03:11:23Z",
+  "codexVersion": "codex-cli 0.159.3",
+  "normalizedPayload": {
+    "account": {
+      "authMode": "chatgpt",
+      "authenticated": true,
+      "planType": "plus"
+    },
+    "generatedAt": "2026-10-01T03:11:23.4067171Z",
+    "limits": [
+      {
+        "id": "base_model_inference",
+        "name": "gpt-reserve",
+        "primary": {
+          "remainingPercent": "100",
+          "resetAt": "2026-10-08T03:11:23Z",
+          "usedPercent": "0",
+          "windowDurationMinutes": 10080
+        },
+        "reachedType": null,
+        "secondary": null
+      },
+      {
+        "id": "codex",
+        "name": null,
+        "primary": {
+          "remainingPercent": "86",
+          "resetAt": "2026-10-01T05:43:20Z",
+          "usedPercent": "14",
+          "windowDurationMinutes": 300
+        },
+        "reachedType": null,
+        "secondary": {
+          "remainingPercent": "58",
+          "resetAt": "2026-10-04T13:05:19Z",
+          "usedPercent": "42",
+          "windowDurationMinutes": 10080
+        }
+      }
+    ],
+    "resetCredits": {
+      "availableCount": 4,
+      "credits": [
+        {
+          "description": "[REDACTED]",
+          "expiresAt": "2026-10-04T05:30:57Z",
+          "grantedAt": "2026-09-04T05:30:57Z",
+          "id": "[REDACTED]",
+          "status": "available",
+          "title": "[REDACTED]"
+        },
+        {
+          "description": "[REDACTED]",
+          "expiresAt": "2026-10-04T23:51:05Z",
+          "grantedAt": "2026-09-04T23:51:05Z",
+          "id": "[REDACTED]",
+          "status": "available",
+          "title": "[REDACTED]"
+        },
+        {
+          "description": "[REDACTED]",
+          "expiresAt": "2026-10-22T19:15:13Z",
+          "grantedAt": "2026-09-22T19:15:13Z",
+          "id": "[REDACTED]",
+          "status": "available",
+          "title": "[REDACTED]"
+        },
+        {
+          "description": "[REDACTED]",
+          "expiresAt": "2026-10-29T19:00:47Z",
+          "grantedAt": "2026-09-29T19:00:47Z",
+          "id": "[REDACTED]",
+          "status": "available",
+          "title": "[REDACTED]"
+        }
+      ]
+    },
+    "version": 1
+  },
+  "protocol": [
+    "initialize: PASS",
+    "initialized: PASS (sent; notification has no response)",
+    "account/read: PASS",
+    "account/rateLimits/read: PASS",
+    "normalization: PASS",
+    "AES/client validation: PASS"
+  ],
+  "rateLimitResponse": {
+    "accountId": "[REDACTED]",
+    "ordinaryUsageAllowed": true,
+    "rateLimitResetCredits": {
+      "availableCount": 4,
+      "credits": [
+        {
+          "description": "[REDACTED]",
+          "expiresAt": 1791091857,
+          "grantedAt": 1788499857,
+          "id": "[REDACTED]",
+          "resetType": "[REDACTED]",
+          "status": "available",
+          "title": "[REDACTED]"
+        },
+        {
+          "description": "[REDACTED]",
+          "expiresAt": 1791157865,
+          "grantedAt": 1788565865,
+          "id": "[REDACTED]",
+          "resetType": "[REDACTED]",
+          "status": "available",
+          "title": "[REDACTED]"
+        },
+        {
+          "description": "[REDACTED]",
+          "expiresAt": 1792696513,
+          "grantedAt": 1790104513,
+          "id": "[REDACTED]",
+          "resetType": "[REDACTED]",
+          "status": "available",
+          "title": "[REDACTED]"
+        },
+        {
+          "description": "[REDACTED]",
+          "expiresAt": 1793300447,
+          "grantedAt": 1790708447,
+          "id": "[REDACTED]",
+          "resetType": "[REDACTED]",
+          "status": "available",
+          "title": "[REDACTED]"
+        }
+      ]
+    },
+    "rateLimitUpsell": null,
+    "rateLimits": {
+      "credits": {
+        "balance": "[REDACTED]",
+        "hasCredits": false,
+        "unlimited": false
+      },
+      "individualLimit": null,
+      "limitId": "codex",
+      "limitName": null,
+      "normalModelSlug": null,
+      "planType": "plus",
+      "primary": {
+        "resetsAt": 1790833400,
+        "usedPercent": 14,
+        "windowDurationMins": 300
+      },
+      "rateLimitReachedType": null,
+      "secondary": {
+        "resetsAt": 1791119119,
+        "usedPercent": 42,
+        "windowDurationMins": 10080
+      },
+      "spendControlReached": false
+    },
+    "rateLimitsByLimitId": {
+      "base_model_inference": {
+        "credits": null,
+        "individualLimit": null,
+        "limitId": "base_model_inference",
+        "limitName": "gpt-reserve",
+        "normalModelSlug": "[REDACTED]",
+        "planType": "plus",
+        "primary": {
+          "resetsAt": 1791429083,
+          "usedPercent": 0,
+          "windowDurationMins": 10080
+        },
+        "rateLimitReachedType": null,
+        "secondary": null,
+        "spendControlReached": null
+      },
+      "codex": {
+        "credits": {
+          "balance": "[REDACTED]",
+          "hasCredits": false,
+          "unlimited": false
+        },
+        "individualLimit": null,
+        "limitId": "codex",
+        "limitName": null,
+        "normalModelSlug": null,
+        "planType": "plus",
+        "primary": {
+          "resetsAt": 1790833400,
+          "usedPercent": 14,
+          "windowDurationMins": 300
+        },
+        "rateLimitReachedType": null,
+        "secondary": {
+          "resetsAt": 1791119119,
+          "usedPercent": 42,
+          "windowDurationMins": 10080
+        },
+        "spendControlReached": false
+      }
+    }
+  }
+}
