@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-15T14:17:41.7242942+08:00",
+  "capturedAt": "2026-10-15T06:30:04.0758294+00:00",
   "platform": "Microsoft Windows 10.0.26300",
   "architecture": "X64",
   "goVersion": "go version go1.27.1 windows/amd64",
@@ -9,7 +9,7 @@
   "unitAndLocalIntegration": "PASS",
   "windowsX64Build": "PASS",
   "windowsAMD64Executable": "PASS",
-  "binarySHA256": "909ACACD331C08A2E1F95F7C28987C2D301DF0AE111D15867A170BEC3E3BBE83",
+  "binarySHA256": "9FA2C81B05E20BA34A56C4CA521DE2CFB78B77C0F10D583DF08D83DD9F4389D8",
   "codexLive": "PASS",
   "codexLiveEvidence": "2026-10-15-codex-live.json",
   "googleOAuth": "PASS",
@@ -26,6 +26,8 @@
     "2026-10-15-google-drive-failure-live.json"
   ],
   "publicHTTPSEvidence": "2026-10-15-google-https-public-live.json",
-  "buildGitHead": "57b4874a5b3f52a295d3e5e3040a206e01a3a245",
-  "acceptanceCriteria": "AC-01 through AC-30 PASS; original whole-worktree-clean completion condition blocked by pre-existing untracked files"
+  "buildGitHead": "6ec1541ee9c81a84f0157b34886058b647e8964d",
+  "acceptanceCriteria": "AC-01 through AC-30 PASS; user explicitly approved preserving pre-existing untracked files and accepting all in-scope Collector changes committed and pushed",
+  "gitAcceptance": "PASS within explicitly approved scope; three pre-existing untracked groups remain unchanged",
+  "gitScopeApproval": "2026-10-15: user replied 完成 to the explicit Git acceptance-scope confirmation"
 }

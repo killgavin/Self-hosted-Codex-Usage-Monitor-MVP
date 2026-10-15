@@ -2,7 +2,7 @@
 
 Windows x64 Go Collector：Codex App Server → Normalized JSON → AES-128-GCM Binary → Google Drive 固定 File ID → HTTPS 測試 Client。
 
-正式基準為 [V1 Specification 1.0](docs/01-codex-usage-monitor-v1-specification.md)，原檔複製後 SHA256 相同；既有 Python / FastAPI / Docker / Dashboard 未修改。2026-10-15 全部實機 Gate 與 AC-01～AC-30 均 PASS：完整 `drive` scope 人工授權、refresh、本機保存、同一 File ID 連續兩次 PATCH、失敗後舊檔保留、正式匿名 HTTPS／解密／錯誤 Key 拒絕。**V1 尚未 COMPLETE**：本次以外的起始未追蹤資料仍保留，尚不符合「整個工作樹乾淨」的完成條件。詳見 [驗收表](docs/acceptance-checklist.md)。
+正式基準為 [V1 Specification 1.0](docs/01-codex-usage-monitor-v1-specification.md)，原檔複製後 SHA256 相同；既有 Python / FastAPI / Docker / Dashboard 未修改。2026-10-15 全部實機 Gate 與 AC-01～AC-30 均 PASS：完整 `drive` scope 人工授權、refresh、本機保存、同一 File ID 連續兩次 PATCH、失敗後舊檔保留、正式匿名 HTTPS／解密／錯誤 Key 拒絕。**V1 COMPLETE（依使用者核准之 Git 驗收範圍）**：本次 Collector 修改均提交、推送；起始未追蹤資料依核准保留，不宣稱整個工作樹字面上 clean。詳見 [驗收表](docs/acceptance-checklist.md)。
 
 ## Requirements
 
@@ -162,5 +162,6 @@ AES 使用標準庫 AES-128-GCM：`MDF1 | version=1 | random 12-byte nonce | cip
 ## Current Gates
 
 - PASS：format、vet、unit / 本機整合測試、Windows x64 build / exe、Codex live、AES-GCM；兩種 scope OAuth／live refresh／本機保存、完整 scope 固定 File ID 連續兩次更新、實際更新失敗後舊內容保留、正式匿名 HTTPS 最新 Binary／正確 Key／錯誤 Key 拒絕；AC-01～AC-30 均 PASS。
-- BLOCKED：原訂「整個 Git 工作樹乾淨」條件。起始已有 `.codex-remote-attachments/`、`docs/formal-spec-v0.5/`、`docs/spec/` 共 9 個未追蹤檔案，保持原樣；沒有刪除、隱藏或擅自納入本次提交。
+- PASS：使用者已明確核准 Git 驗收範圍為「本次 Collector 修改均已提交並推送」。起始已有 `.codex-remote-attachments/`、`docs/formal-spec-v0.5/`、`docs/spec/` 共 9 個未追蹤檔案，依核准保留原樣。
+- Remaining Blockers：無。此核准只調整 Git 驗收範圍，未修改正式 V1 Specification 或 AC。
 - PR 保持 Draft；完整 AC-01～AC-30 與 evidence 見 [acceptance checklist](docs/acceptance-checklist.md)。

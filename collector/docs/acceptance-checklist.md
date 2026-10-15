@@ -1,6 +1,6 @@
 # V1 Acceptance Checklist
 
-基準：[正式 V1 Specification 1.0](01-codex-usage-monitor-v1-specification.md)，依原始 AC 定義逐項驗收。更新日期：2026-10-15（Asia/Taipei）。全部實機 Gate 與 AC-01～AC-30 均 PASS。**V1 尚未 COMPLETE**：原訂「整個 Git 工作樹乾淨」條件仍受起始未追蹤資料阻擋。
+基準：[正式 V1 Specification 1.0](01-codex-usage-monitor-v1-specification.md)，依原始 AC 定義逐項驗收。更新日期：2026-10-15（Asia/Taipei）。全部實機 Gate 與 AC-01～AC-30 均 PASS。**V1 COMPLETE（依使用者核准之 Git 驗收範圍）**。本次 Collector 修改均已提交、推送；起始未追蹤資料依核准保留，不宣稱整個工作樹字面上 clean。
 
 ## Evidence
 
@@ -112,4 +112,6 @@ After Second Update File ID：`1_Gy…OHep`，Google 回傳與原始 ID 相同�
 
 起始工作樹已有 `.codex-remote-attachments/`、`docs/formal-spec-v0.5/`、`docs/spec/` 三組未追蹤資料；本次保留且不納入 commit。因此即使本次變更全部提交，原工作樹仍不會呈現字面上的 `working tree clean`；不刪除或隱藏這些使用者資料來製造乾淨狀態。
 
-2026-10-15 只讀盤點：`.codex-remote-attachments/` 2 files／47,042 bytes、`docs/formal-spec-v0.5/` 6 files／70,321 bytes、`docs/spec/` 1 file／7,342 bytes。共 9 files／124,705 bytes。本次尚未取得將這些既有資料納入版本控制、搬移、刪除或排除的核准；也未取得調整「整個工作樹乾淨」驗收範圍的核准。此項為唯一剩餘完成條件，功能與實機 AC 均已 PASS。
+2026-10-15 只讀盤點：`.codex-remote-attachments/` 2 files／47,042 bytes、`docs/formal-spec-v0.5/` 6 files／70,321 bytes、`docs/spec/` 1 file／7,342 bytes。共 9 files／124,705 bytes。
+
+使用者已針對「保留這些原始資料，將 Git 驗收範圍限定為本次 Collector 修改均已提交並推送」的確認要求，明確回覆「完成」。因此 Git Gate 採此核准範圍驗收，狀態為 PASS；未取得也不需要刪除、搬移、排除或提交這 9 個既有檔案的授權，檔案維持原樣。正式 V1 Specification、AC-01～AC-30 與所有實機 Gate 未變更。Remaining Blockers：無。
