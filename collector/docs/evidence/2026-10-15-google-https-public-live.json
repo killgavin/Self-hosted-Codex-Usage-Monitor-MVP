@@ -1,0 +1,45 @@
+{
+  "capturedAt": "2026-10-15T06:21:02.3070600+00:00",
+  "result": "PASS",
+  "source": "official Google files.get webContentLink",
+  "fileID": "[REDACTED]",
+  "url": "https://drive.google.com/uc?id=[REDACTED FILE ID]&export=download",
+  "metadata": {
+    "id": "[REDACTED FILE ID]",
+    "mimeType": "application/octet-stream",
+    "webContentLink": "https://drive.google.com/uc?id=[REDACTED FILE ID]&export=download",
+    "permissions": [
+      {
+        "type": "anyone",
+        "role": "reader"
+      },
+      {
+        "type": "user",
+        "role": "owner"
+      }
+    ],
+    "md5Checksum": "5631a4b52131969bcc31a0ea035709cf",
+    "size": "1337"
+  },
+  "anonymousHTTPStatus": 200,
+  "anonymousContentType": "application/octet-stream",
+  "anonymousResponseHost": "drive.usercontent.google.com",
+  "anonymousBytes": 1337,
+  "authorizationHeaderSent": false,
+  "cookiesProvided": false,
+  "authenticatedSHA256": "BCB955242D6EB894A668321361786E7D93134C7E3FF57771103112B8B0858183",
+  "anonymousSHA256": "BCB955242D6EB894A668321361786E7D93134C7E3FF57771103112B8B0858183",
+  "matchesAuthenticatedLatestBinary": true,
+  "publishedAtOrAfter": "2026-10-15T06:20:42.3197081+00:00",
+  "generatedAt": "2026-10-15T06:20:44.9382792+00:00",
+  "currentPublicationConfirmed": true,
+  "collectorOutput": "2026/10/15 14:20:42 Collector 啟動\r\n2026/10/15 14:20:42 Codex initialize 成功\r\n2026/10/15 14:20:42 Codex initialized 已送出\r\n2026/10/15 14:20:43 Codex account/read 成功；authenticated=true\r\n2026/10/15 14:20:44 Codex account/rateLimits/read 成功\r\n2026/10/15 14:20:44 Codex App Server / Account / Rate Limit 取得成功\r\n2026/10/15 14:20:44 Normalization 成功\r\n2026/10/15 14:20:44 Encryption 成功\r\n2026/10/15 14:20:46 Google Drive Upload 成功；固定 File ID 已更新: [REDACTED FILE ID]\r\n2026/10/15 14:20:46 本輪執行成功",
+  "goRunExit": 0,
+  "goRunOutput": "2026/10/15 14:20:56 測試 Client 驗證成功：version=1 generatedAt=2026-10-15T06:20:44.9382792Z limits=1",
+  "powerShellClientExit": 0,
+  "powerShellClientOutput": "2026/10/15 14:20:58 測試 Client 驗證成功：version=1 generatedAt=2026-10-15T06:20:44.9382792Z limits=1",
+  "windowsClientExit": 0,
+  "windowsClientOutput": "2026/10/15 14:21:00 測試 Client 驗證成功：version=1 generatedAt=2026-10-15T06:20:44.9382792Z limits=1",
+  "wrongKeyExit": 1,
+  "wrongKeyOutput": "2026/10/15 14:21:02 測試 Client 驗證失敗: AES-GCM 驗證失敗"
+}

@@ -2,7 +2,7 @@
 
 Windows x64 Go Collector：Codex App Server → Normalized JSON → AES-128-GCM Binary → Google Drive 固定 File ID → HTTPS 測試 Client。
 
-正式基準為 [V1 Specification 1.0](docs/01-codex-usage-monitor-v1-specification.md)，原檔複製後 SHA256 相同；既有 Python / FastAPI / Docker / Dashboard 未修改。**V1 尚未 COMPLETE**。2026-10-15 已完成 `drive.file` Desktop OAuth、實際 token refresh 與本機保存；使用者人工上傳之專用 Binary 的實際 PATCH 回傳 HTTP 404／notFound。使用者已核准改用完整 `drive` scope 重新授權，尚待人工同意及後續更新、公開 HTTPS 驗證。詳見 [驗收表](docs/acceptance-checklist.md)。
+正式基準為 [V1 Specification 1.0](docs/01-codex-usage-monitor-v1-specification.md)，原檔複製後 SHA256 相同；既有 Python / FastAPI / Docker / Dashboard 未修改。2026-10-15 全部實機 Gate 與 AC-01～AC-30 均 PASS：完整 `drive` scope 人工授權、refresh、本機保存、同一 File ID 連續兩次 PATCH、失敗後舊檔保留、正式匿名 HTTPS／解密／錯誤 Key 拒絕。**V1 尚未 COMPLETE**：本次以外的起始未追蹤資料仍保留，尚不符合「整個工作樹乾淨」的完成條件。詳見 [驗收表](docs/acceptance-checklist.md)。
 
 ## Requirements
 
@@ -70,6 +70,8 @@ $env:CODEX_MONITOR_GOOGLE_TOKEN_FILE = "<Repository 外尚不存在的獨立 tok
 
 再執行上述 OAuth Gate，由使用者確認 Google 同意畫面。改 scope 不會讓已存在的 token 自動取得新權限；保留原本 `drive.file` token，使用獨立路徑重新授權，後續 Collector 使用相同 scope 與新 token 路徑。完整 `drive` scope 具有較廣的 Drive 讀寫權限，僅在使用者核准後使用。
 
+本次獨立完整 scope 授權與實際 refresh 已 [PASS](docs/evidence/2026-10-15-google-oauth-drive-live.json)。先前 `drive.file` 的 HTTP 404 原始 evidence 保留；完整 scope 查詢確認目標是人工上傳的 `application/octet-stream`，原始檔案為 0 bytes。
+
 ## Run Collector
 
 先確認同一 Windows 使用者已登入：
@@ -91,6 +93,8 @@ PATCH https://www.googleapis.com/upload/drive/v3/files/{FILE_ID}?uploadType=medi
 不搜尋檔名、不 Create、不 Delete，也不先清空檔案。[Google files.update](https://developers.google.com/workspace/drive/api/reference/rest/v3/files/update)。
 
 真實固定 ID Gate 可設定 `CODEX_MONITOR_DRIVE_LIVE_GATE=1`、`CODEX_MONITOR_GOOGLE_CREDENTIALS_FILE`、token 路徑、scope、AES Key 及明確核准覆寫的 `CODEX_MONITOR_DRIVE_FILE_ID`，執行 `go test -v -count=1 -run '^TestLiveGoogleDrivePublishGate$' .`。此 opt-in 測試會透過正式 pipeline 覆寫兩次；observer 只允許指定 ID 的 media PATCH，驗證加密 Payload 與回傳 ID；Google 錯誤會使測試失敗。可用 `CODEX_MONITOR_DRIVE_LIVE_EVIDENCE` 指定遮罩後 evidence 路徑。一般 CI 不執行真實更新。
+
+失敗保護可使用同一組設定，加上 `CODEX_MONITOR_DRIVE_FAILURE_LIVE_GATE=1`，執行 `go test -v -count=1 -run '^TestLiveGoogleDriveFailureGate$' .`。測試先下載並驗證既有 Binary，再對指定 ID 發送一次將 bearer 改為無效值的 PATCH，body 保持原有有效 Binary；要求實際 HTTP 401，並重新下載比對逐 byte 與 SHA256、驗證 GCM。可用 `CODEX_MONITOR_DRIVE_FAILURE_LIVE_EVIDENCE` 指定 evidence 路徑。此 fault injection 不把測試 credential 寫入 token 檔，不執行 Delete／Create。本次 [兩次更新](docs/evidence/2026-10-15-google-drive-full-scope-publish.json)與[失敗保留](docs/evidence/2026-10-15-google-drive-failure-live.json)均 PASS。
 
 `requiresOpenaiAuth` 反映 active provider，不能單獨作為未登入判斷。本次 live 值為 `true`，同時 `account.type=chatgpt`、`planType=plus` 與 rate-limit RPC 均成功。[官方 Codex contract](https://learn.chatgpt.com/docs/app-server)。
 
@@ -145,6 +149,8 @@ go run . --test-url "<正式 HTTPS Binary URL>"
 
 依序驗證 HTTPS URL／redirect、HTTP status、Binary minimum length、Magic、Binary version、AES-GCM authentication、UTF-8、JSON、JSON version、所有固定 schema 必要欄位與時間格式。拒絕 HTTP、malformed URL、HTTP downgrade、錯誤 key、竄改資料、unsupported versions、非法 UTF-8／JSON、缺失欄位與未登入 Payload。TLS certificate 驗證正常開啟；下載上限 4 MiB、timeout 30 秒。
 
+Google Drive 檔案必須允許知道連結的任何人檢視，Client 不攜帶 Google token 或登入 cookie。正式下載 URL 採 `files.get` 回傳的 HTTPS `webContentLink`；瀏覽用 `/file/d/.../view` 不是 Binary。私人檔案可能回傳 HTTP 200 的 HTML 登入頁，仍須由 Binary Magic 驗證拒絕，不能因 HTTP 200 宣告 PASS。本次[分享前 evidence](docs/evidence/2026-10-15-google-https-live.json)為 HTML／Magic 拒絕；使用者開啟 anyone／reader 後，[正式匿名 HTTPS evidence](docs/evidence/2026-10-15-google-https-public-live.json)確認最新 Binary 與授權 API 下載雜湊相同，`go run`、PowerShell script、Windows EXE 均 PASS，錯誤 Key 拒絕。
+
 ## Failure Semantics / Security Boundary
 
 Codex／account／rate-limit、Normalization、JSON 或 Encrypt 任一步失敗，publisher 不會被呼叫。OAuth 或 refresh 失敗不會送出 PATCH；upload 失敗不會清空、Delete 或另外 Create 遠端檔案。Collector 的 process／scanner／RPC 錯誤均使本輪失敗，成功訊息只在最後 upload 成功後記錄。
@@ -155,6 +161,6 @@ AES 使用標準庫 AES-128-GCM：`MDF1 | version=1 | random 12-byte nonce | cip
 
 ## Current Gates
 
-- PASS：format、vet、unit / 本機整合測試、Windows x64 build / exe、Codex live、AES-GCM；Google Desktop OAuth 首次授權／live refresh／本機保存已於 2026-10-15 實測通過。
-- BLOCKED：完整 `drive` scope 的人工重新授權、固定 File ID 實際更新兩次／舊檔保留、正式公開 HTTPS 最新 Binary 下載；先前 `drive.file` PATCH 實測為 HTTP 404／notFound，沒有完成更新。
+- PASS：format、vet、unit / 本機整合測試、Windows x64 build / exe、Codex live、AES-GCM；兩種 scope OAuth／live refresh／本機保存、完整 scope 固定 File ID 連續兩次更新、實際更新失敗後舊內容保留、正式匿名 HTTPS 最新 Binary／正確 Key／錯誤 Key 拒絕；AC-01～AC-30 均 PASS。
+- BLOCKED：原訂「整個 Git 工作樹乾淨」條件。起始已有 `.codex-remote-attachments/`、`docs/formal-spec-v0.5/`、`docs/spec/` 共 9 個未追蹤檔案，保持原樣；沒有刪除、隱藏或擅自納入本次提交。
 - PR 保持 Draft；完整 AC-01～AC-30 與 evidence 見 [acceptance checklist](docs/acceptance-checklist.md)。

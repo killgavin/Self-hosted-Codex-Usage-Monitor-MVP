@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-15T14:06:53.618894+08:00",
+  "capturedAt": "2026-10-15T14:17:41.7242942+08:00",
   "platform": "Microsoft Windows 10.0.26300",
   "architecture": "X64",
   "goVersion": "go version go1.27.1 windows/amd64",
@@ -9,14 +9,23 @@
   "unitAndLocalIntegration": "PASS",
   "windowsX64Build": "PASS",
   "windowsAMD64Executable": "PASS",
-  "binarySHA256": "3EEB8AE7AA8C1EF9AC272E3CF7B2BB0657EE16C012486E02BEC906CF5328CEBA",
+  "binarySHA256": "909ACACD331C08A2E1F95F7C28987C2D301DF0AE111D15867A170BEC3E3BBE83",
   "codexLive": "PASS",
   "codexLiveEvidence": "2026-10-15-codex-live.json",
   "googleOAuth": "PASS",
   "googleOAuthEvidence": "2026-10-15-google-oauth-live.json",
-  "googleDrive": "BLOCKED: drive.file PATCH to the manually uploaded Binary returned HTTP 404/notFound; full drive scope explicitly approved, reauthorization pending",
-  "publicHTTPS": "BLOCKED: no successfully published target Binary",
-  "googleFullDriveOAuth": "BLOCKED: manual browser consent pending",
+  "googleDrive": "PASS: two actual media PATCHes returned HTTP 200 and the original ID; HTTP 401 fault retained byte-identical valid remote Binary",
+  "publicHTTPS": "PASS: anonymous official webContentLink returned the latest authenticated Binary with identical SHA256; Go, PowerShell, Windows EXE PASS; wrong key rejected",
+  "googleFullDriveOAuth": "PASS: manual consent, token acquisition, actual refresh and local persistence",
   "sandboxAttempt": "FAIL: local TLS and temporary token rename denied by sandbox; full suite rerun outside sandbox PASS",
-  "sourceCommit": "4e4a37f6ef1f7b9614aaed4305e1fab9b2dc5a4f"
+  "sourceCommit": "4e4a37f6ef1f7b9614aaed4305e1fab9b2dc5a4f",
+  "googleFullDriveOAuthEvidence": "2026-10-15-google-oauth-drive-live.json",
+  "googleDriveEvidence": [
+    "2026-10-15-google-drive-full-scope-metadata.json",
+    "2026-10-15-google-drive-full-scope-publish.json",
+    "2026-10-15-google-drive-failure-live.json"
+  ],
+  "publicHTTPSEvidence": "2026-10-15-google-https-public-live.json",
+  "buildGitHead": "57b4874a5b3f52a295d3e5e3040a206e01a3a245",
+  "acceptanceCriteria": "AC-01 through AC-30 PASS; original whole-worktree-clean completion condition blocked by pre-existing untracked files"
 }
