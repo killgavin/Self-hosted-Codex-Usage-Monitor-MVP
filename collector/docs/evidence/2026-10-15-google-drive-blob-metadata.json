@@ -1,0 +1,23 @@
+{
+  "capturedAt": "2026-10-15T05:56:19.3047935+00:00",
+  "operation": "GET explicit ordinary-file target metadata",
+  "httpStatus": 404,
+  "requestedScope": "https://www.googleapis.com/auth/drive.file",
+  "fileID": "[REDACTED]",
+  "response": {
+    "error": {
+      "code": 404,
+      "message": "File not found: [REDACTED FILE ID].",
+      "errors": [
+        {
+          "message": "File not found: [REDACTED FILE ID].",
+          "domain": "global",
+          "reason": "notFound",
+          "location": "fileId",
+          "locationType": "parameter"
+        }
+      ]
+    }
+  },
+  "driveWritesSent": 0
+}

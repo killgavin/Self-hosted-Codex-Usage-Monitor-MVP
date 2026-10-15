@@ -1,0 +1,22 @@
+{
+  "capturedAt": "2026-10-15T14:06:53.618894+08:00",
+  "platform": "Microsoft Windows 10.0.26300",
+  "architecture": "X64",
+  "goVersion": "go version go1.27.1 windows/amd64",
+  "codexVersion": "codex-cli 0.162.1",
+  "gofmt": "PASS",
+  "vet": "PASS",
+  "unitAndLocalIntegration": "PASS",
+  "windowsX64Build": "PASS",
+  "windowsAMD64Executable": "PASS",
+  "binarySHA256": "3EEB8AE7AA8C1EF9AC272E3CF7B2BB0657EE16C012486E02BEC906CF5328CEBA",
+  "codexLive": "PASS",
+  "codexLiveEvidence": "2026-10-15-codex-live.json",
+  "googleOAuth": "PASS",
+  "googleOAuthEvidence": "2026-10-15-google-oauth-live.json",
+  "googleDrive": "BLOCKED: drive.file PATCH to the manually uploaded Binary returned HTTP 404/notFound; full drive scope explicitly approved, reauthorization pending",
+  "publicHTTPS": "BLOCKED: no successfully published target Binary",
+  "googleFullDriveOAuth": "BLOCKED: manual browser consent pending",
+  "sandboxAttempt": "FAIL: local TLS and temporary token rename denied by sandbox; full suite rerun outside sandbox PASS",
+  "sourceCommit": "4e4a37f6ef1f7b9614aaed4305e1fab9b2dc5a4f"
+}

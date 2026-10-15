@@ -2,13 +2,13 @@
 
 Windows x64 Go Collector：Codex App Server → Normalized JSON → AES-128-GCM Binary → Google Drive 固定 File ID → HTTPS 測試 Client。
 
-正式基準為 [V1 Specification 1.0](docs/01-codex-usage-monitor-v1-specification.md)，原檔複製後 SHA256 相同；既有 Python / FastAPI / Docker / Dashboard 未修改。**V1 尚未 COMPLETE**，目前等待 Google OAuth credentials，後續仍需真實固定 File ID 與公開 HTTPS 驗證。詳見 [驗收表](docs/acceptance-checklist.md)。
+正式基準為 [V1 Specification 1.0](docs/01-codex-usage-monitor-v1-specification.md)，原檔複製後 SHA256 相同；既有 Python / FastAPI / Docker / Dashboard 未修改。**V1 尚未 COMPLETE**。2026-10-15 已完成 `drive.file` Desktop OAuth、實際 token refresh 與本機保存；使用者人工上傳之專用 Binary 的實際 PATCH 回傳 HTTP 404／notFound。使用者已核准改用完整 `drive` scope 重新授權，尚待人工同意及後續更新、公開 HTTPS 驗證。詳見 [驗收表](docs/acceptance-checklist.md)。
 
 ## Requirements
 
 - Windows x64；本輪已實際 build 並執行 AMD64 PE。
 - Go 1.24.0 以上（既有 `golang.org/x/oauth2 v0.31.0` 的最低要求）；本機與 CI 固定使用 Go 1.27.1。
-- 官方 Codex CLI / App Server；本輪最終實機版本為 `codex-cli 0.159.3`（初次檢查為 0.159.2），以 evidence 記錄為準。
+- 官方 Codex CLI / App Server；2026-10-15 續驗實機版本為 `codex-cli 0.162.1`，以各次 evidence 記錄為準。
 - 執行 Collector 的 Windows 使用者須事先透過官方 Codex 完成登入。Collector 不啟動 OpenAI 登入、不解析 credentials、不使用私有 backend endpoint。
 - Google Cloud 已啟用 Drive API，OAuth Client 類型為 **Desktop app**。
 - 人工建立的專用 Drive Binary 目標檔案、固定 File ID、可下載 Binary 的 HTTPS URL。
@@ -23,6 +23,7 @@ Windows x64 Go Collector：Codex App Server → Normalized JSON → AES-128-GCM 
 | `CODEX_MONITOR_DRIVE_FILE_ID` | 必要；人工建立目標檔案的固定 ID |
 | `CODEX_MONITOR_GOOGLE_CLIENT_ID` | 必要；Google OAuth Desktop App Client ID |
 | `CODEX_MONITOR_GOOGLE_CLIENT_SECRET` | 必要；對應的 Client Secret |
+| `CODEX_MONITOR_GOOGLE_SCOPE` | 可選；預設完整 `drive.file` scope URL；僅在實機驗證失敗並獲核准後明確設定完整 `drive` scope URL |
 | `CODEX_MONITOR_GOOGLE_TOKEN_FILE` | 可選；預設 `google-token.json` |
 | `CODEX_MONITOR_CODEX_PATH` | 可選；預設 `codex`，可指定官方 exe 完整路徑 |
 
@@ -40,13 +41,34 @@ $env:CODEX_MONITOR_AES_KEY = [Convert]::ToHexString($keyBytes)
 
 ## Google OAuth Desktop App / First OAuth Flow
 
-預設且目前唯一使用的 scope 為 `https://www.googleapis.com/auth/drive.file`。
+預設 scope 為 `https://www.googleapis.com/auth/drive.file`。程式只接受此 URL 或 `https://www.googleapis.com/auth/drive`，不會因為 API 失敗而自動擴大權限。
 
-首次 `go run .` 執行至所有資料處理成功後，才啟動 OAuth：只監聽 `127.0.0.1`，由 OS 指派可用 port，再建立實際 redirect URI。程式顯示授權網址，由使用者在本機系統瀏覽器開啟並授權；等待最多五分鐘。每次 flow 使用新的安全隨機 state、callback 驗證 state，並使用 OAuth 套件提供的 PKCE S256；state 不符、缺少 code 或重複 callback 都被拒絕。[Google Desktop OAuth 官方說明](https://developers.google.com/identity/protocols/oauth2/native-app)。
+首次 `go run .` 執行至所有資料處理成功後，才啟動 OAuth：只監聽 `127.0.0.1`，由 OS 指派可用 port，再建立實際 redirect URI。程式顯示授權網址，由使用者在本機系統瀏覽器開啟並授權；等待最多五分鐘。每次 flow 使用新的安全隨機 state、callback 驗證 state，並使用 OAuth 套件提供的 PKCE S256；state 不符、缺少 code 或重複 callback 都被拒絕。新授權指定 `access_type=offline` 與 `prompt=consent`，以便取得可離線使用的 refresh token；既有 token 不重新啟動授權。[Google Desktop OAuth 官方說明](https://developers.google.com/identity/protocols/oauth2/native-app)、[離線授權說明](https://developers.google.com/identity/protocols/oauth2/web-server#offline)。
 
 token 保存於本機。後續 access token 到期時，以 refresh token 換取新 token 並更新本機檔案；token 檔損毀會明確失敗，不會靜默覆蓋。OAuth 與 token endpoint 的原始錯誤 body 不進入 log。
 
+首次授權也可獨立執行，不需要 AES Key 或 Drive File ID。將下載的 Desktop App credentials JSON 與 token 檔案放在 Repository 外，執行以下 opt-in Gate；它不發送 Drive 檔案請求，授權後會讓記憶體中的 token 副本過期，實際驗證 refresh 及保存：
+
+```powershell
+$env:CODEX_MONITOR_GOOGLE_LIVE_GATE = "1"
+$env:CODEX_MONITOR_GOOGLE_CREDENTIALS_FILE = "<Repository 外的 Desktop App JSON 完整路徑>"
+$env:CODEX_MONITOR_GOOGLE_TOKEN_FILE = "<Repository 外的 token JSON 完整路徑>"
+$env:CODEX_MONITOR_GOOGLE_LIVE_EVIDENCE = "docs/evidence/local/google-oauth-live.json"
+go test -v -count=1 -run '^TestLiveGoogleOAuthGate$' .
+```
+
+`CODEX_MONITOR_GOOGLE_CREDENTIALS_FILE` 與 `CODEX_MONITOR_GOOGLE_LIVE_GATE` 僅供測試 Gate 使用；正式 Collector 的 Client ID／Secret 設定仍為上述環境變數。一般 CI 不會啟動此人工 OAuth flow。
+
 `drive.file` 只允許應用程式已獲授權使用的檔案，人工建立與公開分享檔案不等於此 App 已取得更新權限。[Google scope 說明](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)。實機 PATCH 失敗時先保存 HTTP status 與 Google reason，檢查 ownership、檔案／App 授權；不會自動擴大到 `drive` scope。
+
+本次已保留 [HTTP 404／notFound PATCH evidence](docs/evidence/2026-10-15-google-drive-publish.json)。404 本身不足以確定是 scope、ownership 或 ID 問題。依正式規格 §16.2 及使用者明確核准，重新授權時設定：
+
+```powershell
+$env:CODEX_MONITOR_GOOGLE_SCOPE = "https://www.googleapis.com/auth/drive"
+$env:CODEX_MONITOR_GOOGLE_TOKEN_FILE = "<Repository 外尚不存在的獨立 token JSON 完整路徑>"
+```
+
+再執行上述 OAuth Gate，由使用者確認 Google 同意畫面。改 scope 不會讓已存在的 token 自動取得新權限；保留原本 `drive.file` token，使用獨立路徑重新授權，後續 Collector 使用相同 scope 與新 token 路徑。完整 `drive` scope 具有較廣的 Drive 讀寫權限，僅在使用者核准後使用。
 
 ## Run Collector
 
@@ -67,6 +89,8 @@ PATCH https://www.googleapis.com/upload/drive/v3/files/{FILE_ID}?uploadType=medi
 ```
 
 不搜尋檔名、不 Create、不 Delete，也不先清空檔案。[Google files.update](https://developers.google.com/workspace/drive/api/reference/rest/v3/files/update)。
+
+真實固定 ID Gate 可設定 `CODEX_MONITOR_DRIVE_LIVE_GATE=1`、`CODEX_MONITOR_GOOGLE_CREDENTIALS_FILE`、token 路徑、scope、AES Key 及明確核准覆寫的 `CODEX_MONITOR_DRIVE_FILE_ID`，執行 `go test -v -count=1 -run '^TestLiveGoogleDrivePublishGate$' .`。此 opt-in 測試會透過正式 pipeline 覆寫兩次；observer 只允許指定 ID 的 media PATCH，驗證加密 Payload 與回傳 ID；Google 錯誤會使測試失敗。可用 `CODEX_MONITOR_DRIVE_LIVE_EVIDENCE` 指定遮罩後 evidence 路徑。一般 CI 不執行真實更新。
 
 `requiresOpenaiAuth` 反映 active provider，不能單獨作為未登入判斷。本次 live 值為 `true`，同時 `account.type=chatgpt`、`planType=plus` 與 rate-limit RPC 均成功。[官方 Codex contract](https://learn.chatgpt.com/docs/app-server)。
 
@@ -106,7 +130,7 @@ go test -v -count=1 -run 'TestLiveCodexGate|TestBuiltWindowsBinary' .
 Remove-Item Env:CODEX_MONITOR_LIVE_GATE, Env:CODEX_MONITOR_BINARY_GATE
 ```
 
-一般 CI 不具備使用者登入，這兩個 opt-in tests 會 SKIP；Windows 本機另有 PASS evidence。
+一般 CI 不具備使用者登入，Codex、binary 與 Google OAuth 的 opt-in tests 會 SKIP；Windows 本機另有 PASS evidence。
 
 ## HTTPS Test Client
 
@@ -131,6 +155,6 @@ AES 使用標準庫 AES-128-GCM：`MDF1 | version=1 | random 12-byte nonce | cip
 
 ## Current Gates
 
-- PASS：format、vet、unit / 本機整合測試、Windows x64 build / exe、Codex live、AES-GCM。
-- BLOCKED：Google Desktop OAuth 首次授權／live refresh、固定 File ID 實際更新兩次／舊檔保留、正式公開 HTTPS 最新 Binary 下載。
+- PASS：format、vet、unit / 本機整合測試、Windows x64 build / exe、Codex live、AES-GCM；Google Desktop OAuth 首次授權／live refresh／本機保存已於 2026-10-15 實測通過。
+- BLOCKED：完整 `drive` scope 的人工重新授權、固定 File ID 實際更新兩次／舊檔保留、正式公開 HTTPS 最新 Binary 下載；先前 `drive.file` PATCH 實測為 HTTP 404／notFound，沒有完成更新。
 - PR 保持 Draft；完整 AC-01～AC-30 與 evidence 見 [acceptance checklist](docs/acceptance-checklist.md)。

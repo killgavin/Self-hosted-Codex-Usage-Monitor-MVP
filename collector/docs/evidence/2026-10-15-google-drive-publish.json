@@ -1,0 +1,33 @@
+{
+  "attempts": [
+    {
+      "binaryBytes": 1338,
+      "binarySchemaValidated": true,
+      "fileID": "[REDACTED]",
+      "httpStatus": 404,
+      "method": "PATCH",
+      "response": {
+        "error": {
+          "code": 404,
+          "message": "File not found: [REDACTED FILE ID].",
+          "errors": [
+            {
+              "message": "File not found: [REDACTED FILE ID].",
+              "domain": "global",
+              "reason": "notFound",
+              "location": "fileId",
+              "locationType": "parameter"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "capturedAt": "2026-10-15T05:58:02Z",
+  "collectorError": "Google Drive Update HTTP 404; reason=notFound",
+  "completedUpdates": 0,
+  "deleteOrCreateRequests": 0,
+  "originalFileID": "[REDACTED]",
+  "requestedScope": "https://www.googleapis.com/auth/drive.file",
+  "result": "FAIL"
+}

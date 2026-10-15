@@ -1,0 +1,112 @@
+{
+  "sourceCommit": "4e4a37f6ef1f7b9614aaed4305e1fab9b2dc5a4f",
+  "runID": 38690582629,
+  "runURL": "https://github.com/killgavin/Self-hosted-Codex-Usage-Monitor-MVP/actions/runs/38690582629",
+  "result": "PASS",
+  "jobs": [
+    {
+      "id": 116275296002,
+      "name": "Go test and Windows build",
+      "status": "completed",
+      "conclusion": "success",
+      "run_id": 38690582629,
+      "logs_url": null,
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2
+        },
+        {
+          "name": "Run actions/setup-go@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3
+        },
+        {
+          "name": "Download modules",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4
+        },
+        {
+          "name": "Format check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5
+        },
+        {
+          "name": "Vet",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6
+        },
+        {
+          "name": "Unit tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7
+        },
+        {
+          "name": "Build Windows x64",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8
+        },
+        {
+          "name": "Run actions/upload-artifact@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9
+        },
+        {
+          "name": "Post Run actions/setup-go@v5",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19
+        }
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 11951312674,
+      "name": "codex-usage-monitor-win-x64",
+      "size_in_bytes": 6382447,
+      "url": "https://api.github.com/repos/killgavin/Self-hosted-Codex-Usage-Monitor-MVP/actions/artifacts/11951312674",
+      "archive_download_url": "https://api.github.com/repos/killgavin/Self-hosted-Codex-Usage-Monitor-MVP/actions/artifacts/11951312674/zip",
+      "expired": false,
+      "created_at": "2026-10-15T06:08:59Z",
+      "expires_at": "2027-01-13T06:07:37Z",
+      "updated_at": "2026-10-15T06:08:59Z",
+      "digest": "sha256:0ba3cc59fd8e8b79be13b955bbfe4b37bfa79d40128ec193769ab2dac6fa2a82",
+      "workflow_run": {
+        "id": 38690582629,
+        "repository_id": 1376209092,
+        "head_repository_id": 1376209092,
+        "head_branch": "feat/codex-usage-monitor-v1",
+        "head_sha": "4e4a37f6ef1f7b9614aaed4305e1fab9b2dc5a4f"
+      }
+    }
+  ],
+  "boundary": "Google OAuth and Drive live gates are opt-in and skipped in CI; actual drive.file PATCH failure and pending full-drive consent are recorded separately."
+}
