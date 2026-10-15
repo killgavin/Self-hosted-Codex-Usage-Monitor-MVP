@@ -23,12 +23,25 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-const driveFileScope = "https://www.googleapis.com/auth/drive.file"
+const (
+	driveFileScope = "https://www.googleapis.com/auth/drive.file"
+	driveScope     = "https://www.googleapis.com/auth/drive"
+)
 
 var fileIDPattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
 func oauthConfig(cfg Config) *oauth2.Config {
-	return &oauth2.Config{ClientID: cfg.GoogleClientID, ClientSecret: cfg.GoogleSecret, Scopes: []string{driveFileScope}, Endpoint: google.Endpoint}
+	scope := cfg.GoogleScope
+	if scope == "" {
+		scope = driveFileScope
+	}
+	return &oauth2.Config{ClientID: cfg.GoogleClientID, ClientSecret: cfg.GoogleSecret, Scopes: []string{scope}, Endpoint: google.Endpoint}
+}
+
+func oauthAuthorizationURL(config *oauth2.Config, state, verifier string) string {
+	// A new offline grant, including an explicitly approved scope change, needs
+	// consent so Google can issue a refresh token even for a returning user.
+	return config.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.S256ChallengeOption(verifier), oauth2.SetAuthURLParam("prompt", "consent"))
 }
 func loadToken(path string) (*oauth2.Token, error) {
 	data, err := os.ReadFile(path)
@@ -156,7 +169,7 @@ func EnsureToken(ctx context.Context, cfg Config) (*oauth2.Token, error) {
 	config := oauthConfig(cfg)
 	config.RedirectURL = "http://" + listener.Addr().String()
 	verifier := oauth2.GenerateVerifier()
-	authURL := config.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.S256ChallengeOption(verifier))
+	authURL := oauthAuthorizationURL(config, state, verifier)
 	fmt.Printf("首次授權：請在本機瀏覽器開啟以下網址：\n%s\n", authURL)
 	var result oauthResult
 	select {

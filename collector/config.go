@@ -12,6 +12,7 @@ type Config struct {
 	DriveFileID     string
 	GoogleClientID  string
 	GoogleSecret    string
+	GoogleScope     string
 	TokenFile       string
 	CodexExecutable string
 }
@@ -21,12 +22,25 @@ func LoadConfig() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	cfg := Config{AESKey: key, DriveFileID: os.Getenv("CODEX_MONITOR_DRIVE_FILE_ID"), GoogleClientID: os.Getenv("CODEX_MONITOR_GOOGLE_CLIENT_ID"), GoogleSecret: os.Getenv("CODEX_MONITOR_GOOGLE_CLIENT_SECRET"), TokenFile: envOr("CODEX_MONITOR_GOOGLE_TOKEN_FILE", "google-token.json"), CodexExecutable: envOr("CODEX_MONITOR_CODEX_PATH", "codex")}
+	scope, err := LoadGoogleScope()
+	if err != nil {
+		return Config{}, err
+	}
+	cfg := Config{AESKey: key, DriveFileID: os.Getenv("CODEX_MONITOR_DRIVE_FILE_ID"), GoogleClientID: os.Getenv("CODEX_MONITOR_GOOGLE_CLIENT_ID"), GoogleSecret: os.Getenv("CODEX_MONITOR_GOOGLE_CLIENT_SECRET"), GoogleScope: scope, TokenFile: envOr("CODEX_MONITOR_GOOGLE_TOKEN_FILE", "google-token.json"), CodexExecutable: envOr("CODEX_MONITOR_CODEX_PATH", "codex")}
 	if cfg.DriveFileID == "" || cfg.GoogleClientID == "" || cfg.GoogleSecret == "" {
 		return Config{}, fmt.Errorf("缺少 Google Drive 設定環境變數")
 	}
 	return cfg, nil
 }
+
+func LoadGoogleScope() (string, error) {
+	scope := envOr("CODEX_MONITOR_GOOGLE_SCOPE", driveFileScope)
+	if scope != driveFileScope && scope != driveScope {
+		return "", errors.New("CODEX_MONITOR_GOOGLE_SCOPE 僅支援 drive.file 或 drive 的完整 OAuth scope URL")
+	}
+	return scope, nil
+}
+
 func LoadAESKey() ([]byte, error) {
 	value := os.Getenv("CODEX_MONITOR_AES_KEY")
 	key, err := hex.DecodeString(value)

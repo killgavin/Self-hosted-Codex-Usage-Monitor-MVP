@@ -62,16 +62,22 @@ func TestOAuthStateAndCallbacks(t *testing.T) {
 	}
 }
 func TestOAuthDesktopRequestContract(t *testing.T) {
-	config := oauthConfig(Config{GoogleClientID: "test-client", GoogleSecret: "test-secret"})
-	config.RedirectURL = "http://127.0.0.1:12345"
-	verifier := oauth2.GenerateVerifier()
-	parsed, err := url.Parse(config.AuthCodeURL("random-state", oauth2.AccessTypeOffline, oauth2.S256ChallengeOption(verifier)))
-	if err != nil {
-		t.Fatal(err)
-	}
-	query := parsed.Query()
-	if query.Get("scope") != driveFileScope || query.Get("redirect_uri") != config.RedirectURL || query.Get("state") != "random-state" || query.Get("access_type") != "offline" || query.Get("code_challenge_method") != "S256" || query.Get("code_challenge") == "" {
-		t.Fatal("desktop request contract incorrect")
+	for _, scope := range []string{"", driveFileScope, driveScope} {
+		config := oauthConfig(Config{GoogleClientID: "test-client", GoogleSecret: "test-secret", GoogleScope: scope})
+		config.RedirectURL = "http://127.0.0.1:12345"
+		verifier := oauth2.GenerateVerifier()
+		parsed, err := url.Parse(oauthAuthorizationURL(config, "random-state", verifier))
+		if err != nil {
+			t.Fatal(err)
+		}
+		wantScope := scope
+		if wantScope == "" {
+			wantScope = driveFileScope
+		}
+		query := parsed.Query()
+		if query.Get("scope") != wantScope || query.Get("redirect_uri") != config.RedirectURL || query.Get("state") != "random-state" || query.Get("access_type") != "offline" || query.Get("prompt") != "consent" || query.Get("code_challenge_method") != "S256" || query.Get("code_challenge") == "" {
+			t.Fatal("desktop request contract incorrect")
+		}
 	}
 }
 func TestTokenRefreshAndFixedFileUpdate(t *testing.T) {
