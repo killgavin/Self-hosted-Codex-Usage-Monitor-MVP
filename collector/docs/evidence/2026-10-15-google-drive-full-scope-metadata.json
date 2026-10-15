@@ -1,0 +1,25 @@
+{
+  "capturedAt": "2026-10-15T06:13:04.2598805+00:00",
+  "operation": "GET explicit ordinary-file target metadata before update",
+  "requestedScope": "https://www.googleapis.com/auth/drive",
+  "httpStatus": 200,
+  "fileID": "[REDACTED]",
+  "response": {
+    "id": "[REDACTED FILE ID]",
+    "mimeType": "application/octet-stream",
+    "trashed": false,
+    "capabilities": {
+      "canDownload": true,
+      "canEdit": true
+    },
+    "permissions": [
+      {
+        "type": "user",
+        "role": "owner"
+      }
+    ],
+    "md5Checksum": "d41d8cd98f00b204e9800998ecf8427e",
+    "size": "0"
+  },
+  "driveWritesSent": 0
+}

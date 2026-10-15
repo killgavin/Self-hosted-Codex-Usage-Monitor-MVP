@@ -1,0 +1,9 @@
+{
+  "capturedAt": "2026-10-15T06:12:07Z",
+  "desktopCredentials": "PASS",
+  "driveRequestsSent": 0,
+  "refreshToken": "PASS",
+  "scope": "https://www.googleapis.com/auth/drive",
+  "tokenAcquisition": "PASS",
+  "tokenPersistence": "PASS"
+}

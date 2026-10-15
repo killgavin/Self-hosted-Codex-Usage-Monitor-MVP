@@ -1,0 +1,31 @@
+{
+  "afterSHA256": "b9361ea5d1ecd95841c81cf32e9d06a4024ee0e6b92bfbce58a90143cda75577",
+  "beforeAndAfterPackagesValidated": true,
+  "beforeSHA256": "b9361ea5d1ecd95841c81cf32e9d06a4024ee0e6b92bfbce58a90143cda75577",
+  "capturedAt": "2026-10-15T06:15:12Z",
+  "deleteOrCreateRequests": 0,
+  "faultInjection": "replace bearer credential on one real media PATCH; retain existing valid Binary body",
+  "fileID": "[REDACTED]",
+  "httpStatus": 401,
+  "patchRequests": 1,
+  "remoteBytesUnchanged": true,
+  "requestedScope": "https://www.googleapis.com/auth/drive",
+  "response": {
+    "error": {
+      "code": 401,
+      "message": "Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.",
+      "errors": [
+        {
+          "message": "Invalid Credentials",
+          "domain": "global",
+          "reason": "authError",
+          "location": "Authorization",
+          "locationType": "header"
+        }
+      ],
+      "status": "UNAUTHENTICATED"
+    }
+  },
+  "result": "PASS",
+  "tokenFileReplacedByFault": false
+}

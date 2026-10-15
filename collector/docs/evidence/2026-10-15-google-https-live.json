@@ -1,0 +1,28 @@
+{
+  "capturedAt": "2026-10-15T06:15:37.6711993+00:00",
+  "result": "BLOCKED",
+  "source": "official Google files.get webContentLink",
+  "fileID": "[REDACTED]",
+  "url": "https://drive.google.com/uc?id=[REDACTED FILE ID]&export=download",
+  "metadata": {
+    "id": "[REDACTED FILE ID]",
+    "mimeType": "application/octet-stream",
+    "webContentLink": "https://drive.google.com/uc?id=[REDACTED FILE ID]&export=download",
+    "permissions": [
+      {
+        "type": "user",
+        "role": "owner"
+      }
+    ],
+    "md5Checksum": "1cdc77961027027b9ba43699acbe6f80",
+    "size": "1337"
+  },
+  "anonymousHTTPStatus": 200,
+  "anonymousContentType": "text/html",
+  "anonymousResponseHost": "accounts.google.com",
+  "anonymousBytes": 947576,
+  "authorizationHeaderSent": false,
+  "cookiesProvided": false,
+  "windowsClientExit": 1,
+  "windowsClientOutput": "2026/10/15 14:15:37 測試 Client 驗證失敗: Magic 不符"
+}

@@ -1,0 +1,38 @@
+{
+  "attempts": [
+    {
+      "binaryBytes": 1337,
+      "binarySchemaValidated": true,
+      "fileID": "[REDACTED]",
+      "httpStatus": 200,
+      "method": "PATCH",
+      "response": {
+        "kind": "drive#file",
+        "id": "[REDACTED FILE ID]",
+        "name": "drive-target-placeholder-20261015.bin",
+        "mimeType": "application/octet-stream"
+      },
+      "returnedFileIDMatchesOriginal": true
+    },
+    {
+      "binaryBytes": 1337,
+      "binarySchemaValidated": true,
+      "fileID": "[REDACTED]",
+      "httpStatus": 200,
+      "method": "PATCH",
+      "response": {
+        "kind": "drive#file",
+        "id": "[REDACTED FILE ID]",
+        "name": "drive-target-placeholder-20261015.bin",
+        "mimeType": "application/octet-stream"
+      },
+      "returnedFileIDMatchesOriginal": true
+    }
+  ],
+  "capturedAt": "2026-10-15T06:13:12Z",
+  "completedUpdates": 2,
+  "deleteOrCreateRequests": 0,
+  "originalFileID": "[REDACTED]",
+  "requestedScope": "https://www.googleapis.com/auth/drive",
+  "result": "PASS"
+}
